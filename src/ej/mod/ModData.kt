@@ -1,0 +1,68 @@
+package ej.mod
+
+import ej.utils.ValidateElements
+import ej.utils.ValidateNonBlank
+import ej.utils.classValidatorFor
+import javax.xml.bind.JAXBContext
+import javax.xml.bind.annotation.*
+
+/*
+ * Created by aimozg on 25.06.2018.
+ * Confidential until published on GitHub
+ */
+
+
+@XmlRootElement(name="mod")
+class ModData {
+	@ValidateNonBlank
+	@get:XmlAttribute
+	var name:String = ""
+	
+	@get:XmlAttribute
+	var version:Int = 0
+	
+	@ValidateElements(locator="name")
+	@XmlElementWrapper(name="state")
+	@XmlElement(name="var")
+	val stateVars:MutableList<StateVar> = ArrayList()
+	
+	@XmlElement(name="hook")
+	@ValidateElements()
+	val hooks:MutableList<ModHookData> = ArrayList()
+	
+	@XmlElement(name="script")
+	@ValidateElements()
+	val scripts:MutableList<ModScript> = ArrayList()
+	
+	@XmlElement(name="monster")
+	@ValidateElements(locator="id")
+	val monsters:ArrayList<MonsterData> = ArrayList()
+	
+	@XmlElements(
+			XmlElement(name="lib",type=XcLib::class),
+			XmlElement(name="scene",type=XcScene::class),
+			XmlElement(name="text",type=XcNamedText::class)
+	)
+	val content:ArrayList<StoryNode> = ArrayList()
+	
+	override fun toString(): String {
+		return "<mod name='$name' version='$version'>" +
+				" <state> ${stateVars.joinToString(" ")} </state>"+
+				hooks.joinToString(" ")+
+				monsters.joinToString(" ")+
+				content.joinToString(" ")+
+				"</mod>"
+	}
+	
+	fun validate() = VALIDATOR.validate(this)
+	
+	companion object {
+		internal val VALIDATOR by lazy { classValidatorFor<ModData>() }
+		val jaxbContext by lazy {
+			JAXBContext.newInstance(ModData::class.java)
+		}
+		
+	}
+	
+}
+
