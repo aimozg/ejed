@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mod name="ignored" version="0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="mod.rnc">
+    <monster id="default" base="">
+        <name></name>
+        <desc></desc>
+        <a>a </a>
+        <body>
+            <height>0</height>
+            <hips>0</hips>
+            <butt>0</butt>
+            <beard type="NORMAL" length="0"/>
+            <hair type="NORMAL" length="0" color="no"/>
+            <antennae>NONE</antennae>
+            <arms>HUMAN</arms>
+            <claws type="NORMAL" color=""/>
+            <ears>HUMAN</ears>
+            <eyes count="2" type="HUMAN" color="brown"/>
+            <face>HUMAN</face>
+            <gills>NONE</gills>
+            <horns type="NONE" count="0"/>
+            <legs type="HUMAN" count="2"/>
+            <rearBody>NONE</rearBody>
+            <tail type="NONE" count="0"/>
+            <tongue>HUMAN</tongue>
+            <wings>NONE</wings>
+
+            <anal looseness="VIRGIN" wetness="DRY"/>
+        </body>
+        <combat>
+            <level>1</level>
+            <str>1</str>
+            <tou>1</tou>
+            <spe>1</spe>
+            <int>1</int>
+            <wis>1</wis>
+            <lib>1</lib>
+            <sen>0</sen>
+            <cor>0</cor>
+            <weapon name="" verb="" attack="0"/>
+            <armor name="" defense="0"/>
+            <bonusHP>0</bonusHP>
+        </combat>
+    </monster>
+</mod>

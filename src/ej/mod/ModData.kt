@@ -66,3 +66,8 @@ class ModData {
 	
 }
 
+val DefaultModData by lazy {
+	ModData.jaxbContext.createUnmarshaller().unmarshal(
+			ModData::class.java.getResourceAsStream("default.xml"))
+			as ModData
+}

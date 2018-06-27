@@ -1,6 +1,9 @@
 package ej.editor
 
+import ej.editor.utils.mergeCopy
+import ej.mod.DefaultMonsterData
 import ej.mod.ModData
+import ej.mod.MonsterCombatData
 import ej.mod.MonsterData
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleListProperty
@@ -31,7 +34,7 @@ class ModViewModel(property: Property<ModData>) : ItemViewModel<ModData>() {
 	}
 	
 	init {
-		itemProperty.bindBidirectional(property)
+		itemProperty.bind(property)
 	}
 }
 
@@ -47,12 +50,33 @@ class MonsterViewModel(property: Property<MonsterData?>):ItemViewModel<MonsterDa
 	val pronounHis = bind(MonsterData::pronouns).stringBinding { it?.his?:" "}
 	val pronounHim = bind(MonsterData::pronouns).stringBinding { it?.him?:" "}
 	val body = bind(MonsterData::body)
-	val combat = bind(MonsterData::combat)
+	val combat = MonsterCombatDataViewModel(itemProperty)
 	val script = bind(MonsterData::script)
 	
 	
 	
 	init {
-		itemProperty.bindBidirectional(property)
+		itemProperty.bind(property.objectBinding{ md ->
+			mergeCopy(md, DefaultMonsterData)
+		})
+	}
+}
+
+class MonsterCombatDataViewModel(monsterProperty:Property<MonsterData?>) : ItemViewModel<MonsterCombatData>() {
+	val level = bind(MonsterCombatData::level)
+	val str = bind(MonsterCombatData::str)
+	val tou = bind(MonsterCombatData::tou)
+	val spe = bind(MonsterCombatData::spe)
+	val int = bind(MonsterCombatData::int)
+	val wis = bind(MonsterCombatData::wis)
+	val lib = bind(MonsterCombatData::lib)
+	val sen = bind(MonsterCombatData::sen)
+	val cor = bind(MonsterCombatData::cor)
+	val bonusHP = bind(MonsterCombatData::bonusHP)
+	val weapon = bind(MonsterCombatData::weapon)
+	val armor = bind(MonsterCombatData::armor)
+	val loot = bind(MonsterCombatData::loot)
+	init {
+		itemProperty.bind(monsterProperty.objectBinding{it?.combat})
 	}
 }

@@ -1,0 +1,329 @@
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+expression = text
+
+start = mod
+
+# #############################################
+# mod structure
+mod = element mod {
+    attribute name { text },
+    attribute version { text }?,
+    attribute xsi:noNamespaceSchemaLocation { text }?,
+#    import*,
+    state?,
+    hook*,
+    exportable*
+}
+#import = element import {
+#    attribute ref { text }
+#}
+state = element state {
+    var*
+}
+var = element var {
+    attribute name { text },
+    (text | empty)
+}
+hook = element hook {
+    attribute type { 'daily' | 'hourly' },
+    content*
+}
+exportable = monster | script | storynode
+storynode = lib | scene | Text
+lib = element lib {
+    attribute name { text },
+    storynode*
+}
+Text = element text {
+    attribute name { text },
+    content*
+}
+scene = element scene {
+    attribute name { text },
+    content*,
+    scene-fin
+}
+
+# #############################################
+# monster
+monster = element monster {
+    attribute id { text }
+    & attribute base { text }?
+    & element name { text }?
+    & element desc { content* }?
+    & element plural { empty }?
+    & element a { text }?
+    & element pronouns {
+        attribute he { text },
+        attribute his { text },
+        attribute him { text }
+    }?
+    & monsterBody?
+    & monsterCombat?
+    & script*
+}
+monsterBody = element body {
+    element vagina {
+        attribute virgin { 'true' | 'false' }?,
+        attribute wetness { text }?,
+        attribute looseness { text }?
+    }?
+    & element penis {
+        attribute length { text }?,
+        attribute thickness { text }?,
+        attribute type { text }?
+    }*
+    & element balls {
+        attribute count { text }?,
+        attribute size { text }?
+    }?
+    & element breasts { text }*
+    & element anal {
+        attribute looseness { text }?,
+        attribute wetness { text }?
+    }?
+    & element height { text }?
+    & element hips { text }?
+    & element butt { text }?
+    & element skin {
+        attribute coverage { text }
+        & element base {
+            skinLayer
+        }?
+        & element coat {
+            skinLayer
+        }?
+    }?
+    & element hair {
+        attribute length { text }?,
+        attribute color { text }?,
+        attribute type { text }?
+    }?
+    & element antennae { text }?
+    & element arms { text }?
+    & element beard {
+        attribute type { text }?
+        & attribute length { text }?
+    }?
+    & element claws {
+        attribute type { text }?,
+        attribute color { text }?
+    }?
+    & element ears { text }?
+    & element eyes {
+        attribute type { text }?,
+        attribute count { text }?,
+        attribute color { text }?
+    }?
+    & element face { text }?
+    & element gills { text }?
+    & element horns {
+        attribute type { text }?,
+        attribute count { text }?
+    }?
+    & element legs {
+        attribute type { text }?,
+        attribute count { text }?
+    }?
+    & element rearBody { text }?
+    & element tail {
+        attribute type { text }?,
+        attribute count { text }?
+    }?
+    & element tongue { text }?
+    & element wings { text }?
+}
+skinLayer = (
+    attribute type { text }?,
+    attribute color { text }?,
+    attribute color2 { text }?,
+    attribute pattern { text }?,
+    attribute adj { text }?,
+    attribute desc { text }?
+)
+monsterCombat = element combat {
+    element level { text }?
+    & element str { text }?
+    & element tou { text }?
+    & element spe { text }?
+    & element int { text }?
+    & element wis { text }?
+    & element lib { text }?
+    & element sen { text }?
+    & element cor { text }?
+    & element weapon {
+        attribute name { text }?,
+        attribute verb { text }?,
+        attribute attack { text }?
+    }?
+    & element armor {
+        attribute name { text }?,
+        attribute defense { text }?
+    }?
+    & element bonusHP { text }?
+    & element loot {
+        element gems {
+            (
+                (
+                    attribute min { text },
+                    attribute max { text }
+                ) | (
+                    attribute value { text }
+                )
+            )
+        }?,
+        lootItem*
+    }?
+}
+lootItem = element item {
+    attribute weight { text }?,
+    text
+}
+
+
+script = element script {
+    attribute language { 'lua' }?,
+    text
+}
+
+# #############################
+# scenes
+scene-fin = menu | next | scenefin-if | battle
+menu = element menu {
+    button+
+}
+button = element button {
+    attribute text { text },
+    attribute disabled { empty }?,
+    attribute call { text },
+    element hint {
+        attribute header { text }?,
+        content
+    }?
+}
+next = element next {
+   text
+}
+battle = element battle {
+    attribute monster { text },
+    attribute options { text }?
+}
+#extend-story = element extend-story { namedBlock }
+#zone = element zone {
+#    namedBlock,
+#    encounter*
+#}
+#extend-zone = element extend-zone {
+#    namedBlock,
+#    encounter*
+#}
+#encounter = element encounter {
+#    attribute name { text },
+#    attribute chance { expression }?,
+#    attribute when { expression }?,
+#    content*
+#}
+#Include = element include {
+#    attribute path { text },
+#    attribute required { "true" | "false" }?,
+#    empty
+#}
+
+
+scenefin-if = element if {
+    attribute test { expression },
+    content*,
+    scene-fin,
+    scenefin-elseif*,
+    scenefin-else?
+}
+scenefin-elseif = (
+    element elseif {
+        attribute test { expression }
+    },
+    content*,
+    scene-fin
+)
+scenefin-else = (
+    element else { empty },
+    content*,
+    scene-fin
+)
+
+# #############################################
+# textual content
+content =
+    text | b | i | font | xcc-statement | xxc-logic
+b = element b { content* }
+i = element i { content* }
+font = element font {
+    attribute color { text }?,
+    content*
+}
+#xcc-named-content = Text | String | lib | story | macro | extend-story | zone | extend-zone
+xcc-statement = display | set | output | lib # | xcc-named-content | Include | menu
+#namedBlock = attribute name { text }?, content*
+#String = element string { namedBlock }
+display = element display {
+    attribute ref { text },
+    empty
+}
+set = element set {
+    attribute var { text },
+    attribute in { text }?,
+    attribute op { 'append' | 'set' | 'add' | "+=" | '=' }?,
+    (
+        attribute value { expression }
+        | text
+    )
+}
+output = element output { expression }
+# #############################################
+# xlogic
+xxc-logic = if | switch
+array-content-expression = text
+if = element if {
+    attribute test { expression },
+    (if-big | if-short)
+}
+if-big = (
+    content*,
+    elseif*,
+    else?
+)
+if-short = (
+    empty,
+    attribute then { text },
+    attribute else { text }?
+)
+elseif = (
+    element elseif {
+        attribute test { expression }
+    },
+    content*
+)
+else = (
+    element else { empty },
+    content*
+)
+
+switch = element switch {
+    attribute value { expression }?,
+    case*,
+    Default?
+}
+case = element case {
+    attribute test { expression }?,
+    attribute value { expression }?,
+    attribute values { array-content-expression }?,
+    attribute lt { expression }?,
+    attribute gt { expression }?,
+    attribute ne { expression }?,
+    attribute lte { expression }?,
+    attribute gte { expression }?,
+    content*
+}
+Default = element default {
+    content*
+}
