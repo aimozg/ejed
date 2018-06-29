@@ -15,6 +15,8 @@ class Styles : Stylesheet() {
 		val consola by cssclass()
 		val monsterCombat by cssclass()
 		val gridPane by cssclass()
+		
+		val smallButton by cssclass()
 	}
 	
 	init {
@@ -43,6 +45,28 @@ class Styles : Stylesheet() {
 				label {
 					alignment = Pos.CENTER
 				}
+			}
+		}
+		smallButton {
+			backgroundColor += Color.TRANSPARENT
+			backgroundInsets += box(0.px)
+			backgroundRadius += box(0.px)
+			padding = box(0.px)
+			minWidth = 16.px
+			maxWidth = 16.px
+			minHeight = 16.px
+			maxHeight = 16.px
+			alignment = Pos.CENTER
+			fontSize = 0.8.em
+			focusTraversable = false
+			and(hover) {
+				backgroundColor += Color.LIGHTGRAY
+			}
+			and(focused) {
+				backgroundColor += Color.LIGHTGRAY
+			}
+			and(armed) {
+				backgroundColor += Color.DARKGRAY
 			}
 		}
 //		println(render())

@@ -59,3 +59,10 @@ fun TextArea.stretchOnFocus() {
 	focusedProperty().onChange { fit(it) }
 	textProperty().onChange { if (isFocused) fit(true) }
 }
+
+@Suppress("DEPRECATION")
+fun Node.dumpCss() {
+	println(impl_getStyleMap().map {(k,v)->
+		k.cssMetaData.property+" "+v.joinToString { it.selector.toString() }
+	}.joinToString("\n"))
+}

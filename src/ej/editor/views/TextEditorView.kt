@@ -1,5 +1,6 @@
 package ej.editor.views
 
+import ej.editor.Styles
 import ej.editor.utils.stretchOnFocus
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
@@ -37,10 +38,9 @@ class XStatementFragment(val stmt: XStatement?) : Fragment() {
 		onDock()
 		style {
 			borderWidth += box(1.px)
-//			borderColor += box(Color.RED)
 		}
 		vbox {
-			button("=")
+			button("=").addClass(Styles.smallButton)
 		}
 		vbox {
 			hgrow = Priority.SOMETIMES
@@ -69,7 +69,7 @@ class XStatementFragment(val stmt: XStatement?) : Fragment() {
 			}
 		}
 		vbox {
-			button("X")
+			button("X").addClass(Styles.smallButton)
 		}
 	}
 }
@@ -89,6 +89,9 @@ class XContentFragment(val stmt: XContentContainer?) : Fragment() {
 
 
 class TextTestApp : App(TextEditorView::class) {
+	init {
+		importStylesheet(Styles::class)
+	}
 	override fun onBeforeShow(view: UIComponent) {
 		val data = ModData.unmarshaller().unmarshal(StringReader("""<desc>
             |Diva appears to be a vampire, the fangs and wings kind of give it away.
@@ -107,7 +110,7 @@ class TextTestApp : App(TextEditorView::class) {
             |    </if>
             |</if>
 			|</desc>""".trimMargin())) as MonsterData.MonsterDesc
-		println(data.content.joinToString(){ "${it.javaClass} : $it"})
+		println(data.content.joinToString{ "${it.javaClass} : $it"})
 		(view as TextEditorView).contentProperty.value =
 				data
 	}
