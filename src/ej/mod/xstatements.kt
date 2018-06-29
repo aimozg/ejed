@@ -41,7 +41,7 @@ class XsSet : XStatement {
 	@get:XmlAttribute(name = "in")
 	var inobj: String? = null
 	@get:XmlAttribute(name = "op")
-	var op: String? = null
+	var op: String? = null // TODO enum
 	@get:XmlAttribute(name = "value")
 	var value: String = ""
 	

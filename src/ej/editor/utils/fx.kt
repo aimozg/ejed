@@ -43,19 +43,18 @@ fun <T:Fragment> T.initialized():T {
 	return this
 }
 
-fun TextArea.stretchOnFocus() {
+fun TextArea.stretchOnFocus(max:Int=1) {
 	fun fit(focused:Boolean) {
-		prefRowCount = if (!focused) 1 else {
-			val text = lookup(".text") as? Text
-			if (text == null) 1 else {
-				val th = text.boundsInLocal.height
-				val fm = PrismFontLoader.getInstance().getFontMetrics(text.font)
-				val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
-				val rc = Math.ceil(th / fsz).toInt()
-				rc
-			}
+		val text = lookup(".text") as? Text
+		prefRowCount = if (text == null) max else {
+			val th = text.boundsInLocal.height
+			val fm = PrismFontLoader.getInstance().getFontMetrics(text.font)
+			val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
+			val rc = Math.ceil(th / fsz).toInt()
+			if (!focused) minOf(max, rc) else rc
 		}
 	}
+	prefRowCount = maxOf(1, minOf(max, text.count { it=='\n' }+1))
 	focusedProperty().onChange { fit(it) }
 	textProperty().onChange { if (isFocused) fit(true) }
 }
