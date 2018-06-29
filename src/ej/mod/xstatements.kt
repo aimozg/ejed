@@ -1,10 +1,26 @@
 package ej.mod
 
 import com.sun.xml.internal.txw2.annotation.XmlElement
+import ej.editor.utils.escapeXml
 import ej.utils.affix
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
 import javax.xml.bind.annotation.XmlValue
+
+class XsTextNode() : XStatement {
+	constructor(content:String):this() {
+		this.content = content
+	}
+	
+	@get:XmlValue
+	var content:String = ""
+	
+	override val tagName get() = ""
+	override fun innerXML() = content.escapeXml()
+	override fun toSourceString() = innerXML()
+	override fun toString() = content
+}
+
 
 @XmlRootElement(name = "display")
 class XsDisplay : XStatement {

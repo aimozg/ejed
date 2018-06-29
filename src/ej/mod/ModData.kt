@@ -3,6 +3,8 @@ package ej.mod
 import ej.utils.ValidateElements
 import ej.utils.ValidateNonBlank
 import ej.utils.classValidatorFor
+import java.io.InputStream
+import java.io.Reader
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.annotation.*
 
@@ -58,16 +60,21 @@ class ModData {
 	
 	companion object {
 		internal val VALIDATOR by lazy { classValidatorFor<ModData>() }
-		val jaxbContext by lazy {
+		val jaxbContext: JAXBContext by lazy {
 			JAXBContext.newInstance(ModData::class.java)
 		}
+		fun loadMod(src: InputStream):ModData {
+			return unmarshaller().unmarshal(src) as ModData
+		}
+		fun loadMod(src: Reader):ModData {
+			return unmarshaller().unmarshal(src) as ModData
+		}
 		
+		fun unmarshaller() = jaxbContext.createUnmarshaller()
 	}
 	
 }
 
 val DefaultModData by lazy {
-	ModData.jaxbContext.createUnmarshaller().unmarshal(
-			ModData::class.java.getResourceAsStream("default.xml"))
-			as ModData
+	ModData.loadMod(ModData::class.java.getResourceAsStream("default.xml"))
 }

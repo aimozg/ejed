@@ -2,6 +2,8 @@ package ej.mod
 
 import ej.utils.affix
 import ej.utils.affixNonEmpty
+import javafx.collections.ObservableList
+import tornadofx.*
 import javax.xml.bind.JAXBElement
 import javax.xml.bind.annotation.*
 import javax.xml.namespace.QName
@@ -67,9 +69,15 @@ open class XContentContainer(override val tagName: String) : XStatement {
 			XmlElementRef(name = "battle", type = XsBattle::class)
 	)
 	@get:XmlMixed
-	open val content: MutableList<Any> = ArrayList()
+	val contentRaw:ObservableList<Any> = observableList()
 	
-	override fun innerXML(): String = if (emptyTag) "" else content.joinToSourceString()
+	val content:List<XStatement> = ArrayList<XStatement>().apply {
+		bind(contentRaw) { it: Any ->
+			it as? XStatement ?: XsTextNode(it.toString())
+		}
+	}
+	
+	override fun innerXML(): String = if (emptyTag) "" else contentRaw.joinToSourceString()
 	override fun attrsString() = ""
 	
 	override fun toString() = toSourceString()

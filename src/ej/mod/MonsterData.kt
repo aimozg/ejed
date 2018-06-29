@@ -50,6 +50,7 @@ class MonsterData : Patchable {
 	@get:XmlElement(name = "script")
 	var script: ModScript? = null
 	
+	@XmlRootElement(name="desc")
 	class MonsterDesc : XContentContainer("desc")
 	
 	class Pronouns {

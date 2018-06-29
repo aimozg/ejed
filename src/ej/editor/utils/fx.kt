@@ -1,9 +1,13 @@
 package ej.editor.utils
 
+import com.sun.javafx.font.PrismFontLoader
 import javafx.scene.Node
+import javafx.scene.control.TextArea
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
+import javafx.scene.text.Text
 import tornadofx.*
+
 
 /*
  * Created by aimozg on 27.06.2018.
@@ -37,4 +41,21 @@ inline fun GridPane.smartRow(op: Pane.() -> Unit) {
 fun <T:Fragment> T.initialized():T {
 	init()
 	return this
+}
+
+fun TextArea.stretchOnFocus() {
+	fun fit(focused:Boolean) {
+		prefRowCount = if (!focused) 1 else {
+			val text = lookup(".text") as? Text
+			if (text == null) 1 else {
+				val th = text.boundsInLocal.height
+				val fm = PrismFontLoader.getInstance().getFontMetrics(text.font)
+				val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
+				val rc = Math.ceil(th / fsz).toInt()
+				rc
+			}
+		}
+	}
+	focusedProperty().onChange { fit(it) }
+	textProperty().onChange { if (isFocused) fit(true) }
 }
