@@ -1,24 +1,29 @@
 package ej.mod
 
-import ej.editor.utils.CopyAssignable
-import ej.editor.utils.CopyAssignableNoMerge
+import ej.editor.utils.PatchNoMerge
+import ej.editor.utils.Patchable
+import ej.editor.utils.spawnCopy
+import ej.editor.utils.spawnPatchedCopy
 import ej.utils.ValidateNonBlank
 import ej.utils.ValidateUnique
 import ej.utils.affix
+import java.io.StringWriter
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlElement
+import javax.xml.bind.annotation.XmlRootElement
 import javax.xml.bind.annotation.XmlValue
 
-class MonsterData : CopyAssignable {
+@XmlRootElement(name="monster")
+class MonsterData : Patchable {
 	
 	@ValidateNonBlank
 	@ValidateUnique
 	@get:XmlAttribute
-	@CopyAssignableNoMerge
+	@PatchNoMerge
 	var id: String? = null
 	
 	@get:XmlAttribute(name = "base")
-	@CopyAssignableNoMerge
+	@PatchNoMerge
 	var baseId: String? = null
 	
 	@get:XmlElement
@@ -55,33 +60,33 @@ class MonsterData : CopyAssignable {
 		@get:XmlAttribute
 		var him: String = "him"
 	}
-	/*
-	override fun assignFrom(other: MonsterData) {
-		name = name ?: other.name
-		desc = desc ?: other.desc?.spawnCopy()
-		plural = plural ?: other.plural
-		article = article ?: other.article
-		pronouns = pronouns ?: other.pronouns?.spawnCopy()
-		body = mergeAssign(body, other.body)
-		combat = mergeAssign(combat, other.combat)
-		script = mergeAssign(script, other.script)
-	}
-	
-	override fun spawnNew() = MonsterData()
-	*/
 	
 	override fun toString() = "<monster id='$id'" +
 			baseId.affix(" base='", "'") +
 			"> " +
 			name.affix(" <name>", "</name>") +
 			" </monster>"
+	
+	fun patchedCopy(baseProvider:(id:String)->MonsterData?):MonsterData {
+		return spawnCopy().applyPatch(baseProvider)
+	}
+	fun applyPatch(baseProvider:(id:String)->MonsterData?):MonsterData {
+		val base = findBase(baseProvider)
+		return spawnPatchedCopy(this, base?.applyPatch(baseProvider)?:DefaultMonsterData)
+	}
+	
+	fun findBase(baseProvider: (id: String) -> MonsterData?) = baseId?.let(baseProvider)
+	
+	fun toXML() = StringWriter().also { writer ->
+		ModData.jaxbContext.createMarshaller().marshal(this, writer)
+	}.buffer.toString()
 }
 
 val DefaultMonsterData by lazy {
 	DefaultModData.monsters.find { it.id == "default" } ?: error("Unable to load default monster data")
 }
 
-class MonsterBodyData : CopyAssignable {
+class MonsterBodyData : Patchable {
 	
 	@get:XmlElement
 	var vagina: VaginaData? = null
@@ -155,7 +160,7 @@ class MonsterBodyData : CopyAssignable {
 	@get:XmlElement(name = "wings")
 	var wingsName: String? = null
 	
-	class VaginaData : CopyAssignable {
+	class VaginaData : Patchable {
 		@get:XmlAttribute
 		var virgin: Boolean? = null
 		@get:XmlAttribute(name="wetness")
@@ -164,7 +169,7 @@ class MonsterBodyData : CopyAssignable {
 		var loosenessName: String? = null
 	}
 	
-	class PenisData : CopyAssignable {
+	class PenisData : Patchable {
 		@get:XmlAttribute(name="length")
 		var lengthName: String? = null
 		@get:XmlAttribute(name="thickness")
@@ -173,26 +178,26 @@ class MonsterBodyData : CopyAssignable {
 		var typeName: String? = null
 	}
 	
-	class TesticleData : CopyAssignable {
+	class TesticleData : Patchable {
 		@get:XmlAttribute(name="count")
 		var count:Int? = null
 		@get:XmlAttribute(name="size")
 		var sizeName:String? = null
 	}
 	
-	class BreastData : CopyAssignable {
+	class BreastData : Patchable {
 		@get:XmlValue
 		var sizeName: String = "flat"
 	}
 	
-	class AnalData : CopyAssignable {
+	class AnalData : Patchable {
 		@get:XmlAttribute
 		var looseness: String? = null
 		@get:XmlAttribute
 		var wetness: String? = null
 	}
 	
-	class SkinData : CopyAssignable {
+	class SkinData : Patchable {
 		@get:XmlAttribute(name = "coverage")
 		var coverageName: String? = null
 		@get:XmlElement
@@ -201,7 +206,7 @@ class MonsterBodyData : CopyAssignable {
 		var coat: SkinLayerData? = null
 	}
 	
-	class SkinLayerData : CopyAssignable {
+	class SkinLayerData : Patchable {
 		@get:XmlAttribute(name = "type")
 		var typeName: String? = null
 		
@@ -221,7 +226,7 @@ class MonsterBodyData : CopyAssignable {
 		var desc: String? = null
 	}
 	
-	class HairData : CopyAssignable {
+	class HairData : Patchable {
 		@get:XmlAttribute(name="length")
 		var lengthName:String? = null
 		@get:XmlAttribute(name="color")
@@ -230,7 +235,7 @@ class MonsterBodyData : CopyAssignable {
 		var typeName:String? = null
 	}
 	
-	class BeardData : CopyAssignable {
+	class BeardData : Patchable {
 		
 		@get:XmlAttribute(name="style")
 		var styleName: String? = null
@@ -239,7 +244,7 @@ class MonsterBodyData : CopyAssignable {
 		var lengthName: String? = null
 	}
 	
-	class ClawsData : CopyAssignable {
+	class ClawsData : Patchable {
 		
 		@get:XmlAttribute(name="type")
 		var typeName: String? = null
@@ -248,7 +253,7 @@ class MonsterBodyData : CopyAssignable {
 		var color: String? = null
 	}
 	
-	class EyesData : CopyAssignable {
+	class EyesData : Patchable {
 		
 		@get:XmlAttribute(name="type")
 		var typeName: String? = null
@@ -260,7 +265,7 @@ class MonsterBodyData : CopyAssignable {
 		var color: String? = null
 	}
 	
-	class HornsData : CopyAssignable {
+	class HornsData : Patchable {
 		
 		@get:XmlAttribute(name="type")
 		var typeName: String? = null
@@ -269,7 +274,7 @@ class MonsterBodyData : CopyAssignable {
 		var count: Int? = null
 	}
 	
-	class LegsData : CopyAssignable {
+	class LegsData : Patchable {
 		
 		@get:XmlAttribute(name="type")
 		var typeName: String? = null
@@ -278,7 +283,7 @@ class MonsterBodyData : CopyAssignable {
 		var count: Int? = null
 	}
 	
-	class TailData : CopyAssignable {
+	class TailData : Patchable {
 		
 		@get:XmlAttribute(name="type")
 		var typeName: String? = null
@@ -288,7 +293,7 @@ class MonsterBodyData : CopyAssignable {
 	}
 }
 
-class MonsterCombatData : CopyAssignable {
+class MonsterCombatData : Patchable {
 	
 	@get:XmlElement
 	var level: Int? = null

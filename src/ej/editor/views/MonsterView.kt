@@ -1,15 +1,14 @@
 package ej.editor.views
 
-import ej.editor.AModFragment
-import ej.editor.AModView
-import ej.editor.Styles
+import ej.editor.*
 import ej.editor.utils.colspan
+import ej.editor.utils.initialized
 import ej.editor.utils.smartRow
 import javafx.geometry.Pos
 import javafx.util.converter.IntegerStringConverter
 import tornadofx.*
 
-class MonsterView: AModView("Monster") {
+class MonsterView(val monsterVM:MonsterViewModel): AModView("Monster") {
 	init {
 		
 		headingProperty.bind(controller.monsterProperty.stringBinding {
@@ -19,20 +18,31 @@ class MonsterView: AModView("Monster") {
 		})
 	}
 	
+	override fun onSave() {
+		for (property in monsterVM.propertyMap.keys) {
+			if (property.isDifferent) println("${property.name} is different = ${property.value}")
+		}
+		println("---")
+		println("complete:")
+		println(monsterVM.item.toXML())
+		println("as patch:")
+		println(monsterVM.toPatch()?.toXML())
+	}
+	
 	override val root = tabpane {
-		tab(MonsterBasicView::class)
-		tab(MonsterBodyView::class)
-		tab(MonsterDescView::class)
-		tab(MonsterSpecialView::class)
-		tab(MonsterScriptsView::class)
-		tab(MonsterScenesView::class)
+		tab(MonsterBasicView(this@MonsterView).initialized())
+		tab(MonsterBodyView(this@MonsterView).initialized())
+		tab(MonsterDescView(this@MonsterView).initialized())
+		tab(MonsterSpecialView(this@MonsterView).initialized())
+		tab(MonsterScriptsView(this@MonsterView).initialized())
+		tab(MonsterScenesView(this@MonsterView).initialized())
 		connectWorkspaceActions()
 	}
 }
 
-class MonsterBasicView:AModFragment("Basic") {
+class MonsterBasicView(val view:MonsterView):AModFragment("Basic") {
 	override val root = vbox {
-		val vm = controller.monsterVM
+		val vm = view.monsterVM
 		hbox(10) {
 			form {
 				spacing = 10.0
@@ -129,16 +139,16 @@ class MonsterBasicView:AModFragment("Basic") {
 	}
 }
 
-class MonsterBodyView:AModFragment("Body") {
+class MonsterBodyView(val view:MonsterView):AModFragment("Body") {
 	override val root = form {
 		label("Body")
 		// TODO
 	}
 }
 
-class MonsterDescView:AModFragment("Description") {
+class MonsterDescView(val view:MonsterView):AModFragment("Description") {
 	override val root = form {
-		val vm = controller.monsterVM
+		val vm = view.monsterVM
 		fieldset("Description") {
 			textarea(vm.descSource) {
 				isWrapText = true
@@ -148,21 +158,21 @@ class MonsterDescView:AModFragment("Description") {
 	}
 }
 
-class MonsterSpecialView:AModFragment("Specials") {
+class MonsterSpecialView(val view:MonsterView):AModFragment("Specials") {
 	override val root = form {
 		label("Specials")
 		// TODO
 	}
 }
 
-class MonsterScriptsView:AModFragment("Scripts") {
+class MonsterScriptsView(val view:MonsterView):AModFragment("Scripts") {
 	override val root = form {
 		label("Scripts")
 		// TODO
 	}
 }
 
-class MonsterScenesView:AModFragment("Scenes") {
+class MonsterScenesView(val view:MonsterView):AModFragment("Scenes") {
 	override val root = form {
 		label("Scenes")
 		// TODO

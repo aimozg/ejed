@@ -1,6 +1,7 @@
 package ej.editor
 
-import ej.editor.utils.mergeCopy
+import ej.editor.utils.spawnCopy
+import ej.editor.utils.toPatch
 import ej.mod.DefaultMonsterData
 import ej.mod.ModData
 import ej.mod.MonsterCombatData
@@ -20,6 +21,9 @@ class ModViewModel(property: Property<ModData>) : ItemViewModel<ModData>() {
 	val monsters = bind {
 		SimpleListProperty((item?.monsters?: ArrayList()).observable())
 	}
+	val findMonster: (String) -> MonsterData? = { id:String ->
+		monsters.value.find { it.id == id }
+	}
 	
 	override fun onCommit(commits: List<Commit>) {
 		val changedSet = commits.mapNotNullTo(HashSet()) { if (it.changed) it.property else null }
@@ -38,28 +42,34 @@ class ModViewModel(property: Property<ModData>) : ItemViewModel<ModData>() {
 	}
 }
 
-class MonsterViewModel(property: Property<MonsterData?>):ItemViewModel<MonsterData>() {
+val<T> Property<T>.isDifferent:Boolean get() = (bean as? MonsterViewModel)?.isPropertyDifferent(this) ?: false
+
+open class MonsterViewModelBase(val mod:ModViewModel, monster: MonsterData):ItemViewModel<MonsterData>(monster) {
 	
 	val id = bind(MonsterData::id)
 	val baseId = bind(MonsterData::baseId)
 	val name = bind(MonsterData::name)
-	val descSource = bind(MonsterData::desc).stringBinding { it?.innerXML()?:" "}
+	val descSource = bind(MonsterData::desc).stringBinding { it?.innerXML() }
 	val plural = bind(MonsterData::plural)
 	val article = bind(MonsterData::article)
-	val pronounHe = bind(MonsterData::pronouns).stringBinding { it?.he?:" "}
-	val pronounHis = bind(MonsterData::pronouns).stringBinding { it?.his?:" "}
-	val pronounHim = bind(MonsterData::pronouns).stringBinding { it?.him?:" "}
+	val pronounHe = bind { item.pronouns?.observable(MonsterData.Pronouns::he) }
+	val pronounHis = bind { item.pronouns?.observable(MonsterData.Pronouns::his) }
+	val pronounHim = bind { item.pronouns?.observable(MonsterData.Pronouns::him) }
 	val body = bind(MonsterData::body)
 	val combat = MonsterCombatDataViewModel(itemProperty)
 	val script = bind(MonsterData::script)
+}
+class MonsterViewModel(mod:ModViewModel,monster:MonsterData):MonsterViewModelBase(mod,monster.patchedCopy(mod.findMonster) ) {
+	val base = MonsterViewModelBase(mod,
+	                                monster.findBase(mod.findMonster)?.patchedCopy(mod.findMonster)
+			                                ?: DefaultMonsterData)
 	
-	
-	
-	init {
-		itemProperty.bind(property.objectBinding{ md ->
-			mergeCopy(md, DefaultMonsterData)
-		})
+	fun<T> isPropertyDifferent(property:Property<T>):Boolean {
+		val newValue = property.value
+		val old = base.propertyMap.keys.find { it.name == property.name }?.value
+		return old != newValue
 	}
+	fun toPatch():MonsterData? = item.spawnCopy().toPatch(base.item)
 }
 
 class MonsterCombatDataViewModel(monsterProperty:Property<MonsterData?>) : ItemViewModel<MonsterCombatData>() {

@@ -33,3 +33,8 @@ inline fun GridPane.smartRow(op: Pane.() -> Unit) {
 	}
 	children.addAll(newChildren)
 }
+
+fun <T:Fragment> T.initialized():T {
+	init()
+	return this
+}

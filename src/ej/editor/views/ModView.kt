@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.AModView
+import ej.editor.MonsterViewModel
 import tornadofx.*
 
 
@@ -9,7 +10,7 @@ class ModView: AModView("Mod view") {
 		headingProperty.bind(modVM.name)
 		controller.monsterProperty.onChange {
 			if (it != null) {
-				workspace.dock<MonsterView>()
+				workspace.dock(MonsterView(MonsterViewModel(modVM,it)))
 			}
 		}
 	}

@@ -28,7 +28,6 @@ class EditorController : Controller() {
 	
 	val monsterProperty = SimpleObjectProperty<MonsterData?>(null)
 	var monster by monsterProperty
-	val monsterVM = MonsterViewModel(monsterProperty)
 	
 	fun loadModList() {
 		modFiles.setAll(*File(modDir).listFiles { file -> file.isFile && file.extension == "xml" })
