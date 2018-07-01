@@ -2,17 +2,16 @@ package ej.editor.views
 
 import ej.editor.Styles
 import ej.mod.*
+import ej.utils.affixNonEmpty
 import ej.utils.squeezeWs
 import javafx.beans.property.SimpleObjectProperty
-import javafx.scene.Node
-import javafx.scene.control.OverrunStyle
+import javafx.scene.control.Label
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
-import javafx.scene.text.Text
 import tornadofx.*
 
 /*
@@ -20,25 +19,36 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-fun statementTreeGraphic(stmt:XStatement):Node {
-	return when(stmt) {
-		is XlIf -> Text("If: ${stmt.test}").addClass(Styles.xlogic)
-		is XsTextNode -> Text(stmt.content).addClass(Styles.xtext)
-		is XsOutput -> Text("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
-		else -> Text(stmt.toSourceString().squeezeWs()).addClass(Styles.xcommand)
+fun statementTreeGraphic(stmt: XStatement): Region {
+	return when (stmt) {
+		is XlIf -> Label("If: ${stmt.test}").addClass(Styles.xlogic)
+		is XlElse -> Label("Else:").addClass(Styles.xlogic)
+		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
+		is XcTextNode -> Label(stmt.content).addClass(Styles.xtext)
+
+		is XsOutput -> Label("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
+		is XsDisplay -> Label("Display: ${stmt.ref}").addClass(Styles.xcommand)
+		is XsBattle ->
+			Label(
+					"Battle ${stmt.monster}" + (stmt.options.affixNonEmpty(" with options: "))
+			).addClass(Styles.xcommand)
+		
+		is XcLib -> Label("<lib ${stmt.name}>").addClass(Styles.xcomment)
+
+		else -> Label("<Unknown/TODO> " + stmt.toSourceString().squeezeWs()).addClass(Styles.xcommand)
 	}
 }
 
 open class XStatementTree : TreeView<XStatement>() {
-	val contentProperty = SimpleObjectProperty<MutableList<XStatement>>(ArrayList())
-	var content by contentProperty
+	val contentsProperty = SimpleObjectProperty<MutableList<XStatement>>(ArrayList())
+	var contents by contentsProperty
 	
 	private val fakeRoot = TreeItem<XStatement>()
 	fun repopulate() {
 		populate {
 			val stmt = it.value
 			when (stmt) {
-				null -> if (it == fakeRoot) content else emptyList()
+				null -> if (it == fakeRoot) contents else emptyList()
 				is XContentContainer -> stmt.content
 				else -> emptyList()
 			}
@@ -48,14 +58,24 @@ open class XStatementTree : TreeView<XStatement>() {
 	init {
 		isShowRoot = false
 		root = fakeRoot
+		val tree = this
 		cellFormat {
-			this.prefWidthProperty().bind(this@XStatementTree.widthProperty().subtract(5.0))
-			isWrapText = true
-			textOverrun = OverrunStyle.ELLIPSIS
-			graphic = statementTreeGraphic(it)
+			val cell = this
+			this.prefWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
+			this.maxWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
+			graphic = statementTreeGraphic(it).also { g ->
+				g.maxWidthProperty().bind(
+					cell.maxWidthProperty()
+							.doubleBinding(g.layoutXProperty()) { cellMaxWidth ->
+								(cellMaxWidth?.toDouble()?:0.0) -
+										g.layoutX -
+										cell.paddingHorizontal.toDouble()
+							}
+				)
+			}
 		}
 		
-		contentProperty.onChange {
+		contentsProperty.onChange {
 			repopulate()
 		}
 	}
@@ -63,11 +83,11 @@ open class XStatementTree : TreeView<XStatement>() {
 
 open class XStatementTreeWithEditor : VBox() {
 	var editor: Region = Pane()
-	val tree:XStatementTree = XStatementTree().apply {
+	val tree: XStatementTree = XStatementTree().apply {
 		vgrow = Priority.SOMETIMES
 		minHeight = 100.0
 	}
-	val contentsProperty = tree.contentProperty
+	val contentsProperty = tree.contentsProperty
 	var contents by contentsProperty
 	
 	init {

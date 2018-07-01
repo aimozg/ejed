@@ -4,10 +4,10 @@ import ej.editor.Styles
 import ej.editor.utils.stretchOnFocus
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.control.Label
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import javafx.scene.layout.VBox
+import javafx.scene.layout.Region
 import tornadofx.*
 
 /*
@@ -100,7 +100,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 		addClass(Styles.xstmtEditor)
 		hgrow = Priority.ALWAYS
 	}
-	class ForText(stmt:XsTextNode) : StmtEditorBody<XsTextNode>(stmt) {
+	class ForText(stmt:XcTextNode) : StmtEditorBody<XcTextNode>(stmt) {
 		init {
 			textarea {
 				hgrow = Priority.ALWAYS
@@ -149,10 +149,10 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	}
 	
 	companion object {
-		fun bodyFor(stmt: XStatement?): Pane {
+		fun bodyFor(stmt: XStatement?): Region {
 			return when (stmt) {
-				null -> VBox().apply { label("<nothing>") }
-				is XsTextNode -> ForText(stmt)
+				null -> Label("<nothing>")
+				is XcTextNode -> ForText(stmt)
 				is XsDisplay -> DisplayStmt(stmt)
 				is XsSet -> SetStmt(stmt)
 				is XsOutput -> OutputStmt(stmt)
@@ -167,8 +167,10 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 				is XlElseIf -> TODO("ElseIfStmt(stmt)")
 				is XlSwitch -> TODO("SwitchStmt(stmt)")
 				
-				is MonsterData.MonsterDesc -> VBox().apply { label("<Monster Description>") }
-				else -> VBox().apply { label("<unknown ${stmt.javaClass}>") }
+				is XcLib -> Label("Text library ${stmt.name}")
+				
+				is MonsterData.MonsterDesc -> Label("<Monster Description>")
+				else -> Label("<unknown ${stmt.javaClass}>")
 			}
 		}
 	}

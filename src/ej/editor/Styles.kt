@@ -21,6 +21,7 @@ class Styles : Stylesheet() {
 		val xtext by cssclass()
 		val xlogic by cssclass()
 		val xcommand by cssclass()
+		val xcomment by cssclass()
 		val smallButton by cssclass()
 		val smallButtonSpace by cssclass()
 		
@@ -133,16 +134,31 @@ class Styles : Stylesheet() {
 			}
 		}
 		xtext {
-			fontFamily = "Lucida Fax"
-			text
+			text {
+				fontFamily = "Lucida Fax"
+			}
+			wrapText = true
 		}
 		xlogic {
-			fontFamily = "Lucida Console"
-			fill = Color.NAVY
+			text {
+				fontFamily = "Lucida Console"
+				fill = Color.NAVY
+			}
+			wrapText = true
 		}
 		xcommand {
-			fontFamily = "Lucida Console"
-			fill = Color.DARKRED
+			text {
+				fontFamily = "Lucida Console"
+				fill = Color.DARKRED
+			}
+			wrapText = true
+		}
+		xcomment {
+			text {
+				fontFamily = "Lucida Console"
+				fill = Color.DIMGRAY
+			}
+			wrapText = true
 		}
 	}
 }

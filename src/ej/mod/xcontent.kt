@@ -1,5 +1,6 @@
 package ej.mod
 
+import ej.editor.utils.escapeXml
 import ej.utils.affix
 import ej.utils.affixNonEmpty
 import ej.utils.crop
@@ -26,12 +27,15 @@ interface XStatement {
 	val emptyTag: Boolean get() = false
 	fun innerXML(): String = ""
 	fun attrsString(): String = ""
-	fun toSourceString(): String =
-			"<" + tagName + attrsString().affixNonEmpty(" ", "") + (
-					if (emptyTag) "/>"
-					else ">" + innerXML() + "</" + tagName + "/>"
-					)
 }
+
+fun XStatement.toSourceString(): String =
+		tagOpen() + innerXML() + tagClose()
+internal fun XStatement.tagOpen() =
+		if (this is XcTextNode) "" else
+		"<$tagName" + attrsString().affixNonEmpty(" ") + (if (emptyTag) "/>" else ">")
+internal fun XStatement.tagClose() =
+		if (this is XcTextNode || emptyTag) "" else "</$tagName>"
 
 internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 	when (it) {
@@ -41,8 +45,9 @@ internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 	}
 }
 
-interface StoryNode : XStatement {
+interface StoryStmt : XStatement {
 	val name: String
+	val lib: List<StoryStmt>
 }
 
 enum class TrimMode {
@@ -93,10 +98,12 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	
 	val content:MutableList<XStatement> = ArrayList()
 	
+	fun isTextOnly() = content.all { it is XcTextNode }
+	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
 		content.clear()
-		content.addAll(contentRaw.map { it as? XStatement ?: XsTextNode(it.toString()) })
+		content.addAll(contentRaw.map { it as? XStatement ?: XcTextNode(it.toString()) })
 		contentRaw.clear()
 		applyTrim(trimMode?:TrimMode.NONE)
 	}
@@ -105,7 +112,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	private fun beforeMarshal(marshaller: Marshaller) {
 		trimMode = null
 		contentRaw.clear()
-		contentRaw.addAll(content.map { (it as? XsTextNode)?.content ?: it })
+		contentRaw.addAll(content.map { (it as? XcTextNode)?.content ?: it })
 	}
 	
 	override fun innerXML(): String = if (emptyTag) "" else contentRaw.joinToSourceString()
@@ -116,16 +123,18 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 
 private fun XStatement.applyTrim(trimMode: TrimMode) {
 	if (trimMode == TrimMode.NONE) return
-	val content = when (this) {
-		is XcLib -> lib
-		is XContentContainer -> content
-		else -> return
-	}
-	for (stmt in content) {
+	if (this is XcLib) {
+		for (stmt in lib) {
+			if (stmt is XContentContainer && stmt.trimMode == null) stmt.applyTrim(trimMode)
+		}
+		return
+	} else if (this !is XContentContainer) return
+	for (i in content.indices) {
+		val stmt = content[i]
+		val prev = if (i>0) content[i-1] else null
 		when (stmt) {
-			is XsTextNode -> {
-				val s = trimMode.applyTo(stmt.content)
-				stmt.content = s
+			is XcTextNode -> {
+				stmt.content = trimMode.applyTo(stmt.content)
 			}
 			is XContentContainer -> {
 				if (stmt.trimMode == null) stmt.applyTrim(trimMode)
@@ -135,11 +144,11 @@ private fun XStatement.applyTrim(trimMode: TrimMode) {
 			}
 		}
 	}
-	content.removeAll { (it is XsTextNode && it.content.isEmpty()) }
+	content.removeAll { (it is XcTextNode && it.content.isEmpty()) }
 }
 
 @XmlRootElement(name = "b")
-class XcTextBold : XContentContainer("b")
+class XcTextBold : XContentContainer("b") {}
 
 @XmlRootElement(name = "i")
 class XcTextItalic : XContentContainer("i")
@@ -152,8 +161,22 @@ class XcTextStyled : XContentContainer("font") {
 	override fun attrsString() = color.affix("color='", "'")
 }
 
+class XcTextNode() : XStatement {
+	constructor(content:String):this() {
+		this.content = content
+	}
+	
+	var content:String = ""
+	
+	override val tagName get() = ""
+	override fun innerXML() = content.escapeXml()
+	override fun toString() = toSourceString().crop(40)
+	
+}
+
+
 @XmlRootElement(name = "lib")
-class XcLib : StoryNode {
+class XcLib : StoryStmt {
 	@get:XmlAttribute
 	override var name: String = ""
 	@get:XmlElements(
@@ -161,7 +184,7 @@ class XcLib : StoryNode {
 			XmlElement(name = "scene", type = XcScene::class),
 			XmlElement(name = "text", type = XcNamedText::class)
 	)
-	val lib: ArrayList<StoryNode> = ArrayList()
+	override val lib: ArrayList<StoryStmt> = ArrayList()
 
 	@XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
@@ -185,16 +208,21 @@ class XcLib : StoryNode {
 }
 
 @XmlRootElement(name = "scene")
-class XcScene : XContentContainer("scene"), StoryNode {
+class XcScene : XContentContainer("scene"), StoryStmt {
 	@get:XmlAttribute
 	override var name: String = ""
+	
+	override val lib get() = content.filterIsInstance<StoryStmt>()
 	
 	override fun attrsString() = "name='$name'"
 }
 
-class XcNamedText : XContentContainer("text"), StoryNode {
+class XcNamedText : XContentContainer("text"), StoryStmt {
 	@get:XmlAttribute
 	override var name: String = ""
 	
+	override val lib get() = content.filterIsInstance<StoryStmt>()
+	
 	override fun attrsString() = "name='$name'"
 }
+

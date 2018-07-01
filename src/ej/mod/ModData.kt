@@ -45,7 +45,7 @@ class ModData {
 			XmlElement(name="scene",type=XcScene::class),
 			XmlElement(name="text",type=XcNamedText::class)
 	)
-	val content:ArrayList<StoryNode> = ArrayList()
+	val content:ArrayList<StoryStmt> = ArrayList()
 	
 	override fun toString(): String {
 		return "<mod name='$name' version='$version'>" +

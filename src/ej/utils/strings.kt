@@ -5,9 +5,9 @@ package ej.utils
  * Confidential until published on GitHub
  */
 
-fun String?.affix(prefix:String,suffix:String):String =
+fun String?.affix(prefix:String,suffix:String=""):String =
 		if (this == null) "" else prefix+this+suffix
-fun String?.affixNonEmpty(prefix:String,suffix:String):String =
+fun String?.affixNonEmpty(prefix:String,suffix:String=""):String =
 		if (this.isNullOrEmpty()) "" else prefix+this+suffix
 
 fun String.crop(maxLength:Int, ellipsis:String="..."):String =

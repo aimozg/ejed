@@ -56,9 +56,9 @@ abstract class AModView(title: String) : View(title) {
 	
 	override fun onDock() {
 		super.onDock()
-		this.title = "EJEd" + modVM.name.value.affixNonEmpty(" - ", "")
+		this.title = "EJEd" + modVM.name.value.affixNonEmpty(" - ")
 		modVM.name.onChange {
-			this.title = "EJEd" + it.affixNonEmpty(" - ", "")
+			this.title = "EJEd" + it.affixNonEmpty(" - ")
 		}
 	}
 	
