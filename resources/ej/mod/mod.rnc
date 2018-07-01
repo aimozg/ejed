@@ -1,19 +1,20 @@
 namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
 
 expression = text
+ATrim = attribute trim { 'none' | 'unindent' | 'trim' }
 
 start = mod
 
 # #############################################
 # mod structure
 mod = element mod {
-    attribute name { text },
-    attribute version { text }?,
-    attribute xsi:noNamespaceSchemaLocation { text }?,
+    attribute name { text }
+    & attribute version { text }?
+    & attribute xsi:noNamespaceSchemaLocation { text }?
 #    import*,
-    state?,
-    hook*,
-    exportable*
+    & state?
+    & hook*
+    & exportable*
 }
 #import = element import {
 #    attribute ref { text }
@@ -27,20 +28,24 @@ var = element var {
 }
 hook = element hook {
     attribute type { 'daily' | 'hourly' },
+    ATrim?,
     content*
 }
 exportable = monster | script | storynode
 storynode = lib | scene | Text
 lib = element lib {
     attribute name { text },
+    ATrim?,
     storynode*
 }
 Text = element text {
     attribute name { text },
+    ATrim?,
     content*
 }
 scene = element scene {
     attribute name { text },
+    ATrim?,
     content*,
     scene-fin
 }
@@ -51,7 +56,10 @@ monster = element monster {
     attribute id { text }
     & attribute base { text }?
     & element name { text }?
-    & element desc { content* }?
+    & element desc {
+        ATrim?,
+        content*
+    }?
     & element plural { empty }?
     & element a { text }?
     & element pronouns {
@@ -199,6 +207,7 @@ button = element button {
     attribute call { text },
     element hint {
         attribute header { text }?,
+        ATrim?,
         content
     }?
 }
@@ -233,6 +242,7 @@ battle = element battle {
 
 scenefin-if = element if {
     attribute test { expression },
+    ATrim?,
     content*,
     scene-fin,
     scenefin-elseif*,
@@ -255,10 +265,17 @@ scenefin-else = (
 # textual content
 content =
     text | b | i | font | xcc-statement | xxc-logic
-b = element b { content* }
-i = element i { content* }
+b = element b {
+    ATrim?,
+    content*
+}
+i = element i {
+    ATrim?,
+    content*
+}
 font = element font {
     attribute color { text }?,
+    ATrim?,
     content*
 }
 #xcc-named-content = Text | String | lib | story | macro | extend-story | zone | extend-zone
@@ -288,6 +305,7 @@ if = element if {
     (if-big | if-short)
 }
 if-big = (
+    ATrim?,
     content*,
     elseif*,
     else?
@@ -322,8 +340,10 @@ case = element case {
     attribute ne { expression }?,
     attribute lte { expression }?,
     attribute gte { expression }?,
+    ATrim?,
     content*
 }
 Default = element default {
+    ATrim?,
     content*
 }

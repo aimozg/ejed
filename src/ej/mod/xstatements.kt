@@ -12,7 +12,6 @@ class XsTextNode() : XStatement {
 		this.content = content
 	}
 	
-	@get:XmlValue
 	var content:String = ""
 	
 	override val tagName get() = ""

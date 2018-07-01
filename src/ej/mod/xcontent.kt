@@ -2,9 +2,9 @@ package ej.mod
 
 import ej.utils.affix
 import ej.utils.affixNonEmpty
-import javafx.collections.ObservableList
-import tornadofx.*
 import javax.xml.bind.JAXBElement
+import javax.xml.bind.Marshaller
+import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
 import javax.xml.namespace.QName
 
@@ -44,15 +44,31 @@ interface StoryNode : XStatement {
 	val name: String
 }
 
+enum class TrimMode {
+	@XmlEnumValue("none") NONE,
+	@XmlEnumValue("trim") TRIM,
+	@XmlEnumValue("unindent") UNINDENT;
+	
+	fun applyTo(s:String):String {
+		if (s.isEmpty()) return s
+		val s2 = when(this) {
+			TrimMode.NONE -> return s
+			TrimMode.TRIM -> s.trim()
+			TrimMode.UNINDENT -> s.trimIndent()
+		}
+		return s2
+	}
+}
+
 // content =
 //    text | b | i | font | xcc-statement | xxc-logic
 // xcc-statement = display | set | output | lib # | xcc-named-content | Include | menu
 // xxc-logic = if | switch
 // scene-fin = menu | next | scenefin-if | battle
-open class XContentContainer(override val tagName: String) : XStatement {
+abstract class XContentContainer(override val tagName: String) : XStatement {
 	override val emptyTag: Boolean = false
 	
-	@get:XmlElementRefs(
+	@XmlElementRefs(
 			XmlElementRef(name = "b", type = XcTextBold::class),
 			XmlElementRef(name = "i", type = XcTextItalic::class),
 			XmlElementRef(name = "font", type = XcTextStyled::class),
@@ -68,19 +84,57 @@ open class XContentContainer(override val tagName: String) : XStatement {
 			XmlElementRef(name = "next", type = XsNext::class),
 			XmlElementRef(name = "battle", type = XsBattle::class)
 	)
-	@get:XmlMixed
-	val contentRaw:ObservableList<Any> = observableList()
+	@XmlMixed
+	private val contentRaw:MutableList<Any> = ArrayList()
 	
-	val content:List<XStatement> = ArrayList<XStatement>().apply {
-		bind(contentRaw) { it: Any ->
-			it as? XStatement ?: XsTextNode(it.toString())
-		}
+	@XmlAttribute(name="trim")
+	internal var trimMode: TrimMode? = null // inherit
+	
+	val content:MutableList<XStatement> = ArrayList()
+	
+	@Suppress("unused", "UNUSED_PARAMETER")
+	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
+		content.clear()
+		content.addAll(contentRaw.map { it as? XStatement ?: XsTextNode(it.toString()) })
+		contentRaw.clear()
+		applyTrim(trimMode?:TrimMode.NONE)
+	}
+	
+	@Suppress("unused", "UNUSED_PARAMETER")
+	private fun beforeMarshal(marshaller: Marshaller) {
+		trimMode = null
+		contentRaw.clear()
+		contentRaw.addAll(content.map { (it as? XsTextNode)?.content ?: it })
 	}
 	
 	override fun innerXML(): String = if (emptyTag) "" else contentRaw.joinToSourceString()
 	override fun attrsString() = ""
 	
 	override fun toString() = toSourceString()
+}
+
+private fun XStatement.applyTrim(trimMode: TrimMode) {
+	if (trimMode == TrimMode.NONE) return
+	val content = when (this) {
+		is XcLib -> lib
+		is XContentContainer -> content
+		else -> return
+	}
+	for (stmt in content) {
+		when (stmt) {
+			is XsTextNode -> {
+				val s = trimMode.applyTo(stmt.content)
+				stmt.content = s
+			}
+			is XContentContainer -> {
+				if (stmt.trimMode == null) stmt.applyTrim(trimMode)
+			}
+			is XcLib -> {
+				if (stmt.trimMode == null) stmt.applyTrim(trimMode)
+			}
+		}
+	}
+	content.removeAll { (it is XsTextNode && it.content.isEmpty()) }
 }
 
 @XmlRootElement(name = "b")
@@ -107,8 +161,9 @@ class XcLib : StoryNode {
 			XmlElement(name = "text", type = XcNamedText::class)
 	)
 	val lib: ArrayList<StoryNode> = ArrayList()
-	
-//	override fun toString() = toSourceString()
+
+	@XmlAttribute(name="trim")
+	internal var trimMode: TrimMode? = null // inherit
 	
 	override val tagName: String get() = "lib"
 	override val emptyTag: Boolean get() = false
@@ -116,6 +171,16 @@ class XcLib : StoryNode {
 	override fun innerXML(): String = lib.joinToSourceString()
 	
 	override fun attrsString(): String = "name='$name'"
+	
+	@Suppress("unused", "UNUSED_PARAMETER")
+	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
+		applyTrim(trimMode?:TrimMode.NONE)
+	}
+	
+	@Suppress("unused", "UNUSED_PARAMETER")
+	private fun beforeMarshal(marshaller: Marshaller) {
+		trimMode = null
+	}
 }
 
 @XmlRootElement(name = "scene")
