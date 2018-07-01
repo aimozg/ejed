@@ -18,6 +18,9 @@ class Styles : Stylesheet() {
 		val xstmt by cssclass()
 		val xstmtEditor by cssclass()
 		val xstmtSelected by cssclass()
+		val xtext by cssclass()
+		val xlogic by cssclass()
+		val xcommand by cssclass()
 		val smallButton by cssclass()
 		val smallButtonSpace by cssclass()
 		
@@ -128,6 +131,18 @@ class Styles : Stylesheet() {
 				spacing = 2.px
 				alignment = Pos.BASELINE_LEFT
 			}
+		}
+		xtext {
+			fontFamily = "Lucida Fax"
+			text
+		}
+		xlogic {
+			fontFamily = "Lucida Console"
+			fill = Color.NAVY
+		}
+		xcommand {
+			fontFamily = "Lucida Console"
+			fill = Color.DARKRED
 		}
 	}
 }

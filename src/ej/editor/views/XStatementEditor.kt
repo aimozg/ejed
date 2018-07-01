@@ -4,10 +4,10 @@ import ej.editor.Styles
 import ej.editor.utils.stretchOnFocus
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
-import javafx.scene.control.Label
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import javafx.scene.layout.VBox
 import tornadofx.*
 
 /*
@@ -149,9 +149,9 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	}
 	
 	companion object {
-		fun bodyFor(stmt: XStatement?): Region {
+		fun bodyFor(stmt: XStatement?): Pane {
 			return when (stmt) {
-				null -> Label("<nothing>")
+				null -> VBox().apply { label("<nothing>") }
 				is XsTextNode -> ForText(stmt)
 				is XsDisplay -> DisplayStmt(stmt)
 				is XsSet -> SetStmt(stmt)
@@ -167,8 +167,8 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 				is XlElseIf -> TODO("ElseIfStmt(stmt)")
 				is XlSwitch -> TODO("SwitchStmt(stmt)")
 				
-				is MonsterData.MonsterDesc -> Label("<Monster Description>")
-				else -> Label("<unknown ${stmt.javaClass}>")
+				is MonsterData.MonsterDesc -> VBox().apply { label("<Monster Description>") }
+				else -> VBox().apply { label("<unknown ${stmt.javaClass}>") }
 			}
 		}
 	}

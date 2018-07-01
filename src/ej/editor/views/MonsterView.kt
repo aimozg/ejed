@@ -5,7 +5,6 @@ import ej.editor.utils.colspan
 import ej.editor.utils.initialized
 import ej.editor.utils.smartRow
 import javafx.geometry.Pos
-import javafx.scene.layout.Priority
 import javafx.util.converter.IntegerStringConverter
 import tornadofx.*
 
@@ -149,24 +148,12 @@ class MonsterBodyView(val view:MonsterView):AModFragment("Body") {
 
 class MonsterDescView(val view:MonsterView):AModFragment("Description") {
 	
+	val editor = XStatementTreeWithEditor()
+	
 	override val root = vbox {
-		this += XStatementTree().apply {
-			content = view.monsterVM.desc.value.content
-			vgrow = Priority.SOMETIMES
-		}
-		vgrow = Priority.ALWAYS
+		add(editor)
+		editor.contents = view.monsterVM.desc.value.content
 	}
-	/*
-			form {
-		val vm = view.monsterVM
-		fieldset("Description") {
-			textarea(vm.descSource) {
-				isWrapText = true
-				this.prefHeightProperty().bind(this@form.heightProperty())
-			}
-		}
-	}
-	*/
 }
 
 class MonsterSpecialView(val view:MonsterView):AModFragment("Specials") {
