@@ -147,7 +147,11 @@ class MonsterBodyView(val view:MonsterView):AModFragment("Body") {
 }
 
 class MonsterDescView(val view:MonsterView):AModFragment("Description") {
-	override val root = form {
+	override val root = scrollpane(fitToWidth = true) {
+		this += XStatementEditorContainer(view.monsterVM.desc.value)
+	}
+	/*
+			form {
 		val vm = view.monsterVM
 		fieldset("Description") {
 			textarea(vm.descSource) {
@@ -156,6 +160,7 @@ class MonsterDescView(val view:MonsterView):AModFragment("Description") {
 			}
 		}
 	}
+	*/
 }
 
 class MonsterSpecialView(val view:MonsterView):AModFragment("Specials") {

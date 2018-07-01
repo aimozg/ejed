@@ -49,7 +49,8 @@ open class MonsterViewModelBase(val mod:ModViewModel, monster: MonsterData):Item
 	val id = bind(MonsterData::id)
 	val baseId = bind(MonsterData::baseId)
 	val name = bind(MonsterData::name)
-	val descSource = bind(MonsterData::desc).stringBinding { it?.innerXML() }
+	val desc = bind(MonsterData::desc)
+//	val descSource = bind(MonsterData::desc).stringBinding { it?.innerXML() }
 	val plural = bind(MonsterData::plural)
 	val article = bind(MonsterData::article)
 	val pronounHe = bind { item.pronouns?.observable(MonsterData.Pronouns::he) }

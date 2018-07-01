@@ -17,6 +17,7 @@ class Styles : Stylesheet() {
 		
 		val xstmt by cssclass()
 		val xstmtEditor by cssclass()
+		val xstmtSelected by cssclass()
 		val smallButton by cssclass()
 		val smallButtonSpace by cssclass()
 		
@@ -79,46 +80,49 @@ class Styles : Stylesheet() {
 		}
 		xstmt {
 			padding = box(4.px, 4.px, 4.px, 8.px)
+			borderColor += box(Color.TRANSPARENT)
 			borderWidth += box(1.px)
-			and(".depth-0") {
-				backgroundColor += c("#f4f4f4")
-				borderColor += box(c("#fff"))
-			}
-			and(".depth-1") {
-				backgroundColor += c("#ddf")
-				borderColor += box(c("#228"))
-			}
-			and(".depth-2") {
-				backgroundColor += c("#fdf")
-				borderColor += box(c("#828"))
-			}
-			and(".depth-3") {
-				backgroundColor += c("#fdd")
-				borderColor += box(c("#822"))
-			}
-			and(".depth-4") {
-				backgroundColor += c("#fed")
-				borderColor += box(c("#862"))
-			}
-			and(".depth-5") {
-				backgroundColor += c("#ffd")
-				borderColor += box(c("#882"))
-			}
-			and(".depth-6") {
-				backgroundColor += c("#dfd")
-				borderColor += box(c("#282"))
-			}
-			and(".depth-7") {
-				backgroundColor += c("#dff")
-				borderColor += box(c("#288"))
-			}
-			and(".depth-8") {
-				backgroundColor += c("#ddd")
-				borderColor += box(c("#222"))
-			}
-			and(".depth-9") {
-				backgroundColor += c("#ccc")
-				borderColor += box(c("#888"))
+			and(xstmtSelected) {
+				and(".depth-0") {
+					backgroundColor += c("#f4f4f4")
+					borderColor += box(c("#fff"))
+				}
+				and(".depth-1") {
+					backgroundColor += c("#ddf")
+					borderColor += box(c("#228"))
+				}
+				and(".depth-2") {
+					backgroundColor += c("#fdf")
+					borderColor += box(c("#828"))
+				}
+				and(".depth-3") {
+					backgroundColor += c("#fdd")
+					borderColor += box(c("#822"))
+				}
+				and(".depth-4") {
+					backgroundColor += c("#fed")
+					borderColor += box(c("#862"))
+				}
+				and(".depth-5") {
+					backgroundColor += c("#ffd")
+					borderColor += box(c("#882"))
+				}
+				and(".depth-6") {
+					backgroundColor += c("#dfd")
+					borderColor += box(c("#282"))
+				}
+				and(".depth-7") {
+					backgroundColor += c("#dff")
+					borderColor += box(c("#288"))
+				}
+				and(".depth-8") {
+					backgroundColor += c("#ddd")
+					borderColor += box(c("#222"))
+				}
+				and(".depth-9") {
+					backgroundColor += c("#ccc")
+					borderColor += box(c("#888"))
+				}
 			}
 			xstmtEditor {
 				spacing = 2.px

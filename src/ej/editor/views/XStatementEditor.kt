@@ -4,12 +4,9 @@ import ej.editor.Styles
 import ej.editor.utils.stretchOnFocus
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
-import javafx.scene.Parent
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import tornadofx.*
-import java.io.StringReader
 
 /*
  * Created by aimozg on 29.06.2018.
@@ -17,31 +14,50 @@ import java.io.StringReader
  */
 
 class TextEditorView : View("Text Editor") {
-	lateinit var fragment: XStatementFragment
+	lateinit var editor: XStatementEditor
 	val contentProperty = SimpleObjectProperty<XContentContainer?>(null)
 	override val root = vbox {
 		prefWidth = 800.0
 		prefHeight = 600.0
-		fragment = XStatementFragment(contentProperty.value)
-		this += fragment
+		editor = XStatementEditor(contentProperty.value)
+		this += editor
 	}
 	init {
 		contentProperty.onChange {
-			fragment.removeFromParent()
-			fragment = XStatementFragment( it)
-			root += fragment
+			editor.removeFromParent()
+			editor = XStatementEditor(it)
+			root += editor
 		}
 	}
 }
 
-class XStatementFragment(val parentStmt: XStatement?, val stmt: XStatement?, val depth:Int) : Fragment() {
+class XStatementEditorContainer(stmt:XStatement) : XStatementEditor(stmt) {
+	val currentStatementProperty = SimpleObjectProperty<XStatementEditor?>(null)
+	init {
+		currentStatementProperty.addListener { _, oldValue, newValue ->
+			if (oldValue != newValue) {
+				oldValue?.markSelected(false)
+				newValue?.markSelected(true)
+			}
+		}
+		sceneProperty().onChange {
+			it?.focusOwnerProperty()?.onChange { focusOwner ->
+				val newStmt = focusOwner?.findParentOfType(XStatementEditor::class)
+				currentStatementProperty.value = newStmt
+			}
+		}
+	}
+}
+
+open class XStatementEditor(val parentStmt: XStatement?, val stmt: XStatement?, val depth:Int) : HBox() {
 	constructor(stmt:XStatement?) : this(null,stmt,0)
-	override val root: Pane = hbox {
+	fun markSelected(value:Boolean) {
+		if (value) addClass(Styles.xstmtSelected)
+		else removeClass(Styles.xstmtSelected)
+	}
+	init {
 		addClass(Styles.xstmt)
 		addClass("depth-$depth")
-		style {
-			borderWidth += box(1.px)
-		}
 		vbox {
 			/*if (parentStmt != null) {
 				button("≡").addClass(Styles.smallButton)
@@ -74,13 +90,15 @@ class XStatementFragment(val parentStmt: XStatement?, val stmt: XStatement?, val
 			}
 			if (stmt is XContentContainer) {
 				for (s in stmt.content) {
-					this += XStatementFragment(stmt,s,(depth+1) % Styles.MAX_DEPTH).root
+					this += XStatementEditor(stmt, s, (depth+1) % Styles.MAX_DEPTH)
 				}
 			}
 		}
 		vbox {
 			if (parentStmt != null) {
-				button("≡").addClass(Styles.smallButton) // TODO drag & reorder
+				button("≡") {
+					addClass(Styles.smallButton)
+				} // TODO drag & reorder
 				button("X").addClass(Styles.smallButton) // TODO remove
 			} else {
 				addClass(Styles.smallButtonSpace)
@@ -141,48 +159,4 @@ open class StmtEditor<T:XStatement> constructor(val stmt:T) : HBox() {
 			// TODO else, elseif
 		}
 	}
-}
-
-class XContentFragment(val stmt: XContentContainer?) : Fragment() {
-	override val root: Parent = vbox {
-			hgrow = Priority.SOMETIMES
-			when (stmt) {
-				null -> { label("<nothing>") }
-				else -> {
-					label("<unknown ${stmt.javaClass}>")
-				}
-			}
-			
-		}
-}
-
-
-class TextTestApp : App(TextEditorView::class) {
-	init {
-		importStylesheet(Styles::class)
-	}
-	override fun onBeforeShow(view: UIComponent) {
-		val data = ModData.unmarshaller().unmarshal(StringReader(("" +
-				"<desc>" +
-				"Diva appears to be a vampire, the fangs and wings kind of give it away.\n" +
-				"She circles above and around you, waiting for an opening while she constantly screeches.\n" +
-				"Huh, she might be more bat-like that you initially thought.\n" +
-				"Girl certainly has quite the pair of lungs if nothing else.\n" +
-				"Her red and black dress gives her quite the villainous look, while having some unfortunate consequences what with it having a skirt and she being a flyer.\n" +
-				"Somehow, she manages to keep herself from having a rather intimate reunion with the walls despite not looking at where she is flying in favour of drooling at the sight of your neck.\n" +
-				"Guess all that screeching has an actual purpose aside from annoying you." +
-				"<if test=\"\$final\">" +
-				"\n\nLooks like she got one hell of a power-up thanks to your generous blood donations. Masochism much, Champ?" +
-				"<if test=\"silly()\">" +
-				"\nGit gud, scrub." +
-				"</if>" +
-				"</if>" +
-				"</desc>").trimMargin())) as MonsterData.MonsterDesc
-		println(data.content.joinToString{ "${it.javaClass} : $it"})
-		(view as TextEditorView).contentProperty.value =
-				data
-	}
-}
-fun main(args: Array<String>) {
-	launch<TextTestApp>(args)
 }
