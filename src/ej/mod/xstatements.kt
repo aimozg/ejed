@@ -3,6 +3,7 @@ package ej.mod
 import com.sun.xml.internal.txw2.annotation.XmlElement
 import ej.editor.utils.escapeXml
 import ej.utils.affix
+import ej.utils.crop
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
 import javax.xml.bind.annotation.XmlValue
@@ -17,7 +18,7 @@ class XsTextNode() : XStatement {
 	override val tagName get() = ""
 	override fun innerXML() = content.escapeXml()
 	override fun toSourceString() = innerXML()
-	override fun toString() = content
+	override fun toString() = toSourceString().crop(40)
 }
 
 
@@ -30,7 +31,7 @@ class XsDisplay : XStatement {
 	override val emptyTag get() = true
 	
 	override fun attrsString() = "ref='$ref'"
-	
+	override fun toString() = toSourceString().crop(40)
 }
 
 @XmlRootElement(name = "set")
@@ -50,6 +51,7 @@ class XsSet : XStatement {
 			inobj.affix(" in='", "'") +
 			op.affix(" op='", "'") +
 			" value='$value'/>"
+	override fun toString() = toSourceString().crop(40)
 }
 
 @XmlRootElement(name = "output")
@@ -59,6 +61,7 @@ class XsOutput : XStatement {
 	
 	override val tagName get() = "output"
 	override fun innerXML(): String = expression
+	override fun toString() = toSourceString().crop(40)
 }
 
 @XmlRootElement(name = "menu")
@@ -68,6 +71,7 @@ class XsMenu : XStatement {
 	
 	override val tagName get() = "menu"
 	override fun innerXML(): String = buttons.joinToSourceString()
+	override fun toString() = toSourceString().crop(40)
 }
 
 @XmlRootElement(name = "button")
@@ -92,6 +96,7 @@ class XsButton : XStatement {
 			"text='$text'" +
 			(if (disabled) " disabled" else "") +
 			" call='$call'>"
+	override fun toString() = toSourceString().crop(40)
 }
 
 class XsButtonHint : XContentContainer("hint") {
@@ -108,6 +113,7 @@ class XsNext : XStatement {
 	
 	override val tagName get() = "next"
 	override fun innerXML() = call
+	override fun toString() = toSourceString().crop(40)
 }
 
 @XmlRootElement(name = "battle")
@@ -122,4 +128,5 @@ class XsBattle : XStatement {
 	override val emptyTag get() = true
 	override fun attrsString() = "monster='$monster'" +
 			options.affix(" options='", "'")
+	override fun toString() = toSourceString().crop(40)
 }

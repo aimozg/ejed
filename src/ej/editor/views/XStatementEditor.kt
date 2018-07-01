@@ -4,8 +4,10 @@ import ej.editor.Styles
 import ej.editor.utils.stretchOnFocus
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import tornadofx.*
 
 /*
@@ -51,6 +53,10 @@ class XStatementEditorContainer(stmt:XStatement) : XStatementEditor(stmt) {
 
 open class XStatementEditor(val parentStmt: XStatement?, val stmt: XStatement?, val depth:Int) : HBox() {
 	constructor(stmt:XStatement?) : this(null,stmt,0)
+	
+	val expandedProperty = SimpleObjectProperty<Boolean>(false)
+	var expanded by expandedProperty
+	
 	fun markSelected(value:Boolean) {
 		if (value) addClass(Styles.xstmtSelected)
 		else removeClass(Styles.xstmtSelected)
@@ -68,26 +74,7 @@ open class XStatementEditor(val parentStmt: XStatement?, val stmt: XStatement?, 
 		vbox {
 			hgrow = Priority.SOMETIMES
 			// Header
-			this += when (stmt) {
-				null -> label("<nothing>")
-				is XsTextNode -> StmtEditor.TextStmt(stmt)
-				is XsDisplay -> StmtEditor.DisplayStmt(stmt)
-				is XsSet -> StmtEditor.SetStmt(stmt)
-				is XsOutput -> StmtEditor.OutputStmt(stmt)
-				is XsMenu -> TODO("StmtEditor.MenuStmt(stmt)")
-				is XsButton -> TODO("StmtEditor.ButtonStmt(stmt)")
-				is XsButtonHint -> TODO("StmtEditor.ButtonStmt(stmt)")
-				is XsNext -> TODO("StmtEditor.ButtonStmt(stmt)")
-				is XsBattle -> TODO("StmtEditor.ButtonStmt(stmt)")
-				
-				is XlIf -> StmtEditor.IfStmt(stmt)
-				is XlElse -> TODO("StmtEditor.ElseStmt(stmt)")
-				is XlElseIf -> TODO("StmtEditor.ElseIfStmt(stmt)")
-				is XlSwitch -> TODO("StmtEditor.SwitchStmt(stmt)")
-				
-				is MonsterData.MonsterDesc -> label("<Monster Description>")
-				else -> label("<unknown ${stmt.javaClass}>")
-			}
+			this += StmtEditorBody.bodyFor(stmt)
 			if (stmt is XContentContainer) {
 				for (s in stmt.content) {
 					this += XStatementEditor(stmt, s, (depth+1) % Styles.MAX_DEPTH)
@@ -105,14 +92,15 @@ open class XStatementEditor(val parentStmt: XStatement?, val stmt: XStatement?, 
 			}
 		}
 	}
+	
 }
 
-open class StmtEditor<T:XStatement> constructor(val stmt:T) : HBox() {
+open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	init {
 		addClass(Styles.xstmtEditor)
 		hgrow = Priority.ALWAYS
 	}
-	class TextStmt(stmt:XsTextNode) : StmtEditor<XsTextNode>(stmt) {
+	class ForText(stmt:XsTextNode) : StmtEditorBody<XsTextNode>(stmt) {
 		init {
 			textarea {
 				hgrow = Priority.ALWAYS
@@ -122,13 +110,13 @@ open class StmtEditor<T:XStatement> constructor(val stmt:T) : HBox() {
 			}
 		}
 	}
-	class DisplayStmt(stmt:XsDisplay) : StmtEditor<XsDisplay>(stmt) {
+	class DisplayStmt(stmt:XsDisplay) : StmtEditorBody<XsDisplay>(stmt) {
 		init {
 			label("Display text: ")
 			textfield(stmt.ref)
 		}
 	}
-	class SetStmt(stmt:XsSet) : StmtEditor<XsSet>(stmt) {
+	class SetStmt(stmt:XsSet) : StmtEditorBody<XsSet>(stmt) {
 		init {
 			label("Property ")
 			textfield(stmt.varname)
@@ -145,18 +133,43 @@ open class StmtEditor<T:XStatement> constructor(val stmt:T) : HBox() {
 			textfield(stmt.value)
 		}
 	}
-	class OutputStmt(stmt:XsOutput) : StmtEditor<XsOutput>(stmt) {
+	class OutputStmt(stmt:XsOutput) : StmtEditorBody<XsOutput>(stmt) {
 		init {
 			label("Evaluate and display:")
 			textfield(stmt.expression) { hgrow = Priority.ALWAYS }
 		}
 	}
-	class IfStmt(stmt:XlIf) : StmtEditor<XlIf>(stmt) {
+	class IfStmt(stmt:XlIf) : StmtEditorBody<XlIf>(stmt) {
 		init {
 			label("If condition ")
 			textfield(stmt.test)
 			label(" is true")
 			// TODO else, elseif
+		}
+	}
+	
+	companion object {
+		fun bodyFor(stmt: XStatement?): Region {
+			return when (stmt) {
+				null -> Label("<nothing>")
+				is XsTextNode -> ForText(stmt)
+				is XsDisplay -> DisplayStmt(stmt)
+				is XsSet -> SetStmt(stmt)
+				is XsOutput -> OutputStmt(stmt)
+				is XsMenu -> TODO("MenuStmt(stmt)")
+				is XsButton -> TODO("ButtonStmt(stmt)")
+				is XsButtonHint -> TODO("ButtonHintStmt(stmt)")
+				is XsNext -> TODO("NextStmt(stmt)")
+				is XsBattle -> TODO("BattleStmt(stmt)")
+				
+				is XlIf -> IfStmt(stmt)
+				is XlElse -> TODO("ElseStmt(stmt)")
+				is XlElseIf -> TODO("ElseIfStmt(stmt)")
+				is XlSwitch -> TODO("SwitchStmt(stmt)")
+				
+				is MonsterData.MonsterDesc -> Label("<Monster Description>")
+				else -> Label("<unknown ${stmt.javaClass}>")
+			}
 		}
 	}
 }

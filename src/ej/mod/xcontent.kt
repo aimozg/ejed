@@ -2,6 +2,7 @@ package ej.mod
 
 import ej.utils.affix
 import ej.utils.affixNonEmpty
+import ej.utils.crop
 import javax.xml.bind.JAXBElement
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
@@ -110,7 +111,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	override fun innerXML(): String = if (emptyTag) "" else contentRaw.joinToSourceString()
 	override fun attrsString() = ""
 	
-	override fun toString() = toSourceString()
+	override fun toString() = toSourceString().crop(40)
 }
 
 private fun XStatement.applyTrim(trimMode: TrimMode) {
