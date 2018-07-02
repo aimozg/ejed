@@ -24,7 +24,18 @@ fun statementTreeGraphic(stmt: XStatement): Region {
 		is XlIf -> Label("If: ${stmt.test}").addClass(Styles.xlogic)
 		is XlElse -> Label("Else:").addClass(Styles.xlogic)
 		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
-		is XcTextNode -> Label(stmt.content).addClass(Styles.xtext)
+//		is XcTextNode -> Label(stmt.content).addClass(Styles.xtext)
+		is XcStyledText -> VBox().apply {
+			addClass(Styles.xtext)
+			textflow().apply {
+				for (run in stmt.runs) {
+					text(run.content) {
+						style = run.style.toCss()
+					}
+				}
+			}
+		}
+		
 
 		is XsOutput -> Label("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
 		is XsDisplay -> Label("Display: ${stmt.ref}").addClass(Styles.xcommand)

@@ -6,6 +6,7 @@ import ej.utils.classValidatorFor
 import java.io.InputStream
 import java.io.Reader
 import javax.xml.bind.JAXBContext
+import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
 
 /*
@@ -13,9 +14,10 @@ import javax.xml.bind.annotation.*
  * Confidential until published on GitHub
  */
 
+interface ModDataNode
 
 @XmlRootElement(name="mod")
-class ModData {
+class ModData : ModDataNode {
 	@ValidateNonBlank
 	@get:XmlAttribute
 	var name:String = ""
@@ -57,6 +59,11 @@ class ModData {
 	}
 	
 	fun validate() = VALIDATOR.validate(this)
+	
+	@Suppress("unused", "UNUSED_PARAMETER")
+	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
+		visit(StylingVisitor())
+	}
 	
 	companion object {
 		internal val VALIDATOR by lazy { classValidatorFor<ModData>() }

@@ -104,7 +104,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 		init {
 			textarea {
 				hgrow = Priority.ALWAYS
-				text = stmt.htmlContent
+				text = stmt.textContent // TODO runs
 				isWrapText = true
 				stretchOnFocus(3)
 			}
@@ -173,6 +173,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 				is XlSwitch -> TODO("SwitchStmt(stmt)")
 				
 				is XcLib -> Label("Text library ${stmt.name}")
+				is XcStyledText -> ForText(stmt)
 				
 				is MonsterData.MonsterDesc -> Label("<Monster Description>")
 				else -> Label("<unknown ${stmt.javaClass}>")

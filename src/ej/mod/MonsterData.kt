@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement
 import javax.xml.bind.annotation.XmlValue
 
 @XmlRootElement(name="monster")
-class MonsterData : Patchable {
+class MonsterData : Patchable, ModDataNode {
 	
 	@ValidateNonBlank
 	@ValidateUnique
