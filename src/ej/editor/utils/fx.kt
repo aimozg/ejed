@@ -3,6 +3,7 @@ package ej.editor.utils
 import com.sun.javafx.font.PrismFontLoader
 import javafx.scene.Node
 import javafx.scene.control.TextArea
+import javafx.scene.control.TreeItem
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.scene.text.Text
@@ -64,4 +65,24 @@ fun Node.dumpCss() {
 	println(impl_getStyleMap().map {(k,v)->
 		k.cssMetaData.property+" "+v.joinToString { it.selector.toString() }
 	}.joinToString("\n"))
+}
+
+inline fun<T> TreeItem<T>.traverseAll(visitor:(TreeItem<T>)->Unit) {
+	traverse {
+		visitor(it)
+		true
+	}
+}
+inline fun<T> TreeItem<T>.traverse(visitor:(TreeItem<T>)->Boolean) {
+	var e:TreeItem<T>? = this
+	while(e != null) {
+		if (visitor(e)) {
+			e = e.children.firstOrNull() ?: e
+		}
+		var ie = e.nextSibling()
+		while (ie == null && e != null) {
+			e = e.parent
+			ie = e.nextSibling()
+		}
+	}
 }

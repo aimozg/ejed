@@ -33,6 +33,7 @@ internal fun XStatement.tagClose() =
 internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 	when (it) {
 		is XStatement -> it.toSourceString()
+		is XcStyledText.Run -> it.toSourceString()
 		is String -> it
 		else -> it.toString()
 	}
@@ -218,6 +219,13 @@ class XcStyledText(text:String,style:Style=Style()): XStatement {
 		fun sameStyleAs(other:Run) = this.style == other.style
 		fun isEmpty() = content.isEmpty()
 		fun isBlank() = content.isBlank()
+		fun toSourceString(): String {
+			var s = content.escapeXml().replace("\n","<br>")
+			style.color?.let { color -> s = "<font color='$color'>$s</font>" }
+			if (style.bold) s = "<b>$s</b>"
+			if (style.italic) s = "<i>$s</i>"
+			return s
+		}
 	}
 	
 	@get:XmlElement(name="r")
@@ -284,6 +292,9 @@ class XcStyledText(text:String,style:Style=Style()): XStatement {
 		runs.add(run)
 	}
 	
+	@get:XmlTransient
+	val htmlContent:String
+		get() =  runs.joinToSourceString()
 	/*
 	@get:XmlTransient
 	var htmlContent:String

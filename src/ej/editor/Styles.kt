@@ -11,9 +11,15 @@ import tornadofx.*
  */
 class Styles : Stylesheet() {
 	companion object {
+		val FONT_FACE_TEXT = "Lucida Fax"
+		val FONT_FACE_SCRIPT = "Lucida Console"
+
 		val wrapper by cssclass()
 		val consola by cssclass()
 		val monsterCombat by cssclass()
+		
+		val treeExpanded by cssclass()
+		val treeNode by cssclass()
 		
 		val xstmt by cssclass()
 		val xstmtEditor by cssclass()
@@ -134,31 +140,39 @@ class Styles : Stylesheet() {
 			}
 		}
 		xtext {
+			fontFamily = FONT_FACE_TEXT
 			text {
-				fontFamily = "Lucida Fax"
+				fontFamily = FONT_FACE_TEXT
 			}
-			wrapText = true
 		}
 		xlogic {
 			text {
-				fontFamily = "Lucida Console"
+				fontFamily = FONT_FACE_SCRIPT
 				fill = Color.NAVY
 			}
-			wrapText = true
 		}
 		xcommand {
 			text {
-				fontFamily = "Lucida Console"
+				fontFamily = FONT_FACE_SCRIPT
 				fill = Color.DARKRED
 			}
-			wrapText = true
 		}
 		xcomment {
 			text {
-				fontFamily = "Lucida Console"
+				fontFamily = FONT_FACE_SCRIPT
 				fill = Color.DIMGRAY
 			}
-			wrapText = true
+		}
+		treeNode {
+//			maxHeight = 22.px
+//			prefHeight = 16.px
+		}
+		treeExpanded contains treeNode {
+			contains("TextFlow") {
+//				minWidth = -1.px
+			}
+//			maxHeight = (-1).px
+//			prefHeight = (-1).px
 		}
 	}
 }

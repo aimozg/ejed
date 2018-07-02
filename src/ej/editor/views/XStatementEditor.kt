@@ -1,14 +1,15 @@
 package ej.editor.views
 
 import ej.editor.Styles
-import ej.editor.utils.stretchOnFocus
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import javafx.scene.web.WebView
 import tornadofx.*
+import java.util.concurrent.atomic.AtomicReference
 
 /*
  * Created by aimozg on 29.06.2018.
@@ -95,6 +96,7 @@ open class XStatementEditor(val parentStmt: XStatement?, val stmt: XStatement?, 
 	
 }
 
+private val cachedWebView = AtomicReference<WebView?>(null)
 open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	init {
 		addClass(Styles.xstmtEditor)
@@ -102,12 +104,28 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	}
 	class ForText(stmt:XcStyledText) : StmtEditorBody<XcStyledText>(stmt) {
 		init {
+			/*
 			textarea {
 				hgrow = Priority.ALWAYS
 				text = stmt.textContent // TODO runs
 				isWrapText = true
 				stretchOnFocus(3)
 			}
+			*/
+			val wv = synchronized(Companion) {
+				cachedWebView.getAndSet(null) ?: WebView().apply {
+					sceneProperty().onChange {
+						if (it == null) cachedWebView.compareAndSet(null, this)
+					}
+					engine.documentProperty().onChange {
+						//println(engine.executeScript("document.head.outerHTML+' '+document.body.outerHTML"))
+					}
+				}
+			}
+			add(wv)
+			wv.hgrow = Priority.ALWAYS
+			//language=HTML
+			wv.engine.loadContent("<html><head><style type='text/css'>*{font-family:'${Styles.FONT_FACE_TEXT}', 'serif'}</style></head><body contentEditable='true'>${stmt.htmlContent}</body></html>")
 		}
 	}
 	class DisplayStmt(stmt:XsDisplay) : StmtEditorBody<XsDisplay>(stmt) {
@@ -151,13 +169,12 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	companion object {
 		fun bodyFor(stmt: XStatement?): Region {
 			return when (stmt) {
-				null -> Label("<nothing>")/*
-				is XcTextNode,
-					is XmlElementB,
-					is XmlElementI,
-					is XmlElementFont ->
-					TODO("This should not happen (encountered ${stmt.javaClass} $stmt)")
-				*/
+				null -> Label("<nothing>")
+				is XmlElementB,
+				is XmlElementI,
+				is XmlElementFont ->
+				TODO("This should not happen (encountered ${stmt.javaClass} $stmt)")
+
 				is XsDisplay -> DisplayStmt(stmt)
 				is XsSet -> SetStmt(stmt)
 				is XsOutput -> OutputStmt(stmt)

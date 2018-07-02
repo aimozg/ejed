@@ -5,6 +5,7 @@ import ej.editor.ModViewModel
 import ej.editor.MonsterViewModel
 import ej.mod.*
 import javafx.scene.control.TreeItem
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -48,7 +49,11 @@ class ModView: AModView("Mod view") {
 		}
 	}
 	
-	val treeWithEditor by lazy { XStatementTreeWithEditor() }
+	val treeWithEditor by lazy {
+		XStatementTreeWithEditor().apply {
+			vgrow = Priority.ALWAYS
+		}
+	}
 	
 	fun selectModEntry(e:ModTreeNode?) {
 		root.center.replaceChildren(when (e) {
@@ -93,7 +98,7 @@ class ModView: AModView("Mod view") {
 					selectionModel.selectedItemProperty().onChange {
 						selectModEntry(it?.value)
 					}
-					root.expandTo(2)
+					root.expandTo(3)
 				}
 			}
 		}
