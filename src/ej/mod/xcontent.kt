@@ -4,23 +4,10 @@ import ej.editor.utils.escapeXml
 import ej.utils.affix
 import ej.utils.affixNonEmpty
 import ej.utils.crop
-import javax.xml.bind.JAXBElement
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
-import javax.xml.namespace.QName
 
-
-@XmlRegistry
-class XContentRegistry {
-	@XmlElementDecl(namespace = "", name = "set", scope = XContentContainer::class)
-	fun createXContentContainerXsSet(value: XsSet): JAXBElement<XsSet> {
-		return JAXBElement<XsSet>(QName("", "set"),
-		                          XsSet::class.java,
-		                          XContentContainer::class.java,
-		                          value)
-	}
-}
 
 interface XStatement {
 	val tagName: String
@@ -75,9 +62,9 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	override val emptyTag: Boolean = false
 	
 	@XmlElementRefs(
-			XmlElementRef(name = "b", type = XcTextBold::class),
-			XmlElementRef(name = "i", type = XcTextItalic::class),
-			XmlElementRef(name = "font", type = XcTextStyled::class),
+			XmlElementRef(name = "b", type = XmlElementB::class),
+			XmlElementRef(name = "i", type = XmlElementI::class),
+			XmlElementRef(name = "font", type = XmlElementFont::class),
 			XmlElementRef(name = "display", type = XsDisplay::class),
 			XmlElementRef(name = "set", type = XsSet::class),
 			XmlElementRef(name = "output", type = XsOutput::class),
@@ -105,7 +92,10 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 		content.clear()
 		content.addAll(contentRaw.map { it as? XStatement ?: XcTextNode(it.toString()) })
 		contentRaw.clear()
-		applyTrim(trimMode?:TrimMode.NONE)
+		trimMode?.let { trimMode ->
+			TrimmingVisitor(trimMode).visitAll(content)
+			content.removeAll { (it is XcTextNode && it.content.isEmpty()) }
+		}
 	}
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
@@ -121,40 +111,48 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	override fun toString() = toSourceString().crop(40)
 }
 
-private fun XStatement.applyTrim(trimMode: TrimMode) {
-	if (trimMode == TrimMode.NONE) return
-	if (this is XcLib) {
-		for (stmt in lib) {
-			if (stmt is XContentContainer && stmt.trimMode == null) stmt.applyTrim(trimMode)
-		}
-		return
-	} else if (this !is XContentContainer) return
-	for (i in content.indices) {
-		val stmt = content[i]
-		val prev = if (i>0) content[i-1] else null
-		when (stmt) {
-			is XcTextNode -> {
-				stmt.content = trimMode.applyTo(stmt.content)
-			}
-			is XContentContainer -> {
-				if (stmt.trimMode == null) stmt.applyTrim(trimMode)
-			}
-			is XcLib -> {
-				if (stmt.trimMode == null) stmt.applyTrim(trimMode)
-			}
+class TrimmingVisitor(val trimMode: TrimMode) : XStatementVisitor() {
+	override fun visitLib(stmt: XcLib) {
+		if (stmt.trimMode == null) {
+			visitAll(stmt.lib)
 		}
 	}
-	content.removeAll { (it is XcTextNode && it.content.isEmpty()) }
+	
+	override fun visitAnyContentContainer(stmt: XContentContainer) {
+		if (stmt.trimMode == null) {
+			visitAll(stmt.content)
+			stmt.content.removeAll { (it is XcTextNode && it.content.isEmpty()) }
+		}
+	}
+	
+	override fun visitAnyStmt(stmt: XStatement) {
+		if (stmt is XcTextNode) {
+			stmt.content = trimMode.applyTo(stmt.content)
+		}
+	}
 }
 
 @XmlRootElement(name = "b")
-class XcTextBold : XContentContainer("b") {}
+class XmlElementB() : XContentContainer("b") {
+	constructor(e:XStatement):this() {
+		content += e
+	}
+}
 
 @XmlRootElement(name = "i")
-class XcTextItalic : XContentContainer("i")
+class XmlElementI() : XContentContainer("i") {
+	constructor(e:XStatement):this() {
+		content += e
+	}
+}
 
 @XmlRootElement(name = "font")
-class XcTextStyled : XContentContainer("font") {
+class XmlElementFont() : XContentContainer("font") {
+	constructor(e:XStatement,color:String?):this() {
+		content += e
+		this.color = color
+	}
+
 	@get:XmlAttribute
 	var color: String? = null
 	
@@ -174,6 +172,43 @@ class XcTextNode() : XStatement {
 	
 }
 
+class XcStyledText(): XStatement {
+	constructor(run:Run):this() {
+		addRun(run)
+	}
+	
+	fun addRun(content: String, bold: Boolean=false, italic: Boolean=false, color: String?=null) {
+		runs.add(Run(content, bold, italic, color))
+	}
+	fun addRun(run:Run) {
+		runs.add(run)
+	}
+	
+	var htmlContent:String
+		get() = runs.fold(ArrayList<XStatement>()) { rslt, run ->
+			//val prev = rslt.lastOrNull()
+			var e:XStatement = XcTextNode(run.content)
+			if (run.bold) e = XmlElementB(e)
+			if (run.italic) e = XmlElementI(e)
+			if (run.color != null) e = XmlElementFont(e,run.color)
+			rslt.add(e)
+			rslt
+		}.joinToSourceString()
+		set(value) {
+			runs.clear()
+			addRun(value)
+		}
+	
+	class Run(var content:String,var bold:Boolean=false,var italic:Boolean=false,var color:String?=null) {
+		fun sameStyleAs(other:Run) =
+				this.bold == other.bold
+						&& this.italic == other.italic
+						&& this.color == other.color
+	}
+	val runs = ArrayList<Run>()
+	override val tagName: String get() = ""
+	override fun toString() = toSourceString().crop(40)
+}
 
 @XmlRootElement(name = "lib")
 class XcLib : StoryStmt {
@@ -198,7 +233,9 @@ class XcLib : StoryStmt {
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
-		applyTrim(trimMode?:TrimMode.NONE)
+		trimMode?.let { trimMode ->
+			TrimmingVisitor(trimMode).visitAll(lib)
+		}
 	}
 	
 	@Suppress("unused", "UNUSED_PARAMETER")

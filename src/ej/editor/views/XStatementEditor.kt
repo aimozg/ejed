@@ -100,11 +100,11 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 		addClass(Styles.xstmtEditor)
 		hgrow = Priority.ALWAYS
 	}
-	class ForText(stmt:XcTextNode) : StmtEditorBody<XcTextNode>(stmt) {
+	class ForText(stmt:XcStyledText) : StmtEditorBody<XcStyledText>(stmt) {
 		init {
 			textarea {
 				hgrow = Priority.ALWAYS
-				text = stmt.content
+				text = stmt.htmlContent
 				isWrapText = true
 				stretchOnFocus(3)
 			}
@@ -151,8 +151,13 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	companion object {
 		fun bodyFor(stmt: XStatement?): Region {
 			return when (stmt) {
-				null -> Label("<nothing>")
-				is XcTextNode -> ForText(stmt)
+				null -> Label("<nothing>")/*
+				is XcTextNode,
+					is XmlElementB,
+					is XmlElementI,
+					is XmlElementFont ->
+					TODO("This should not happen (encountered ${stmt.javaClass} $stmt)")
+				*/
 				is XsDisplay -> DisplayStmt(stmt)
 				is XsSet -> SetStmt(stmt)
 				is XsOutput -> OutputStmt(stmt)
