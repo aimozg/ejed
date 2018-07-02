@@ -18,7 +18,6 @@ class Styles : Stylesheet() {
 		val consola by cssclass()
 		val monsterCombat by cssclass()
 		
-		val treeExpanded by cssclass()
 		val treeNode by cssclass()
 		
 		val xstmt by cssclass()
@@ -144,6 +143,9 @@ class Styles : Stylesheet() {
 			text {
 				fontFamily = FONT_FACE_TEXT
 			}
+			and("TextFlow") {
+				padding = box(0.px, 0.px, 15.px, 0.px)
+			}
 		}
 		xlogic {
 			text {
@@ -162,17 +164,6 @@ class Styles : Stylesheet() {
 				fontFamily = FONT_FACE_SCRIPT
 				fill = Color.DIMGRAY
 			}
-		}
-		treeNode {
-//			maxHeight = 22.px
-//			prefHeight = 16.px
-		}
-		treeExpanded contains treeNode {
-			contains("TextFlow") {
-//				minWidth = -1.px
-			}
-//			maxHeight = (-1).px
-//			prefHeight = (-1).px
 		}
 	}
 }

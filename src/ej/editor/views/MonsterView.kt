@@ -8,15 +8,7 @@ import javafx.geometry.Pos
 import javafx.util.converter.IntegerStringConverter
 import tornadofx.*
 
-class MonsterView(val monsterVM:MonsterViewModel): AModView("Monster") {
-	init {
-		
-		headingProperty.bind(controller.monsterProperty.stringBinding {
-			if (it == null) "Monster" else {
-				"Monster ${it.id}" +(if(it.name==it.id) "" else " (${it.name?:"unnamed"})")
-			}
-		})
-	}
+class MonsterView(val monsterVM:MonsterViewModel): AModView() {
 	
 	override fun onSave() {
 		for (property in monsterVM.propertyMap.keys) {

@@ -5,27 +5,7 @@ import javafx.scene.control.ListView
 import tornadofx.*
 import java.io.File
 
-class ModListView: AModView("EJEd") {
-	init {
-		heading = ""
-		disableCreate()
-		disableDelete()
-		disableSave()
-		disableRefresh() // TODO reload list
-		
-		this.controller.modProperty.onChange {
-			if (it != null) {
-				workspace.dock<ModView>()
-			} else {
-				workspace.dock(this)
-			}
-		}
-	}
-	
-	
-	override fun onRefresh() {
-		controller.loadModList()
-	}
+class ModListView: AModView() {
 	
 	var fileList: ListView<File> by singleAssign()
 	override val root = vbox {

@@ -2,11 +2,14 @@ package ej.editor
 
 import ej.editor.utils.SplittingOutputStream
 import ej.editor.utils.TextAreaOutputStream
+import ej.editor.utils.onChangeAndNow
 import ej.editor.views.ModListView
+import ej.editor.views.ModView
 import ej.mod.ModData
 import ej.mod.MonsterData
 import ej.utils.affixNonEmpty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Side
 import tornadofx.*
 import java.io.File
 import java.io.PrintStream
@@ -22,7 +25,7 @@ val modDir = "content/mods"
 class EditorController : Controller() {
 	val modFiles = ArrayList<File>().observable()
 	
-	val modProperty = SimpleObjectProperty<ModData>(ModData())
+	val modProperty = SimpleObjectProperty<ModData>(null)
 	var mod by modProperty
 	val modVM = ModViewModel(modProperty)
 	
@@ -37,14 +40,10 @@ class EditorController : Controller() {
 		mod = ModData.jaxbContext.createUnmarshaller().apply {
 			setEventHandler { false }
 		}.unmarshal(src) as ModData
-		ModData.jaxbContext.createMarshaller().marshal(mod, System.out)
-		println()
+//		ModData.jaxbContext.createMarshaller().marshal(mod, System.out)
+//		println()
 	}
 	
-	fun selectMonster(monster: MonsterData?) {
-//		println(monster)
-		this.monster = monster
-	}
 }
 
 abstract class AModFragment(title: String? = null) : Fragment(title) {
@@ -52,12 +51,12 @@ abstract class AModFragment(title: String? = null) : Fragment(title) {
 	val modVM get() = controller.modVM
 }
 
-abstract class AModView(title: String) : View(title) {
+abstract class AModView : View("EJEd") {
 	
 	override fun onDock() {
 		super.onDock()
 		this.title = "EJEd" + modVM.name.value.affixNonEmpty(" - ")
-		modVM.name.onChange {
+		modVM.name.onChangeAndNow {
 			this.title = "EJEd" + it.affixNonEmpty(" - ")
 		}
 	}
@@ -66,33 +65,25 @@ abstract class AModView(title: String) : View(title) {
 	val modVM get() = controller.modVM
 }
 
-abstract class AModWorkspace(title: String) : Workspace(title) {
-	val controller: EditorController by inject()
-	val modVM get() = controller.modVM
-}
-
-class EditorWorkspace : AModWorkspace("EJEd") {
-	
-	init {
+class EditorView : AModView() {
+//	val leftDrawer = Drawer(Side.LEFT,false,false)
+	val rightDrawer = Drawer(Side.RIGHT,false,false)
+	override val root = borderpane {
 		menubar {
 			menu("Mod") {
 				item("New") {
 					isDisable = true
 				}
 				item("Open").action {
-					if (workspace.dockedComponent !is ModListView) {
-						workspace.dock<ModListView>()
-					}
+					center = find<ModListView>().root
 				}
 				item("Save") {
 					isDisable = true
 				}
-				// separator()
-				// TODO recent mods
 			}
 		}
-		
-		with(bottomDrawer) {
+		right = rightDrawer
+		bottom = drawer {
 			item("Logs") {
 				textarea {
 					addClass("consola")
@@ -105,15 +96,21 @@ class EditorWorkspace : AModWorkspace("EJEd") {
 			}
 		}
 	}
+	
+	override fun onDock() {
+		controller.loadModList()
+		this.controller.modProperty.onChangeAndNow {
+			if (it != null) {
+				root.center = find<ModView>().root
+			} else {
+				root.center = find<ModListView>().root
+				
+			}
+		}
+	}
 }
 
-class EditorApp : App(EditorWorkspace::class) {
-	val controller: EditorController by inject()
-	
-	override fun onBeforeShow(view: UIComponent) {
-		controller.loadModList()
-		workspace.dock<ModListView>()
-	}
+class EditorApp : App(EditorView::class) {
 	
 	init {
 		importStylesheet(Styles::class)

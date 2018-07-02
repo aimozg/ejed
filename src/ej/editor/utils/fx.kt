@@ -1,6 +1,7 @@
 package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
+import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.control.TextArea
 import javafx.scene.control.TreeItem
@@ -85,4 +86,9 @@ inline fun<T> TreeItem<T>.traverse(visitor:(TreeItem<T>)->Boolean) {
 			ie = e.nextSibling()
 		}
 	}
+}
+
+fun <T> ObservableValue<T>.onChangeAndNow(op: (T?) -> Unit) {
+	op(value)
+	addListener { _, _, newValue -> op(newValue) }
 }

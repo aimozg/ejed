@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.utils.onChangeAndNow
 import ej.mod.*
 import ej.utils.affixNonEmpty
 import ej.utils.squeezeWs
@@ -27,9 +28,12 @@ fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
 		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
 //		is XcTextNode -> Label(stmt.content).addClass(Styles.xtext)
 		is XcStyledText -> VBox().apply {
+			val g = this
 			val flow = TextFlow().apply {
-				prefWidth = Region.USE_COMPUTED_SIZE
-				minWidth = Region.USE_COMPUTED_SIZE
+				prefWidthProperty().bind(g.widthProperty())
+				maxWidthProperty().bind(g.widthProperty())
+//				prefWidth = Region.USE_COMPUTED_SIZE
+//				minWidth = Region.USE_COMPUTED_SIZE
 				for (run in stmt.runs) {
 					text(run.content) {
 						style = run.style.toCss()
@@ -38,9 +42,7 @@ fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
 				}
 			}
 			val label = Label(stmt.textContent.replace("\n"," ")).addClass(Styles.xtext)
-			if (tree.expandedNodes) flow.attachTo(this)
-			else label.attachTo(this)
-			tree.expandedNodesProperty.onChange {
+			tree.expandedNodesProperty.onChangeAndNow {
 				if (it == true) {
 					label.removeFromParent()
 					flow.attachTo(this)
@@ -109,9 +111,10 @@ open class StatementTreeView : TreeView<XStatement>() {
 		contentsProperty.onChange {
 			repopulate()
 		}
+		/*
 		expandedNodesProperty.onChange {
 			if (it == true) addClass(Styles.treeExpanded) else removeClass(Styles.treeExpanded)
-		}
+		}*/
 	}
 }
 
