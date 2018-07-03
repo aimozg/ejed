@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: Editor-lite-libs.jar
+Main-Class: ej.editor.EditorApp
+

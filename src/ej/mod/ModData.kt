@@ -3,6 +3,7 @@ package ej.mod
 import ej.utils.ValidateElements
 import ej.utils.ValidateNonBlank
 import ej.utils.classValidatorFor
+import java.io.File
 import java.io.InputStream
 import java.io.Reader
 import javax.xml.bind.JAXBContext
@@ -18,6 +19,9 @@ interface ModDataNode
 
 @XmlRootElement(name="mod")
 class ModData : ModDataNode {
+	@get:XmlTransient
+	var sourceFile: File? = null
+	
 	@ValidateNonBlank
 	@get:XmlAttribute
 	var name:String = ""

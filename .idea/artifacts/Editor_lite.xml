@@ -1,0 +1,17 @@
+<component name="ArtifactManager">
+  <artifact name="Editor:lite">
+    <output-path>$PROJECT_DIR$/</output-path>
+    <root id="root">
+      <element id="archive" name="Editor-lite.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/resources/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="Editor" />
+      </element>
+      <element id="archive" name="Editor-lite-libs.jar">
+        <element id="library" level="project" name="no.tornado:tornadofx:1.7.16" />
+        <element id="library" level="project" name="KotlinJavaRuntime" />
+      </element>
+    </root>
+  </artifact>
+</component>

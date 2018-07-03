@@ -1,21 +1,34 @@
 package ej.editor.views
 
 import ej.editor.AModView
+import javafx.geometry.Pos
 import javafx.scene.control.ListView
+import javafx.scene.layout.Priority
 import tornadofx.*
 import java.io.File
+
 
 class ModListView: AModView() {
 	
 	var fileList: ListView<File> by singleAssign()
 	override val root = vbox {
-		label("Open mod")
-		listview(this@ModListView.controller.modFiles) {
+		hbox {
+			alignment = Pos.BASELINE_LEFT
+			label("Mod directory")
+			textfield {
+				textProperty().bindBidirectional(controller.modDirProperty)
+				vgrow = Priority.SOMETIMES
+			}
+			button("...").action {
+				controller.openMod()
+			}
+		}
+		listview(controller.modFiles) {
 			fileList = this
 			multiSelect(false)
 			cellFormat { text = it.nameWithoutExtension }
 			onUserSelect {
-				this@ModListView.controller.loadMod(it)
+				controller.loadMod(it)
 			}
 		}
 		hbox {
@@ -27,5 +40,9 @@ class ModListView: AModView() {
 			}
 		}
 		
+	}
+	
+	override fun onDock() {
+		controller.loadModList()
 	}
 }

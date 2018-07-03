@@ -1,8 +1,10 @@
 package ej.editor.views
 
-import ej.editor.*
+import ej.editor.AModView
+import ej.editor.MonsterViewModel
+import ej.editor.Styles
+import ej.editor.isDifferent
 import ej.editor.utils.colspan
-import ej.editor.utils.initialized
 import ej.editor.utils.smartRow
 import javafx.geometry.Pos
 import javafx.util.converter.IntegerStringConverter
@@ -22,17 +24,17 @@ class MonsterView(val monsterVM:MonsterViewModel): AModView() {
 	}
 	
 	override val root = tabpane {
-		tab(MonsterBasicView(this@MonsterView).initialized())
-		tab(MonsterBodyView(this@MonsterView).initialized())
-		tab(MonsterDescView(this@MonsterView).initialized())
-		tab(MonsterSpecialView(this@MonsterView).initialized())
-		tab(MonsterScriptsView(this@MonsterView).initialized())
-		tab(MonsterScenesView(this@MonsterView).initialized())
-		connectWorkspaceActions()
+		tab<MonsterBasicView>()
+		tab<MonsterBodyView>()
+		tab<MonsterDescView>()
+		tab<MonsterSpecialView>()
+		tab<MonsterScriptsView>()
+		tab<MonsterScenesView>()
 	}
 }
 
-class MonsterBasicView(val view:MonsterView):AModFragment("Basic") {
+class MonsterBasicView():AModView("Basic") {
+	val view = find<MonsterView>()
 	override val root = vbox {
 		val vm = view.monsterVM
 		hbox(10) {
@@ -131,15 +133,16 @@ class MonsterBasicView(val view:MonsterView):AModFragment("Basic") {
 	}
 }
 
-class MonsterBodyView(val view:MonsterView):AModFragment("Body") {
+class MonsterBodyView():AModView("Body") {
+	val view = find<MonsterView>()
 	override val root = form {
 		label("Body")
 		// TODO
 	}
 }
 
-class MonsterDescView(val view:MonsterView):AModFragment("Description") {
-	
+class MonsterDescView():AModView("Description") {
+	val view = find<MonsterView>()
 	val editor = XStatementTreeWithEditor()
 	
 	override val root = vbox {
@@ -148,21 +151,24 @@ class MonsterDescView(val view:MonsterView):AModFragment("Description") {
 	}
 }
 
-class MonsterSpecialView(val view:MonsterView):AModFragment("Specials") {
+class MonsterSpecialView():AModView("Specials") {
+	val view = find<MonsterView>()
 	override val root = form {
 		label("Specials")
 		// TODO
 	}
 }
 
-class MonsterScriptsView(val view:MonsterView):AModFragment("Scripts") {
+class MonsterScriptsView():AModView("Scripts") {
+	val view = find<MonsterView>()
 	override val root = form {
 		label("Scripts")
 		// TODO
 	}
 }
 
-class MonsterScenesView(val view:MonsterView):AModFragment("Scenes") {
+class MonsterScenesView():AModView("Scenes") {
+	val view = find<MonsterView>()
 	override val root = form {
 		label("Scenes")
 		// TODO
