@@ -21,7 +21,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
+fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 	return when (stmt) {
 		is XlIf -> Label("If: ${stmt.test}").addClass(Styles.xlogic)
 		is XlElse -> Label("Else:").addClass(Styles.xlogic)
@@ -77,7 +77,7 @@ fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
 	}
 }
 
-open class StatementTreeView : TreeView<XStatement>() {
+open class StatementTree : TreeView<XStatement>() {
 	val contentsProperty = SimpleObjectProperty<MutableList<XStatement>>(ArrayList())
 	var contents by contentsProperty
 	
@@ -127,7 +127,7 @@ open class StatementTreeView : TreeView<XStatement>() {
 
 open class XStatementTreeWithEditor : VBox() {
 	var editor: Region = Pane()
-	val tree: StatementTreeView = StatementTreeView()
+	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
 	val contentsProperty = tree.contentsProperty
 	var contents by contentsProperty

@@ -16,6 +16,10 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
+class MonsterScope(val mod:ModViewModel,val monster:MonsterData):Scope() {
+	val monsterVM = MonsterViewModel(mod,monster)
+}
+
 class ModViewModel(property: Property<ModData>) : ItemViewModel<ModData>() {
 	val name = bind { SimpleStringProperty(item?.name?:"") }
 	val monsters = bind {
@@ -61,7 +65,8 @@ open class MonsterViewModelBase(val mod:ModViewModel, monster: MonsterData):Item
 }
 class MonsterViewModel(mod:ModViewModel,monster:MonsterData):MonsterViewModelBase(mod,monster.patchedCopy(mod.findMonster) ) {
 	val base = MonsterViewModelBase(mod,
-	                                monster.findBase(mod.findMonster)?.patchedCopy(mod.findMonster)
+	                                monster.findBase(mod.findMonster)
+			                                ?.patchedCopy(mod.findMonster)
 			                                ?: DefaultMonsterData)
 	
 	fun<T> isPropertyDifferent(property:Property<T>):Boolean {

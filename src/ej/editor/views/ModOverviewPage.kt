@@ -1,9 +1,9 @@
 package ej.editor.views
 
-import ej.editor.AModFragment
+import ej.editor.AModView
 import tornadofx.*
 
-class ModOverviewFragment: AModFragment("Overview") {
+class ModOverviewPage: AModView("Overview") {
 	override val root = vbox {
 		form {
 			fieldset("Mod overview") {

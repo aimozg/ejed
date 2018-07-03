@@ -2,7 +2,7 @@ package ej.editor.views
 
 import ej.editor.AModView
 import ej.editor.ModViewModel
-import ej.editor.MonsterViewModel
+import ej.editor.MonsterScope
 import ej.mod.*
 import javafx.geometry.Side
 import javafx.scene.control.TreeItem
@@ -50,8 +50,11 @@ class ModView: AModView() {
 	
 	fun selectModEntry(e:ModTreeNode?) = when (e) {
 			null -> null
-			is ModTreeNode.RootNode -> ModOverviewFragment().root
-			is ModTreeNode.MonsterNode -> MonsterView(MonsterViewModel(modVM,e.monster)).root
+			is ModTreeNode.RootNode -> ModOverviewPage().root
+			is ModTreeNode.MonsterNode -> {
+				val monsterScope = MonsterScope(modVM, e.monster)
+				find<MonsterPage>(monsterScope).root
+			}
 			is ModTreeNode.MonsterListNode -> VBox().apply { text("TODO")} // TODO
 			is ModTreeNode.StoryNode -> e.story.let { story ->
 				when(story) {

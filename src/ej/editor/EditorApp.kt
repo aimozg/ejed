@@ -16,13 +16,8 @@ import java.io.PrintStream
  */
 
 
-abstract class AModFragment(title: String? = null) : Fragment(title) {
-	val controller: EditorController by inject()
-	val modVM get() = controller.modVM
-}
-
 abstract class AModView (title: String? = "EJEd"): View(title) {
-	val controller: EditorController by inject()
+	val controller: EditorController by inject(DefaultScope)
 	val modVM get() = controller.modVM
 }
 

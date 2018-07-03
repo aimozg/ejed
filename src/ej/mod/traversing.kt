@@ -61,6 +61,12 @@ abstract class XModVisitor {
 		visitAnyNode(x)
 		visitAllMonsters(x.monsters)
 		visitAllStatements(x.content)
+		// TODO hooks, scripts
+	}
+	open fun visitMonster(x:MonsterData) {
+		visitAnyNode(x)
+		x.desc?.content?.let { visitAllStatements(it) }
+		// TODO scripts
 	}
 	//// utils
 	open fun<T:ModDataNode> visitAllNodes(nodes:List<T>) {
@@ -105,6 +111,7 @@ fun ModDataNode.visit(visitor:XModVisitor) {
 		
 		// Non-statements
 		is ModData -> visitor.visitMod(this)
+		is MonsterData -> visitor.visitMonster(this)
 		else -> {
 			println("[WARN] Generic node ${this.javaClass}")
 			visitor.visitAnyNode(this)
