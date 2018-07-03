@@ -83,6 +83,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 			XmlElementRef(name = "set", type = XsSet::class),
 			XmlElementRef(name = "output", type = XsOutput::class),
 			XmlElementRef(name = "lib", type = XcLib::class),
+			XmlElementRef(name = "text", type = XcNamedText::class),
 			XmlElementRef(name = "if", type = XlIf::class),
 			XmlElementRef(name = "else", type = XlElse::class),
 			XmlElementRef(name = "elseif", type = XlElseIf::class),
@@ -271,7 +272,7 @@ class XcStyledText(text:String,style:Style=Style()): XStatement {
 			)
 		}
 		companion object {
-			val STYLE_REGEX = Regex("(b?)(i?)(?:c([^;]++);)?")
+			val STYLE_REGEX = Regex("^(b?)(i?)(?:c([^;]++);)?$")
 		}
 	}
 	
@@ -385,6 +386,7 @@ class XcScene : XContentContainer("scene"), StoryStmt {
 	override fun attrsString() = "name='$name'"
 }
 
+@XmlRootElement(name="text")
 class XcNamedText : XContentContainer("text"), StoryStmt {
 	@get:XmlAttribute
 	override var name: String = ""

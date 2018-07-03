@@ -55,6 +55,19 @@ fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
 		
 
 		is XsOutput -> Label("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
+		is XsSet -> Label().apply{
+			addClass(Styles.xcommand)
+			val s:String = if (stmt.inobj != null) {
+				"property '${stmt.varname}' of ${stmt.inobj}"
+			} else {
+				"variable '${stmt.varname}'"
+			}
+			text = when (stmt.op) {
+				"add", "+", "+=" -> "Add ${stmt.value} to $s"
+				null, "set", "=" -> "Set ${stmt.value} to $s"
+				else -> "Apply ${stmt.op}${stmt.value} to $s"
+			}
+		}
 		is XsDisplay -> Label("Display: ${stmt.ref}").addClass(Styles.xcommand)
 		is XsBattle ->
 			Label(
@@ -62,6 +75,7 @@ fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
 			).addClass(Styles.xcommand)
 		
 		is XcLib -> Label("<lib ${stmt.name}>").addClass(Styles.xcomment)
+		is XcNamedText -> Label("<text ${stmt.name}>").addClass(Styles.xcomment)
 
 		else -> Label("<Unknown/TODO> " + stmt.toSourceString().squeezeWs()).addClass(Styles.xcommand)
 	}
@@ -80,6 +94,7 @@ open class StatementTreeView : TreeView<XStatement>() {
 			val stmt = it.value
 			when (stmt) {
 				null -> if (it == fakeRoot) contents else emptyList()
+				is XcLib, is XcNamedText -> emptyList()
 				is XContentContainer -> stmt.content
 				else -> emptyList()
 			}

@@ -3,6 +3,7 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -100,6 +101,7 @@ private val cachedWebView = AtomicReference<WebView?>(null)
 open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	init {
 		addClass(Styles.xstmtEditor)
+		alignment = Pos.BASELINE_LEFT
 		hgrow = Priority.ALWAYS
 	}
 	class ForText(stmt:XcStyledText) : StmtEditorBody<XcStyledText>(stmt) {
@@ -139,7 +141,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 			label("Property ")
 			textfield(stmt.varname)
 			checkbox("in object") {
-				isDisabled = stmt.inobj.isNullOrBlank()
+				isDisable = stmt.inobj.isNullOrBlank()
 			}
 			when (stmt.op) {
 				null, "=", "assign" -> label("set to")
