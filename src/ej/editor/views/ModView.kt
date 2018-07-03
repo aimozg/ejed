@@ -3,9 +3,11 @@ package ej.editor.views
 import ej.editor.AModView
 import ej.editor.ModViewModel
 import ej.editor.MonsterScope
+import ej.editor.utils.onChangeAndNow
 import ej.mod.*
 import javafx.geometry.Side
 import javafx.scene.control.TreeItem
+import javafx.scene.control.TreeView
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
@@ -47,6 +49,7 @@ class ModView: AModView() {
 			vgrow = Priority.ALWAYS
 		}
 	}
+	val tree = TreeView<ModTreeNode>()
 	
 	fun selectModEntry(e:ModTreeNode?) = when (e) {
 			null -> null
@@ -73,10 +76,7 @@ class ModView: AModView() {
 		val main = this
 		left = drawer(Side.LEFT) {
 			item("Mod contents") {
-				treeview<ModTreeNode> {
-					root = TreeItem(ModTreeNode.RootNode(modVM))
-					populate { it.value.population() }
-					root.expandTo(4)
+				tree.attachTo(this) {
 					onUserSelect {
 						main.center = selectModEntry(it)
 					}
@@ -86,4 +86,18 @@ class ModView: AModView() {
 		}
 	}
 	
+	private fun TreeView<ModTreeNode>.repopulate() {
+		root = TreeItem(ModTreeNode.RootNode(modVM))
+		populate { it.value.population() }
+		root.expandTo(4)
+		selectionModel.select(root)
+	}
+	
+	init {
+		controller.modProperty.onChangeAndNow {
+			if (it != null) {
+				tree.repopulate()
+			}
+		}
+	}
 }
