@@ -8,6 +8,7 @@ import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import javafx.scene.layout.VBox
 import javafx.scene.web.WebView
 import tornadofx.*
 import java.util.concurrent.atomic.AtomicReference
@@ -16,42 +17,6 @@ import java.util.concurrent.atomic.AtomicReference
  * Created by aimozg on 29.06.2018.
  * Confidential until published on GitHub
  */
-
-class TextEditorView : View("Text Editor") {
-	lateinit var editor: XStatementEditor
-	val contentProperty = SimpleObjectProperty<XContentContainer?>(null)
-	override val root = vbox {
-		prefWidth = 800.0
-		prefHeight = 600.0
-		editor = XStatementEditor(contentProperty.value)
-		this += editor
-	}
-	init {
-		contentProperty.onChange {
-			editor.removeFromParent()
-			editor = XStatementEditor(it)
-			root += editor
-		}
-	}
-}
-
-class XStatementEditorContainer(stmt:XStatement) : XStatementEditor(stmt) {
-	val currentStatementProperty = SimpleObjectProperty<XStatementEditor?>(null)
-	init {
-		currentStatementProperty.addListener { _, oldValue, newValue ->
-			if (oldValue != newValue) {
-				oldValue?.markSelected(false)
-				newValue?.markSelected(true)
-			}
-		}
-		sceneProperty().onChange {
-			it?.focusOwnerProperty()?.onChange { focusOwner ->
-				val newStmt = focusOwner?.findParentOfType(XStatementEditor::class)
-				currentStatementProperty.value = newStmt
-			}
-		}
-	}
-}
 
 open class XStatementEditor(val parentStmt: XStatement?, val stmt: XStatement?, val depth:Int) : HBox() {
 	constructor(stmt:XStatement?) : this(null,stmt,0)
@@ -106,22 +71,16 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	}
 	class ForText(stmt:XcStyledText) : StmtEditorBody<XcStyledText>(stmt) {
 		init {
-			/*
-			textarea {
-				hgrow = Priority.ALWAYS
-				text = stmt.textContent // TODO runs
-				isWrapText = true
-				stretchOnFocus(3)
-			}
-			*/
 			val wv = synchronized(Companion) {
 				cachedWebView.getAndSet(null) ?: WebView().apply {
 					sceneProperty().onChange {
 						if (it == null) cachedWebView.compareAndSet(null, this)
 					}
+					/*
 					engine.documentProperty().onChange {
 						//println(engine.executeScript("document.head.outerHTML+' '+document.body.outerHTML"))
 					}
+					*/
 				}
 			}
 			add(wv)
@@ -175,27 +134,27 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 				is XmlElementB,
 				is XmlElementI,
 				is XmlElementFont ->
-				TODO("This should not happen (encountered ${stmt.javaClass} $stmt)")
+				kotlin.error("This should not happen (encountered ${stmt.javaClass} $stmt)")
 
 				is XsDisplay -> DisplayStmt(stmt)
 				is XsSet -> SetStmt(stmt)
 				is XsOutput -> OutputStmt(stmt)
-				is XsMenu -> TODO("MenuStmt(stmt)")
-				is XsButton -> TODO("ButtonStmt(stmt)")
-				is XsButtonHint -> TODO("ButtonHintStmt(stmt)")
-				is XsNext -> TODO("NextStmt(stmt)")
-				is XsBattle -> TODO("BattleStmt(stmt)")
+				is XsMenu -> VBox().apply { label("TODO MenuStmt(stmt)") }
+				is XsButton -> VBox().apply { label("TODO ButtonStmt(stmt)") }
+				is XsButtonHint -> VBox().apply { label("TODO ButtonHintStmt(stmt)") }
+				is XsNext -> VBox().apply { label("TODO NextStmt(stmt)") }
+				is XsBattle -> VBox().apply { label("TODO BattleStmt(stmt)") }
 				
 				is XlIf -> IfStmt(stmt)
-				is XlElse -> TODO("ElseStmt(stmt)")
-				is XlElseIf -> TODO("ElseIfStmt(stmt)")
-				is XlSwitch -> TODO("SwitchStmt(stmt)")
+				is XlElse -> VBox().apply { label("TODO ElseStmt(stmt)") }
+				is XlElseIf -> VBox().apply { label("TODO ElseIfStmt(stmt)") }
+				is XlSwitch -> VBox().apply { label("TODO SwitchStmt(stmt)") }
 				
-				is XcLib -> Label("Text library ${stmt.name}")
+				is XcLib -> VBox().apply { label("Text library ${stmt.name}") }
 				is XcStyledText -> ForText(stmt)
 				
-				is MonsterData.MonsterDesc -> Label("<Monster Description>")
-				else -> Label("<unknown ${stmt.javaClass}>")
+				is MonsterData.MonsterDesc -> VBox().apply { label("<Monster Description>") }
+				else -> VBox().apply { label("<unknown ${stmt.javaClass}>") }
 			}
 		}
 	}

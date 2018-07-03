@@ -1,8 +1,9 @@
 package ej.editor.views
 
 import ej.editor.Styles
-import ej.editor.utils.onChangeAndNow
+import ej.editor.utils.onChangeWeak
 import ej.mod.*
+import ej.utils.addToList
 import ej.utils.affixNonEmpty
 import ej.utils.squeezeWs
 import javafx.beans.property.SimpleObjectProperty
@@ -13,7 +14,6 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
-import javafx.scene.text.TextFlow
 import tornadofx.*
 
 /*
@@ -26,31 +26,27 @@ fun statementTreeGraphic(tree:StatementTreeView, stmt: XStatement): Region {
 		is XlIf -> Label("If: ${stmt.test}").addClass(Styles.xlogic)
 		is XlElse -> Label("Else:").addClass(Styles.xlogic)
 		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
-//		is XcTextNode -> Label(stmt.content).addClass(Styles.xtext)
 		is XcStyledText -> VBox().apply {
 			val g = this
-			val flow = TextFlow().apply {
+			val fnExpanded = tree.expandedNodesProperty.toBinding()
+			val fnCollapsed = fnExpanded.not()
+			textflow {
 				prefWidthProperty().bind(g.widthProperty())
 				maxWidthProperty().bind(g.widthProperty())
-//				prefWidth = Region.USE_COMPUTED_SIZE
-//				minWidth = Region.USE_COMPUTED_SIZE
 				for (run in stmt.runs) {
 					text(run.content) {
 						style = run.style.toCss()
 						addClass(Styles.xtext)
 					}
 				}
+				hiddenWhen(fnCollapsed)
+				managedWhen(fnExpanded)
 			}
-			val label = Label(stmt.textContent.replace("\n"," ")).addClass(Styles.xtext)
-			tree.expandedNodesProperty.onChangeAndNow {
-				if (it == true) {
-					label.removeFromParent()
-					flow.attachTo(this)
-				} else {
-					flow.removeFromParent()
-					label.attachTo(this)
-				}
-			}
+			label(stmt.textContent.replace("\n"," ")) {
+						addClass(Styles.xtext)
+						hiddenWhen(fnExpanded)
+						managedWhen(fnCollapsed)
+					}
 		}
 		
 
@@ -126,10 +122,6 @@ open class StatementTreeView : TreeView<XStatement>() {
 		contentsProperty.onChange {
 			repopulate()
 		}
-		/*
-		expandedNodesProperty.onChange {
-			if (it == true) addClass(Styles.treeExpanded) else removeClass(Styles.treeExpanded)
-		}*/
 	}
 }
 
@@ -140,6 +132,7 @@ open class XStatementTreeWithEditor : VBox() {
 	val contentsProperty = tree.contentsProperty
 	var contents by contentsProperty
 	private var expandButton by singleAssign<ToggleButton>()
+	private val weakListeners = ArrayList<Any>()
 	
 	init {
 		hbox {
@@ -148,16 +141,16 @@ open class XStatementTreeWithEditor : VBox() {
 				text = "Expand"
 			}
 		}
-		this += splitPane.apply {
+		splitPane.attachTo(this) {
 			orientation = Orientation.VERTICAL
 			vgrow = Priority.ALWAYS
 			items += tree.apply {
 				vgrow = Priority.SOMETIMES
-				selectionModel.selectedItemProperty().onChange { treeItem ->
+				selectionModel.selectedItemProperty().onChangeWeak { treeItem ->
 					splitPane.items -= editor
 					val value = treeItem?.value
 					if (value != null) splitPane.items +=  StmtEditorBody.bodyFor(value).also { editor = it }
-				}
+				}.addToList(weakListeners)
 				expandButton.isSelected = expandedNodes
 				expandedNodesProperty.bind(expandButton.selectedProperty())
 			}

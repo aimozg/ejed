@@ -22,7 +22,6 @@ abstract class AModFragment(title: String? = null) : Fragment(title) {
 }
 
 abstract class AModView (title: String? = "EJEd"): View(title) {
-	
 	val controller: EditorController by inject()
 	val modVM get() = controller.modVM
 }

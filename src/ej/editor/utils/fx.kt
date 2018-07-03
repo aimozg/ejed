@@ -1,7 +1,9 @@
 package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.beans.value.WeakChangeListener
 import javafx.scene.Node
 import javafx.scene.control.TextArea
 import javafx.scene.control.TreeItem
@@ -46,19 +48,23 @@ fun <T:Fragment> T.initialized():T {
 }
 
 fun TextArea.stretchOnFocus(max:Int=1) {
-	fun fit(focused:Boolean) {
+	var rc = maxOf(1, minOf(max, text.count { it=='\n' }+1))
+	fun fit(focused:Boolean):Int {
 		val text = lookup(".text") as? Text
-		prefRowCount = if (text == null) max else {
+		return if (text == null) max else {
 			val th = text.boundsInLocal.height
 			val fm = PrismFontLoader.getInstance().getFontMetrics(text.font)
 			val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
-			val rc = Math.ceil(th / fsz).toInt()
+			rc = Math.ceil(th / fsz).toInt()
 			if (!focused) minOf(max, rc) else rc
 		}
 	}
-	prefRowCount = maxOf(1, minOf(max, text.count { it=='\n' }+1))
-	focusedProperty().onChange { fit(it) }
-	textProperty().onChange { if (isFocused) fit(true) }
+	prefRowCount = rc
+	prefRowCountProperty().bind(
+			focusedProperty().integerBinding(textProperty()) {
+				if (it != null) fit(it) else rc
+			}
+	)
 }
 
 @Suppress("DEPRECATION")
@@ -88,7 +94,19 @@ inline fun<T> TreeItem<T>.traverse(visitor:(TreeItem<T>)->Boolean) {
 	}
 }
 
+
+fun <T> ObservableValue<T>.onChangeAndNowWeak(op: (T?) -> Unit): ChangeListener<T> {
+	op(value)
+	val listener = ChangeListener<T> { _, _, newValue -> op(newValue) }
+	addListener(WeakChangeListener(listener))
+	return listener
+}
 fun <T> ObservableValue<T>.onChangeAndNow(op: (T?) -> Unit) {
 	op(value)
-	addListener { _, _, newValue -> op(newValue) }
+	addListener{ _, _, newValue -> op(newValue) }
+}
+fun <T> ObservableValue<T>.onChangeWeak(op: (T?) -> Unit): ChangeListener<T> {
+	val listener = ChangeListener<T>{ _, _, newValue -> op(newValue) }
+	addListener(WeakChangeListener(listener))
+	return listener
 }
