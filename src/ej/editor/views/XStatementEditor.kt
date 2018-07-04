@@ -23,7 +23,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 		alignment = Pos.BASELINE_LEFT
 		hgrow = Priority.ALWAYS
 	}
-	class ForText(stmt:XcUnstyledText) : StmtEditorBody<XcUnstyledText>(stmt) {
+	class ForText(stmt:XcText) : StmtEditorBody<XcText>(stmt) {
 		init {
 			synchronized(Companion) {
 				cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
@@ -95,7 +95,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 				is XlSwitch -> VBox().apply { label("TODO SwitchStmt(stmt)") }
 				
 				is XcLib -> VBox().apply { label("Text library ${stmt.name}") }
-				is XcUnstyledText -> ForText(stmt)
+				is XcText -> ForText(stmt)
 				
 				is MonsterData.MonsterDesc -> VBox().apply { label("<Monster Description>") }
 				else -> VBox().apply { label("<unknown ${stmt.javaClass}>") }

@@ -1,7 +1,7 @@
 package ej.editor.views
 
 import ej.editor.Styles
-import ej.mod.XcUnstyledText
+import ej.mod.XcText
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -10,7 +10,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-class TextNodeLabel(tree:StatementTree, stmt: XcUnstyledText): VBox() {
+class TextNodeLabel(tree:StatementTree, stmt: XcText): VBox() {
 	init {
 		val g = this
 		val fnExpanded = tree.expandedNodesProperty.toBinding()

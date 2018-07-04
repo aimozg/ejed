@@ -87,7 +87,7 @@ class ModData : ModDataNode {
 }
 
 class StylingVisitor : ReplacingVisitor() {
-	override fun visitText(x: XcUnstyledText) {
+	override fun visitText(x: XcText) {
 		if (x.isEmpty()) remove(x)
 	}
 	
@@ -96,13 +96,13 @@ class StylingVisitor : ReplacingVisitor() {
 		var merged = false
 		for ((i,stmt) in x.content.withIndex()) {
 			val prev = if (i==0) null else x.content[i-1]
-			if (prev is XcUnstyledText && stmt is XcUnstyledText) {
+			if (prev is XcText && stmt is XcText) {
 				stmt.text = prev.text + stmt.text
 				prev.text = ""
 				merged = true
 			}
 		}
-		if (merged) x.content.removeAll { it is XcUnstyledText && it.isEmpty()}
+		if (merged) x.content.removeAll { it is XcText && it.isEmpty()}
 	}
 }
 

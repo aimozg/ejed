@@ -19,15 +19,15 @@ interface XStatement : ModDataNode {
 fun XStatement.toSourceString(): String =
 		tagOpen() + innerXML() + tagClose()
 internal fun XStatement.tagOpen() =
-		if (this is XcUnstyledText) "" else
+		if (this is XcText) "" else
 		"<$tagName" + attrsString().affixNonEmpty(" ") + (if (emptyTag) "/>" else ">")
 internal fun XStatement.tagClose() =
-		if (this is XcUnstyledText || emptyTag) "" else "</$tagName>"
+		if (this is XcText || emptyTag) "" else "</$tagName>"
 
 internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 	when (it) {
 		is XStatement -> it.toSourceString()
-		is XcUnstyledText -> it.text
+		is XcText -> it.text
 		is String -> it
 		else -> it.toString()
 	}
@@ -69,7 +69,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	override val emptyTag: Boolean = false
 	
 	@XmlElementRefs(
-			XmlElementRef(name = "t", type = XcUnstyledText::class),
+			XmlElementRef(name = "t", type = XcText::class),
 			XmlElementRef(name = "display", type = XsDisplay::class),
 			XmlElementRef(name = "set", type = XsSet::class),
 			XmlElementRef(name = "output", type = XsOutput::class),
@@ -96,7 +96,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 		content.clear()
 		content.addAll(contentRaw.map {
 					it as? XStatement
-					?: XcUnstyledText(it.toString())
+					?: XcText(it.toString())
 		})
 		contentRaw.clear()
 		trimMode?.let { trimMode ->
@@ -108,7 +108,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	private fun beforeMarshal(marshaller: Marshaller) {
 		trimMode = null
 		contentRaw.clear()
-//		contentRaw.addAll(content.map { (it as? XcUnstyledText)?.text ?: it })
+//		contentRaw.addAll(content.map { (it as? XcText)?.text ?: it })
 		contentRaw.addAll(content)
 	}
 	
@@ -127,17 +127,17 @@ class TrimmingVisitor(val trimMode: TrimMode) : XModVisitor() {
 		if (x.trimMode == null) super.visitAnyContentContainer(x)
 	}
 	
-	override fun visitText(x: XcUnstyledText) {
+	override fun visitText(x: XcText) {
 		x.text = (x.trimMode ?: trimMode).applyTo(x.text)
 	}
 }
 
 
 @XmlRootElement(name = "t")
-class XcUnstyledText(text:String):XStatement {
+class XcText(text:String):XStatement {
 	@get:XmlValue
 	var text:String by property(text)
-	fun textProperty() = getProperty(XcUnstyledText::text)
+	fun textProperty() = getProperty(XcText::text)
 	
 	@get:XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit

@@ -17,7 +17,7 @@ abstract class XModVisitor {
 		visitAllStatements(x.content)
 	}
 	//// specifics
-	open fun visitText(x:XcUnstyledText){
+	open fun visitText(x:XcText){
 		visitAnyStmt(x)
 	}
 	open fun visitLib(x:XcLib) {
@@ -77,7 +77,7 @@ fun ModDataNode.visit(visitor:XModVisitor) {
 		is XcLib -> visitor.visitLib(this)
 		is XcNamedText -> visitor.visitNamedText(this)
 		is XcScene -> visitor.visitScene(this)
-		is XcUnstyledText -> visitor.visitText(this)
+		is XcText -> visitor.visitText(this)
 		
 		is XsOutput -> visitor.visitOutput(this)
 		is XsDisplay -> visitor.visitDisplay(this)
