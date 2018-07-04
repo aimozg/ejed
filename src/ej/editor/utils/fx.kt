@@ -4,9 +4,12 @@ import com.sun.javafx.font.PrismFontLoader
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.beans.value.WeakChangeListener
+import javafx.collections.ObservableList
+import javafx.collections.transformation.FilteredList
 import javafx.scene.Node
 import javafx.scene.control.TextArea
 import javafx.scene.control.TreeItem
+import javafx.scene.control.TreeView
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.scene.text.Text
@@ -83,14 +86,15 @@ inline fun<T> TreeItem<T>.traverseAll(visitor:(TreeItem<T>)->Unit) {
 inline fun<T> TreeItem<T>.traverse(visitor:(TreeItem<T>)->Boolean) {
 	var e:TreeItem<T>? = this
 	while(e != null) {
+		var next = e.nextSibling()
 		if (visitor(e)) {
-			e = e.children.firstOrNull() ?: e
+			next = e.children.firstOrNull() ?: next
 		}
-		var ie = e.nextSibling()
-		while (ie == null && e != null) {
+		while (next == null && e != null) {
 			e = e.parent
-			ie = e.nextSibling()
+			next = e?.nextSibling()
 		}
+		e = next
 	}
 }
 
@@ -109,4 +113,35 @@ fun <T> ObservableValue<T>.onChangeWeak(op: (T?) -> Unit): ChangeListener<T> {
 	val listener = ChangeListener<T>{ _, _, newValue -> op(newValue) }
 	addListener(WeakChangeListener(listener))
 	return listener
+}
+
+fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> {
+	val source = this
+	return ArrayList<O>().observable().apply {
+		bind(source,transform)
+	}
+}
+
+@Suppress("UNCHECKED_CAST")
+inline fun <reified B> ObservableList<*>.filteredIsInstance():FilteredList<B> {
+	return filtered { it is B } as FilteredList<B>
+}
+
+fun<T> TreeView<T>.itemForValue(value:T):TreeItem<T>? {
+	var result:TreeItem<T>? = null
+	root.traverse {
+		if (it.value == value) {
+			result = it
+			false
+		} else true
+	}
+	return result
+}
+fun<T> TreeView<T>.findItem(filter:(T)->Boolean):TreeItem<T>? {
+	root.traverseAll {
+		if (filter(it.value)) {
+			return it
+		}
+	}
+	return null
 }

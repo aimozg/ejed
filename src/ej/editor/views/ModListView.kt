@@ -1,6 +1,6 @@
 package ej.editor.views
 
-import ej.editor.AModView
+import ej.editor.EditorController
 import javafx.geometry.Pos
 import javafx.scene.control.ListView
 import javafx.scene.layout.Priority
@@ -8,7 +8,8 @@ import tornadofx.*
 import java.io.File
 
 
-class ModListView: AModView() {
+class ModListView: View("EJEd") {
+	val controller: EditorController by inject(DefaultScope)
 	
 	var fileList: ListView<File> by singleAssign()
 	override val root = vbox {

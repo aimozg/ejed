@@ -1,9 +1,11 @@
 package ej.mod
 
 import ej.editor.utils.escapeXml
+import ej.editor.utils.filteredIsInstance
 import ej.utils.affixNonEmpty
 import ej.utils.crop
 import javafx.beans.property.ObjectProperty
+import javafx.collections.ObservableList
 import tornadofx.*
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
@@ -35,7 +37,7 @@ internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 }
 
 interface StoryContainer {
-	val lib: List<StoryStmt>
+	val lib: ObservableList<out StoryStmt>
 }
 interface StoryStmt : XStatement, StoryContainer {
 	val name: String
@@ -90,7 +92,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement, Sto
 	
 	val content = ArrayList<XStatement>().observable()
 	
-	override val lib get() = content.filterIsInstance<StoryStmt>()
+	override val lib = content.filteredIsInstance<StoryStmt>()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
@@ -164,7 +166,7 @@ class XcLib : StoryStmt {
 			XmlElement(name = "scene", type = XcScene::class),
 			XmlElement(name = "text", type = XcNamedText::class)
 	)
-	override val lib: ArrayList<StoryStmt> = ArrayList()
+	override val lib = ArrayList<StoryStmt>().observable()
 
 	@XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
@@ -204,7 +206,7 @@ class XcNamedText : XContentContainer("text"), StoryStmt {
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcNamedText::name)
 	
-	override val lib get() = content.filterIsInstance<StoryStmt>()
+	override val lib = content.filteredIsInstance<StoryStmt>()
 	
 	override fun attrsString() = "name='$name'"
 }

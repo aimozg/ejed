@@ -4,7 +4,6 @@ import ej.utils.ValidateElements
 import ej.utils.ValidateNonBlank
 import ej.utils.classValidatorFor
 import javafx.beans.property.SimpleIntegerProperty
-import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 import java.io.File
@@ -35,34 +34,33 @@ class ModData : ModDataNode {
 	@get:XmlAttribute
 	var version by versionProperty
 	
-	val stateVarsProperty = SimpleObjectProperty<MutableList<StateVar>>(ArrayList())
 	@ValidateElements(locator="name")
 	@get:XmlElementWrapper(name="state")
 	@get:XmlElement(name="var")
-	var stateVars by stateVarsProperty
+	val stateVars = ArrayList<StateVar>().observable()
 	
 	@get:XmlElement(name="hook")
 	@ValidateElements()
-	val hooks:MutableList<ModHookData> = ArrayList()
+	val hooks = ArrayList<ModHookData>().observable()
 	
 	@get:XmlElement(name="script")
 	@ValidateElements()
-	val scripts:MutableList<ModScript> = ArrayList()
+	val scripts = ArrayList<ModScript>().observable()
 	
 	@get:XmlElement(name="monster")
 	@ValidateElements(locator="id")
-	val monsters:ArrayList<MonsterData> = ArrayList()
+	val monsters = ArrayList<MonsterData>().observable()
 	
 	@get:XmlElements(
 			XmlElement(name="lib",type=XcLib::class),
 			XmlElement(name="scene",type=XcScene::class),
 			XmlElement(name="text",type=XcNamedText::class)
 	)
-	val content:ArrayList<StoryStmt> = ArrayList()
+	val content = ArrayList<StoryStmt>().observable()
 	
 	@get:XmlElement(name="encounter")
 	@ValidateElements
-	val encounters:MutableList<Encounter> = ArrayList()
+	val encounters = ArrayList<Encounter>().observable()
 	
 	override fun toString(): String {
 		return "<mod name='$name' version='$version'>" +
