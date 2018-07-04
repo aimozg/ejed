@@ -121,7 +121,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	class IfStmt(stmt:XlIf) : StmtEditorBody<XlIf>(stmt) {
 		init {
 			label("If condition ")
-			textfield(stmt.test)
+			textfield(stmt.testProperty())
 			label(" is true")
 			// TODO else, elseif
 		}

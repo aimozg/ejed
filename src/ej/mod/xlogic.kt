@@ -1,5 +1,6 @@
 package ej.mod
 
+import tornadofx.*
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
 
@@ -7,7 +8,8 @@ import javax.xml.bind.annotation.XmlRootElement
 class XlIf : XContentContainer("if"), XStatement {
 	
 	@get:XmlAttribute
-	var test:String = ""
+	var test: String by property("")
+	fun testProperty() = getProperty(XlIf::test)
 	
 	override fun attrsString() = "test='$test'"
 }

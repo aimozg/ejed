@@ -23,7 +23,12 @@ import tornadofx.*
 
 fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 	return when (stmt) {
-		is XlIf -> Label("If: ${stmt.test}").addClass(Styles.xlogic)
+		is XlIf -> Label().apply{
+			textProperty().bind(
+					stmt.testProperty().stringBinding { "If: $it" }
+			)
+			addClass(Styles.xlogic)
+		}
 		is XlElse -> Label("Else:").addClass(Styles.xlogic)
 		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
 		is XcStyledText -> TextNodeLabel(tree,stmt)
