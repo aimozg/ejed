@@ -1,13 +1,18 @@
 package ej.editor.views
 
 import ej.editor.AModView
-import ej.editor.MonsterScope
 import ej.editor.Styles
 import ej.editor.utils.colspan
 import ej.editor.utils.smartRow
+import ej.mod.ModData
+import ej.mod.MonsterData
 import javafx.geometry.Pos
+import javafx.scene.layout.Priority
 import javafx.util.converter.IntegerStringConverter
 import tornadofx.*
+
+class MonsterScope(val mod: ModData, val monster: MonsterData):Scope() {
+}
 
 abstract class AMonsterView(title:String?=null) : AModView(title) {
 	override val scope = super.scope as MonsterScope
@@ -135,8 +140,10 @@ class MonsterDescView():AMonsterView("Description") {
 	val editor = XStatementTreeWithEditor()
 	
 	override val root = vbox {
-		add(editor)
-		editor.contents = monster.desc.content
+		editor.attachTo(this) {
+			contents = monster.desc.content
+			vgrow = Priority.SOMETIMES
+		}
 	}
 }
 

@@ -60,6 +60,10 @@ class ModData : ModDataNode {
 	)
 	val content:ArrayList<StoryStmt> = ArrayList()
 	
+	@get:XmlElement(name="encounter")
+	@ValidateElements
+	val encounters:MutableList<Encounter> = ArrayList()
+	
 	override fun toString(): String {
 		return "<mod name='$name' version='$version'>" +
 				" <state> ${stateVars.joinToString(" ")} </state>"+

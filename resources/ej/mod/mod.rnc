@@ -31,7 +31,7 @@ hook = element hook {
     ATrim?,
     content*
 }
-exportable = monster | script | storynode
+exportable = monster | script | storynode | encounter
 storynode = lib | scene | Text
 lib = element lib {
     attribute name { text },
@@ -48,6 +48,23 @@ scene = element scene {
     ATrim?,
     content*,
     scene-fin
+}
+
+# #############################################
+# encounter
+encounter = element encounter {
+    attribute pool { text }
+    & attribute name { text }
+    & element condition {
+        expression
+    }?
+    & element chance {
+        expression
+    }?
+    & element scene {
+        content*,
+        scene-fin
+    }
 }
 
 # #############################################
@@ -264,24 +281,12 @@ scenefin-else = (
 # #############################################
 # textual content
 content =
-    text | b | i | font | xcc-statement | xxc-logic
-b = element b {
+    text | t | xcc-statement | xxc-logic
+t = element t {
     ATrim?,
-    content*
+    text
 }
-i = element i {
-    ATrim?,
-    content*
-}
-font = element font {
-    attribute color { text }?,
-    ATrim?,
-    content*
-}
-#xcc-named-content = Text | String | lib | story | macro | extend-story | zone | extend-zone
-xcc-statement = display | set | output | lib # | xcc-named-content | Include | menu
-#namedBlock = attribute name { text }?, content*
-#String = element string { namedBlock }
+xcc-statement = display | set | output | lib
 display = element display {
     attribute ref { text },
     empty

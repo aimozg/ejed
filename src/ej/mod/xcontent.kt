@@ -34,9 +34,11 @@ internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 	}
 }
 
-interface StoryStmt : XStatement {
-	val name: String
+interface StoryContainer {
 	val lib: List<StoryStmt>
+}
+interface StoryStmt : XStatement, StoryContainer {
+	val name: String
 	fun nameProperty(): ObjectProperty<String>
 }
 
@@ -62,7 +64,7 @@ enum class TrimMode {
 	}
 }
 
-abstract class XContentContainer(override val tagName: String) : XStatement {
+abstract class XContentContainer(override val tagName: String) : XStatement, StoryContainer {
 	override val emptyTag: Boolean = false
 	
 	@XmlElementRefs(
@@ -87,6 +89,8 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	internal var trimMode: TrimMode? = null // inherit
 	
 	val content = ArrayList<XStatement>().observable()
+	
+	override val lib get() = content.filterIsInstance<StoryStmt>()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
@@ -190,8 +194,6 @@ class XcScene : XContentContainer("scene"), StoryStmt {
 	@get:XmlAttribute
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcScene::name)
-	
-	override val lib get() = content.filterIsInstance<StoryStmt>()
 	
 	override fun attrsString() = "name='$name'"
 }
