@@ -21,7 +21,6 @@ class EditorController : Controller() {
 	
 	val modProperty = SimpleObjectProperty<ModData>(null)
 	var mod: ModData? by modProperty
-	val modVM = ModViewModel(modProperty)
 	
 	fun loadModList() {
 		File(modDir).takeIf{it.exists() && it.isDirectory}?.let { dir ->

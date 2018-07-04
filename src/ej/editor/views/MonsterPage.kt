@@ -3,7 +3,6 @@ package ej.editor.views
 import ej.editor.AModView
 import ej.editor.MonsterScope
 import ej.editor.Styles
-import ej.editor.isDifferent
 import ej.editor.utils.colspan
 import ej.editor.utils.smartRow
 import javafx.geometry.Pos
@@ -12,22 +11,10 @@ import tornadofx.*
 
 abstract class AMonsterView(title:String?=null) : AModView(title) {
 	override val scope = super.scope as MonsterScope
-	val monsterVM get() = scope.monsterVM
+	val monster get() = scope.monster
 }
 
 class MonsterPage(): AMonsterView() {
-	
-	
-	override fun onSave() {
-		for (property in monsterVM.propertyMap.keys) {
-			if (property.isDifferent) println("${property.name} is different = ${property.value}")
-		}
-		println("---")
-		println("complete:")
-		println(monsterVM.item.toXML())
-		println("as patch:")
-		println(monsterVM.toPatch()?.toXML())
-	}
 	
 	override val root = tabpane {
 		tab<MonsterBasicView>()
@@ -39,36 +26,35 @@ class MonsterPage(): AMonsterView() {
 	}
 }
 
-class MonsterBasicView():AMonsterView("Basic") {
+class MonsterBasicView:AMonsterView("Basic") {
 	override val root = vbox {
-		val vm = monsterVM
 		hbox(10) {
 			form {
 				spacing = 10.0
 				fieldset("Core") {
-					field("ID") { textfield(vm.id) }
+					field("ID") { textfield(monster.idProperty) }
 					field("Prorotype monster") {
-						textfield(vm.baseId) // TODO select from other monsters
+						textfield(monster.baseId) // TODO select from other monsters
 					}
-					field("Name") { textfield(vm.name) }
+					field("Name") { textfield(monster.name) }
 				}
 				fieldset("Grammar") {
 					field("Group") {
-						checkbox("(use plural form)", vm.plural)
+						checkbox("(use plural)", monster.pluralProperty)
 					}
-					field("Article") { textfield(vm.article) }
+					field("Article") { textfield(monster.article) }
 					label("Pronouns:")
 					field("'he'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
-						textfield(vm.pronounHe)
+						textfield(monster.pronouns.he)
 					}
 					field("'his'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
-						textfield(vm.pronounHis)
+						textfield(monster.pronouns.his)
 					}
 					field("'him'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
-						textfield(vm.pronounHim)
+						textfield(monster.pronouns.him)
 					}
 				}
 			}
@@ -85,50 +71,50 @@ class MonsterBasicView():AMonsterView("Basic") {
 						vbox {
 							colspan(2)
 							label("Level") { useMaxWidth = true }
-							textfield(vm.combat.level, IntegerStringConverter()){ prefColumnCount = 3 }
+							textfield(monster.combat.levelProperty, IntegerStringConverter()){ prefColumnCount = 3 }
 						}
 					}
 					row {
 						vbox {
 							label("STR") { useMaxWidth = true }
-							textfield(vm.combat.str, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.strProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							label("TOU") { useMaxWidth = true }
-							textfield(vm.combat.tou, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.touProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							label("SPE") { useMaxWidth = true }
-							textfield(vm.combat.spe, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.speProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							label("INT") { useMaxWidth = true }
-							textfield(vm.combat.int, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.intProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							label("WIS") { useMaxWidth = true }
-							textfield(vm.combat.wis, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.wisProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							label("LIB") { useMaxWidth = true }
-							textfield(vm.combat.lib, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.libProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 					}
 					smartRow {
 						vbox {
 							colspan(2)
 							label("Sensitivity") { useMaxWidth = true }
-							textfield(vm.combat.sen, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.senProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							colspan(2)
 							label("Corruption") { useMaxWidth = true }
-							textfield(vm.combat.cor, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.corProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 						vbox {
 							colspan(2)
 							label("Bonus HP") { useMaxWidth = true }
-							textfield(vm.combat.bonusHP, IntegerStringConverter()) { prefColumnCount = 3 }
+							textfield(monster.combat.bonusHpProperty, IntegerStringConverter()) { prefColumnCount = 3 }
 						}
 					}
 				}
@@ -150,7 +136,7 @@ class MonsterDescView():AMonsterView("Description") {
 	
 	override val root = vbox {
 		add(editor)
-		editor.contents = monsterVM.desc.value.content
+		editor.contents = monster.desc.content
 	}
 }
 

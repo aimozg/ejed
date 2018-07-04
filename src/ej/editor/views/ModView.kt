@@ -1,10 +1,11 @@
 package ej.editor.views
 
+import com.sun.javafx.binding.StringConstant
 import ej.editor.AModView
-import ej.editor.ModViewModel
 import ej.editor.MonsterScope
 import ej.editor.utils.onChangeAndNow
 import ej.mod.*
+import javafx.beans.value.ObservableValue
 import javafx.geometry.Side
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
@@ -14,31 +15,32 @@ import tornadofx.*
 
 sealed class ModTreeNode {
 	open fun population():List<ModTreeNode> = emptyList()
-	abstract val text:String
-	override fun toString() = text
-	class MonsterListNode(val modVM:ModViewModel): ModTreeNode() {
-		override fun population() = modVM.monsters.value.map { MonsterNode(it) }
-		override val text get() = "Monsters"
+	abstract val textProperty: ObservableValue<String>
+	class MonsterListNode(val mod:ModData): ModTreeNode() {
+		override fun population() = mod.monsters.map { MonsterNode(mod,it) }
+		override val textProperty = StringConstant.valueOf("Monsters")
 	}
-	class MonsterNode(val monster:MonsterData): ModTreeNode() {
-		override val text get() = monster.id ?: ""
+	class MonsterNode(val mod:ModData, val monster:MonsterData): ModTreeNode() {
+		override val textProperty = monster.idProperty.stringBinding{it?:""}
 	}
 	class StoryNode(val story:StoryStmt): ModTreeNode() {
-		override val text get() = when(story) {
-			is XcScene -> "(Scene) "
-			is XcNamedText -> "(Text) "
-			is XcLib -> "/"
-			else -> ""
-		} + story.name
+		override val textProperty = story.nameProperty().stringBinding {
+			when(story) {
+				is XcScene -> "(Scene) $it"
+				is XcNamedText -> "(Text) $it"
+				is XcLib -> "$it/"
+				else -> it
+			}
+		}
 		override fun population() = story.lib.map { StoryNode(it) }
 	}
 	class StoryListNode(val stories:List<StoryStmt>): ModTreeNode() {
-		override val text get() = "Scenes"
+		override val textProperty = StringConstant.valueOf("Scenes")
 		override fun population() = stories.map { StoryNode(it) }
 	}
-	class RootNode(val modVM:ModViewModel): ModTreeNode() {
-		override fun population() = listOf(MonsterListNode(modVM)) + StoryListNode(modVM.item.content)
-		override val text get() = modVM.item.name
+	class RootNode(val mod:ModData): ModTreeNode() {
+		override fun population() = listOf(MonsterListNode(mod)) + StoryListNode(mod.content)
+		override val textProperty = mod.nameProperty
 	}
 }
 
@@ -49,13 +51,17 @@ class ModView: AModView() {
 			vgrow = Priority.ALWAYS
 		}
 	}
-	val tree = TreeView<ModTreeNode>()
+	val tree = TreeView<ModTreeNode>().apply {
+		cellFormat {
+			textProperty().bind(it.textProperty)
+		}
+	}
 	
 	fun selectModEntry(e:ModTreeNode?) = when (e) {
 			null -> null
 			is ModTreeNode.RootNode -> ModOverviewPage().root
 			is ModTreeNode.MonsterNode -> {
-				val monsterScope = MonsterScope(modVM, e.monster)
+				val monsterScope = MonsterScope(e.mod, e.monster)
 				find<MonsterPage>(monsterScope).root
 			}
 			is ModTreeNode.MonsterListNode -> VBox().apply { text("TODO")} // TODO
@@ -87,7 +93,7 @@ class ModView: AModView() {
 	}
 	
 	private fun TreeView<ModTreeNode>.repopulate() {
-		root = TreeItem(ModTreeNode.RootNode(modVM))
+		root = TreeItem(ModTreeNode.RootNode(mod?:return))
 		populate { it.value.population() }
 		root.expandTo(4)
 		selectionModel.select(root)

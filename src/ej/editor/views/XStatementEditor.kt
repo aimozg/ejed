@@ -94,7 +94,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 				is XlElseIf -> VBox().apply { label("TODO ElseIfStmt(stmt)") }
 				is XlSwitch -> VBox().apply { label("TODO SwitchStmt(stmt)") }
 				
-				is XcLib -> VBox().apply { label("Text library ${stmt.name}") }
+				is XcLib -> VBox().apply { label(stmt.nameProperty().stringBinding{"Text library $it"}) }
 				is XcText -> ForText(stmt)
 				
 				is MonsterData.MonsterDesc -> VBox().apply { label("<Monster Description>") }

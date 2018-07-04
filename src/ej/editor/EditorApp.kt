@@ -18,7 +18,7 @@ import java.io.PrintStream
 
 abstract class AModView (title: String? = "EJEd"): View(title) {
 	val controller: EditorController by inject(DefaultScope)
-	val modVM get() = controller.modVM
+	val mod get() = controller.mod
 }
 
 class EditorView : AModView() {

@@ -56,7 +56,7 @@ abstract class XModVisitor {
 	}
 	open fun visitMonster(x:MonsterData) {
 		visitAnyNode(x)
-		x.desc?.content?.let { visitAllStatements(it) }
+		visitAllStatements(x.desc.content)
 		// TODO scripts
 	}
 	//// utils

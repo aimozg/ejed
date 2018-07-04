@@ -53,8 +53,14 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 					"Battle ${stmt.monster}" + (stmt.options.affixNonEmpty(" with options: "))
 			).addClass(Styles.xcommand)
 		
-		is XcLib -> Label("<lib ${stmt.name}>").addClass(Styles.xcomment)
-		is XcNamedText -> Label("<text ${stmt.name}>").addClass(Styles.xcomment)
+		is XcLib -> Label().apply {
+			textProperty().bind(stmt.nameProperty().stringBinding{ "<lib $it>" })
+			addClass(Styles.xcomment)
+		}
+		is XcNamedText -> Label().apply {
+			textProperty().bind(stmt.nameProperty().stringBinding{ "<text $it>" })
+			addClass(Styles.xcomment)
+		}
 
 		else -> Label("<Unknown/TODO> " + stmt.toSourceString().squeezeWs()).addClass(Styles.xcommand)
 	}

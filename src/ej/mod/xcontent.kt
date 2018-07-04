@@ -3,6 +3,7 @@ package ej.mod
 import ej.editor.utils.escapeXml
 import ej.utils.affixNonEmpty
 import ej.utils.crop
+import javafx.beans.property.ObjectProperty
 import tornadofx.*
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
@@ -36,6 +37,7 @@ internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 interface StoryStmt : XStatement {
 	val name: String
 	val lib: List<StoryStmt>
+	fun nameProperty(): ObjectProperty<String>
 }
 
 val REX_INDENT = Regex("""\n[ \t]++""")
@@ -60,11 +62,6 @@ enum class TrimMode {
 	}
 }
 
-// content =
-//    text | b | i | font | xcc-statement | xxc-logic
-// xcc-statement = display | set | output | lib # | xcc-named-content | Include | menu
-// xxc-logic = if | switch
-// scene-fin = menu | next | scenefin-if | battle
 abstract class XContentContainer(override val tagName: String) : XStatement {
 	override val emptyTag: Boolean = false
 	
@@ -155,7 +152,9 @@ class XcText(text:String):XStatement {
 @XmlRootElement(name = "lib")
 class XcLib : StoryStmt {
 	@get:XmlAttribute
-	override var name: String = ""
+	override var name by property("")
+	override fun nameProperty() = getProperty(XcLib::name)
+	
 	@get:XmlElements(
 			XmlElement(name = "lib", type = XcLib::class),
 			XmlElement(name = "scene", type = XcScene::class),
@@ -189,7 +188,8 @@ class XcLib : StoryStmt {
 @XmlRootElement(name = "scene")
 class XcScene : XContentContainer("scene"), StoryStmt {
 	@get:XmlAttribute
-	override var name: String = ""
+	override var name by property("")
+	override fun nameProperty() = getProperty(XcScene::name)
 	
 	override val lib get() = content.filterIsInstance<StoryStmt>()
 	
@@ -199,7 +199,8 @@ class XcScene : XContentContainer("scene"), StoryStmt {
 @XmlRootElement(name="text")
 class XcNamedText : XContentContainer("text"), StoryStmt {
 	@get:XmlAttribute
-	override var name: String = ""
+	override var name by property("")
+	override fun nameProperty() = getProperty(XcNamedText::name)
 	
 	override val lib get() = content.filterIsInstance<StoryStmt>()
 	

@@ -3,6 +3,7 @@ package ej.editor.utils
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.*
 
 /*
@@ -43,6 +44,7 @@ class PatchDescriptor<T:Patchable> private constructor(val klass: KClass<T>) {
 		debug(klass.simpleName)
 		for (property in klass.memberProperties) {
 			if (property.findAnnotation<PatchIgnore>() != null) continue
+			if (property.visibility != KVisibility.PUBLIC) continue
 			val type = property.returnType
 			if (property is KMutableProperty1) {
 				if (type.isSubtypeOf(Patchable::class.starProjectedType.withNullability(true))) {
@@ -155,4 +157,15 @@ fun<T:Patchable> MutableList<T>.applyPatch( src:List<T>): MutableList<T> {
 	if (src.isEmpty()) return this
 	this += src.map { it.spawnCopy() }
 	return this
+}
+fun<T:Patchable> T.hasNotNulls():Boolean {
+	val descriptor = descriptor()
+	for (property in descriptor.simpleProperties) {
+		if (property.get(this) != null) return true
+	}
+	for (property in descriptor.patchableProperties) {
+		val value = property.get(this)
+		if (value?.hasNotNulls() == true) return true
+	}
+	return false
 }

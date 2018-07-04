@@ -3,6 +3,10 @@ package ej.mod
 import ej.utils.ValidateElements
 import ej.utils.ValidateNonBlank
 import ej.utils.classValidatorFor
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import tornadofx.*
 import java.io.File
 import java.io.InputStream
 import java.io.Reader
@@ -22,31 +26,34 @@ class ModData : ModDataNode {
 	@get:XmlTransient
 	var sourceFile: File? = null
 	
+	val nameProperty = SimpleStringProperty("")
 	@ValidateNonBlank
 	@get:XmlAttribute
-	var name:String = ""
+	var name by nameProperty
 	
+	val versionProperty = SimpleIntegerProperty(0)
 	@get:XmlAttribute
-	var version:Int = 0
+	var version by versionProperty
 	
+	val stateVarsProperty = SimpleObjectProperty<MutableList<StateVar>>(ArrayList())
 	@ValidateElements(locator="name")
-	@XmlElementWrapper(name="state")
-	@XmlElement(name="var")
-	val stateVars:MutableList<StateVar> = ArrayList()
+	@get:XmlElementWrapper(name="state")
+	@get:XmlElement(name="var")
+	var stateVars by stateVarsProperty
 	
-	@XmlElement(name="hook")
+	@get:XmlElement(name="hook")
 	@ValidateElements()
 	val hooks:MutableList<ModHookData> = ArrayList()
 	
-	@XmlElement(name="script")
+	@get:XmlElement(name="script")
 	@ValidateElements()
 	val scripts:MutableList<ModScript> = ArrayList()
 	
-	@XmlElement(name="monster")
+	@get:XmlElement(name="monster")
 	@ValidateElements(locator="id")
 	val monsters:ArrayList<MonsterData> = ArrayList()
 	
-	@XmlElements(
+	@get:XmlElements(
 			XmlElement(name="lib",type=XcLib::class),
 			XmlElement(name="scene",type=XcScene::class),
 			XmlElement(name="text",type=XcNamedText::class)

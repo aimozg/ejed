@@ -8,12 +8,7 @@ class ModOverviewPage: AModView("Overview") {
 		form {
 			fieldset("Mod overview") {
 				field("ID") {
-					textfield(modVM.name)
-				}
-			}
-			button("Save") {
-				action {
-					modVM.commit()
+					textfield(controller.mod?.nameProperty?:return@field)
 				}
 			}
 		}
