@@ -26,29 +26,7 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 		is XlIf -> Label("If: ${stmt.test}").addClass(Styles.xlogic)
 		is XlElse -> Label("Else:").addClass(Styles.xlogic)
 		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
-		is XcStyledText -> VBox().apply {
-			val g = this
-			val fnExpanded = tree.expandedNodesProperty.toBinding()
-			val fnCollapsed = fnExpanded.not()
-			textflow {
-				prefWidthProperty().bind(g.widthProperty())
-				maxWidthProperty().bind(g.widthProperty())
-				for (run in stmt.runs) {
-					text(run.content) {
-						style = run.style.toCss()
-						addClass(Styles.xtext)
-					}
-				}
-				hiddenWhen(fnCollapsed)
-				managedWhen(fnExpanded)
-			}
-			label(stmt.textContent.replace("\n"," ")) {
-						addClass(Styles.xtext)
-						hiddenWhen(fnExpanded)
-						managedWhen(fnCollapsed)
-					}
-		}
-		
+		is XcStyledText -> TextNodeLabel(tree,stmt)
 
 		is XsOutput -> Label("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
 		is XsSet -> Label().apply{
@@ -78,7 +56,7 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 }
 
 open class StatementTree : TreeView<XStatement>() {
-	val contentsProperty = SimpleObjectProperty<MutableList<XStatement>>(ArrayList())
+	val contentsProperty = SimpleObjectProperty(ArrayList<XStatement>().observable())
 	var contents by contentsProperty
 	
 	val expandedNodesProperty = SimpleObjectProperty<Boolean>(false)

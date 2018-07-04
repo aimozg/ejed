@@ -98,7 +98,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	@XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
 	
-	val content:MutableList<XStatement> = ArrayList()
+	val content = ArrayList<XStatement>().observable()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
