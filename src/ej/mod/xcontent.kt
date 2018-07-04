@@ -1,18 +1,12 @@
 package ej.mod
 
 import ej.editor.utils.escapeXml
-import ej.utils.affix
 import ej.utils.affixNonEmpty
 import ej.utils.crop
-import javafx.scene.paint.Color
-import javafx.scene.text.FontPosture
-import javafx.scene.text.FontWeight
 import tornadofx.*
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
-import javax.xml.bind.annotation.adapters.XmlAdapter
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 
 
 interface XStatement : ModDataNode {
@@ -25,15 +19,15 @@ interface XStatement : ModDataNode {
 fun XStatement.toSourceString(): String =
 		tagOpen() + innerXML() + tagClose()
 internal fun XStatement.tagOpen() =
-		if (this is XcStyledText) "" else
+		if (this is XcUnstyledText) "" else
 		"<$tagName" + attrsString().affixNonEmpty(" ") + (if (emptyTag) "/>" else ">")
 internal fun XStatement.tagClose() =
-		if (this is XcStyledText || emptyTag) "" else "</$tagName>"
+		if (this is XcUnstyledText || emptyTag) "" else "</$tagName>"
 
 internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 	when (it) {
 		is XStatement -> it.toSourceString()
-		is XcStyledText.Run -> it.toSourceString()
+		is XcUnstyledText -> it.text
 		is String -> it
 		else -> it.toString()
 	}
@@ -75,10 +69,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	override val emptyTag: Boolean = false
 	
 	@XmlElementRefs(
-			XmlElementRef(name = "b", type = XmlElementB::class),
-			XmlElementRef(name = "i", type = XmlElementI::class),
-			XmlElementRef(name = "font", type = XmlElementFont::class),
-			XmlElementRef(name = "t", type = XcStyledText::class),
+			XmlElementRef(name = "t", type = XcUnstyledText::class),
 			XmlElementRef(name = "display", type = XsDisplay::class),
 			XmlElementRef(name = "set", type = XsSet::class),
 			XmlElementRef(name = "output", type = XsOutput::class),
@@ -95,7 +86,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	@XmlMixed
 	private val contentRaw:MutableList<Any> = ArrayList()
 	
-	@XmlAttribute(name="trim")
+	@get:XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
 	
 	val content = ArrayList<XStatement>().observable()
@@ -103,7 +94,10 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
 		content.clear()
-		content.addAll(contentRaw.map { it as? XStatement ?: XcStyledText(it.toString()) })
+		content.addAll(contentRaw.map {
+					it as? XStatement
+					?: XcUnstyledText(it.toString())
+		})
 		contentRaw.clear()
 		trimMode?.let { trimMode ->
 			TrimmingVisitor(trimMode).visitAllStatements(content)
@@ -114,7 +108,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement {
 	private fun beforeMarshal(marshaller: Marshaller) {
 		trimMode = null
 		contentRaw.clear()
-//		contentRaw.addAll(content.map { (it as? XcTextNode)?.content ?: it })
+//		contentRaw.addAll(content.map { (it as? XcUnstyledText)?.text ?: it })
 		contentRaw.addAll(content)
 	}
 	
@@ -133,213 +127,29 @@ class TrimmingVisitor(val trimMode: TrimMode) : XModVisitor() {
 		if (x.trimMode == null) super.visitAnyContentContainer(x)
 	}
 	
-	override fun visitText(x: XcStyledText) {
-		for (run in x.runs) {
-			run.content = trimMode.applyTo(run.content)
-		}
+	override fun visitText(x: XcUnstyledText) {
+		x.text = (x.trimMode ?: trimMode).applyTo(x.text)
 	}
 }
 
-class StylingVisitor : ReplacingVisitor() {
-	var style = XcStyledText.Style()
-	override fun visitText(x: XcStyledText) {
-		if (x.isEmpty()) remove(x)
-		else x.applyStyle(style)
-	}
-	
-	override fun visitXmlB(x: XmlElementB) {
-		restyle(x, style.copy(bold=true))
-	}
-	override fun visitXmlI(x: XmlElementI) {
-		restyle(x, style.copy(italic=true))
-	}
-	override fun visitXmlFont(x: XmlElementFont) {
-		restyle(x, style.copy(color=x.color))
-	}
-	fun restyle(x: XContentContainer, newStyle:XcStyledText.Style) {
-		val oldStyle = style
-		style = newStyle
-		replace(x, x.content)
-		visitAnyContentContainer(x)
-		style = oldStyle
-	}
-	
-	override fun visitAnyContentContainer(x: XContentContainer) {
-		super.visitAnyContentContainer(x)
-		var merged = false
-		for ((i,stmt) in x.content.withIndex()) {
-			val prev = if (i==0) null else x.content[i-1]
-			if (prev is XcStyledText && stmt is XcStyledText) {
-				stmt.runs.addAll(0,prev.runs)
-				stmt.compact()
-				prev.runs.clear()
-				merged = true
-			}
-		}
-		if (merged) x.content.removeAll { it is XcStyledText && it.isEmpty() }
-	}
-}
-
-@XmlRootElement(name = "b")
-class XmlElementB() : XContentContainer("b") {
-	constructor(e:XStatement):this() {
-		content += e
-	}
-}
-
-@XmlRootElement(name = "i")
-class XmlElementI() : XContentContainer("i") {
-	constructor(e:XStatement):this() {
-		content += e
-	}
-}
-
-@XmlRootElement(name = "font")
-class XmlElementFont() : XContentContainer("font") {
-	constructor(e:XStatement,color:String?):this() {
-		content += e
-		this.color = color
-	}
-
-	@get:XmlAttribute
-	var color: String? = null
-	
-	override fun attrsString() = color.affix("color='", "'")
-}
 
 @XmlRootElement(name = "t")
-class XcStyledText(text:String,style:Style=Style()): XStatement {
+class XcUnstyledText(text:String):XStatement {
+	@get:XmlValue
+	var text:String by property(text)
+	fun textProperty() = getProperty(XcUnstyledText::text)
 	
-	class Run(
-			@get:XmlValue
-			var content:String,
-			@get:XmlAttribute
-			var style:Style) {
-		@Suppress("unused")
-		constructor():this("", Style())
-		fun sameStyleAs(other:Run) = this.style == other.style
-		fun isEmpty() = content.isEmpty()
-		fun isBlank() = content.isBlank()
-		fun toSourceString(): String {
-			var s = content.escapeXml().replace("\n","<br>")
-			style.color?.let { color -> s = "<font color='$color'>$s</font>" }
-			if (style.bold) s = "<b>$s</b>"
-			if (style.italic) s = "<i>$s</i>"
-			return s
-		}
-	}
-	
-	@get:XmlElement(name="r")
-	val runs = ArrayList<Run>()
+	@get:XmlAttribute(name="trim")
+	internal var trimMode: TrimMode? = null // inherit
 	
 	@Suppress("unused")
-	constructor():this("", Style())
-
-	@XmlJavaTypeAdapter(value=StyleAdapter::class)
-	data class Style(val bold:Boolean=false,val italic:Boolean=false, val color:String?=null) {
-		fun isEmpty():Boolean {
-			return !bold && !italic && color == null
-		}
-		
-		fun combine(other: Style) =
-				if (this == other) other else
-					Style(bold = other.bold || bold,
-					      italic = other.italic || italic,
-					      color = other.color ?: color)
-		
-		fun toCss() : String = InlineCss().also { css ->
-			if (bold) css.fontWeight = FontWeight.BOLD
-			if (italic) css.fontStyle = FontPosture.ITALIC
-			if (color != null) css.fill = Color.web(color)
-		}.render()
-	}
-	class StyleAdapter:XmlAdapter<String?,Style>() {
-		override fun marshal(v: Style): String? {
-			if (v.isEmpty()) return null
-			return  (if (v.bold)"b" else "") +
-					(if (v.italic)"i" else "") +
-					v.color.affix("c", ";")
-			
-		}
-		
-		override fun unmarshal(v: String?): Style {
-			if (v == null) return Style()
-			val m = STYLE_REGEX.matchEntire(v) ?: kotlin.error("Invalid style format $v")
-			return Style(
-					bold = m.groupValues[1].isNotEmpty(),
-					italic = m.groupValues[2].isNotEmpty(),
-					color = m.groupValues[3].takeIf { it.isNotEmpty() }
-			)
-		}
-		companion object {
-			val STYLE_REGEX = Regex("^(b?)(i?)(?:c([^;]++);)?$")
-		}
-	}
+	constructor():this("")
 	
-	fun isEmpty():Boolean {
-		return runs.none { it.content.isNotEmpty() }
-	}
-	fun applyStyle(style: Style) {
-		if (style.isEmpty()) return
-		for (run in runs) {
-			run.style = run.style.combine(style)
-		}
-	}
+	fun isEmpty():Boolean = text.isEmpty()
 	
-	fun addRun(content: String, style:Style? = null) {
-		runs.add(Run(content, style ?: Style()))
-	}
-	fun addRun(run:Run) {
-		runs.add(run)
-	}
+	override val tagName get() = "t"
 	
-	@get:XmlTransient
-	val htmlContent:String
-		get() =  runs.joinToSourceString()
-	/*
-	@get:XmlTransient
-	var htmlContent:String
-		get() = runs.fold(ArrayList<XStatement>()) { rslt, run ->
-			//val prev = rslt.lastOrNull()
-			var e:XStatement = XcTextNode(run.content)
-			if (run.style.bold) e = XmlElementB(e)
-			if (run.style.italic) e = XmlElementI(e)
-			if (run.style.color != null) e = XmlElementFont(e,run.style.color)
-			rslt.add(e)
-			rslt
-		}.joinToSourceString()
-		set(value) {
-			runs.clear()
-			addRun(value)
-		}
-	*/
-	@get:XmlTransient
-	var textContent:String
-		get() = runs.joinToString(""){it.content}
-		set(value) {
-			runs.clear()
-			addRun(value)
-		}
-	
-	override val tagName: String get() = "t"
-	override fun innerXML() = runs.joinToString { it.content.crop(10).escapeXml().affix("[","]") }
-	override fun toString() = toSourceString()
-	fun compact() {
-		var del = false
-		for ((prev,next) in runs.zipWithNext()) {
-			if (prev.isBlank() || next.isBlank() || next.sameStyleAs(prev)) {
-				if (next.isBlank()) next.style = prev.style
-				next.content = prev.content + next.content
-				prev.content = ""
-				del = true
-			}
-		}
-		if (del) runs.removeAll { it.isEmpty() }
-		if (runs.isEmpty()) addRun("")
-	}
-	init {
-		addRun(Run(text,style))
-	}
+	override fun innerXML(): String = text.escapeXml()
 }
 
 @XmlRootElement(name = "lib")

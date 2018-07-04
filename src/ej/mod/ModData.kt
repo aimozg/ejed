@@ -86,6 +86,26 @@ class ModData : ModDataNode {
 	
 }
 
+class StylingVisitor : ReplacingVisitor() {
+	override fun visitText(x: XcUnstyledText) {
+		if (x.isEmpty()) remove(x)
+	}
+	
+	override fun visitAnyContentContainer(x: XContentContainer) {
+		super.visitAnyContentContainer(x)
+		var merged = false
+		for ((i,stmt) in x.content.withIndex()) {
+			val prev = if (i==0) null else x.content[i-1]
+			if (prev is XcUnstyledText && stmt is XcUnstyledText) {
+				stmt.text = prev.text + stmt.text
+				prev.text = ""
+				merged = true
+			}
+		}
+		if (merged) x.content.removeAll { it is XcUnstyledText && it.isEmpty()}
+	}
+}
+
 val DefaultModData by lazy {
 	ModData.loadMod(ModData::class.java.getResourceAsStream("default.xml"))
 }

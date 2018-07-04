@@ -31,7 +31,7 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 		}
 		is XlElse -> Label("Else:").addClass(Styles.xlogic)
 		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
-		is XcStyledText -> TextNodeLabel(tree,stmt)
+		is XcUnstyledText -> TextNodeLabel(tree,stmt)
 
 		is XsOutput -> Label("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
 		is XsSet -> Label().apply{

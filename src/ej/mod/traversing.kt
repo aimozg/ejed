@@ -17,16 +17,7 @@ abstract class XModVisitor {
 		visitAllStatements(x.content)
 	}
 	//// specifics
-	open fun visitXmlI(x:XmlElementI){
-		visitAnyContentContainer(x)
-	}
-	open fun visitXmlB(x:XmlElementB){
-		visitAnyContentContainer(x)
-	}
-	open fun visitXmlFont(x:XmlElementFont){
-		visitAnyContentContainer(x)
-	}
-	open fun visitText(x:XcStyledText){
+	open fun visitText(x:XcUnstyledText){
 		visitAnyStmt(x)
 	}
 	open fun visitLib(x:XcLib) {
@@ -83,14 +74,10 @@ abstract class XModVisitor {
 }
 fun ModDataNode.visit(visitor:XModVisitor) {
 	when (this) {
-		is XmlElementI -> visitor.visitXmlI(this)
-		is XmlElementB -> visitor.visitXmlB(this)
-		is XmlElementFont -> visitor.visitXmlFont(this)
-
 		is XcLib -> visitor.visitLib(this)
 		is XcNamedText -> visitor.visitNamedText(this)
 		is XcScene -> visitor.visitScene(this)
-		is XcStyledText -> visitor.visitText(this)
+		is XcUnstyledText -> visitor.visitText(this)
 		
 		is XsOutput -> visitor.visitOutput(this)
 		is XsDisplay -> visitor.visitDisplay(this)
