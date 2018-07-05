@@ -1,5 +1,7 @@
 package ej.editor.utils
 
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.beans.value.WeakChangeListener
@@ -35,6 +37,16 @@ fun <T> ObservableList<T>.onChangeWeak(op: (ListChangeListener.Change<out T>) ->
 	val listener = ListChangeListener<T> { op(it) }
 	addListener(WeakListChangeListener(listener))
 	return listener
+}
+
+fun <I : ObservableList<*>, O: Any> I.listBinding(calculator:(I)->O): Property<O> {
+	val list = this
+	return object:SimpleObjectProperty<O>(calculator(this)) {
+		@Suppress("unused")
+		val listener = list.onChangeWeak {
+			value = calculator(list)
+		}
+	}
 }
 
 fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> {

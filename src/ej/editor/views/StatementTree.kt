@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.utils.listBinding
 import ej.editor.utils.onChangeWeak
 import ej.mod.*
 import ej.utils.addToList
@@ -122,13 +123,44 @@ open class XStatementTreeWithEditor : VBox() {
 	var contents by contentsProperty
 	private var expandButton by singleAssign<ToggleButton>()
 	private val weakListeners = ArrayList<Any>()
-	
+
+	val selected:XStatement? get() = tree.selectedValue
 	init {
-		hbox {
+		spacing = 5.0
+		paddingAll = 5
+		hbox(5) {
+			label("Options")
 			togglebutton {
 				expandButton = this
 				text = "Expand"
 			}
+		}
+		hbox(5){
+			label("Add")
+			button("Text")
+			button("If-Else") { isDisable = true }
+			button("Display") { isDisable = true }
+			button("Output") { isDisable = true }
+			button("Battle") { isDisable = true }
+			button("...") { isDisable = true }
+			label("Edit")
+			button("Move Up") {
+				isDisable = true
+				disableProperty().bind(tree.selectionModel.selectedItemProperty().select { stmt ->
+					stmt.parentProperty().select { parent ->
+						parent.children.listBinding {children ->
+							children.indexOf(stmt) <= 0
+						}
+					}
+				})
+				action {
+					val selected = selected
+					when (selected) {
+						// todo
+					}
+				}
+			}
+//			button("Move Down")
 		}
 		splitPane.attachTo(this) {
 			orientation = Orientation.VERTICAL
