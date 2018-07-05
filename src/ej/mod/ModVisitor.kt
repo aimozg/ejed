@@ -6,7 +6,7 @@ package ej.mod
  */
 
 @Suppress("unused")
-abstract class XModVisitor {
+abstract class ModVisitor {
 	//// generics
 	open fun visitAnyNode(node:ModDataNode) {}
 	open fun visitAnyStmt(x:XStatement){
@@ -31,6 +31,9 @@ abstract class XModVisitor {
 		visitAnyContentContainer(x)
 	}
 	open fun visitOutput(x:XsOutput){
+		visitAnyStmt(x)
+	}
+	open fun visitSet(x:XsSet){
 		visitAnyStmt(x)
 	}
 	open fun visitDisplay(x:XsDisplay) {
@@ -81,13 +84,14 @@ abstract class XModVisitor {
 		visitAllNodes(encounters)
 	}
 }
-fun ModDataNode.visit(visitor:XModVisitor) {
+fun ModDataNode.visit(visitor:ModVisitor) {
 	when (this) {
 		is XcLib -> visitor.visitLib(this)
 		is XcNamedText -> visitor.visitNamedText(this)
 		is XcScene -> visitor.visitScene(this)
 		is XcText -> visitor.visitText(this)
 		
+		is XsSet -> visitor.visitSet(this)
 		is XsOutput -> visitor.visitOutput(this)
 		is XsDisplay -> visitor.visitDisplay(this)
 		is XsBattle -> visitor.visitBattle(this)
@@ -116,7 +120,7 @@ fun ModDataNode.visit(visitor:XModVisitor) {
 	}
 }
 
-abstract class ReplacingVisitor:XModVisitor() {
+abstract class ReplacingVisitor:ModVisitor() {
 	private class ReplacementInfo<T:XStatement>(val list:MutableList<T>) {
 		val nodes = HashMap<T,List<T>>()
 		fun generate():ArrayList<T> {

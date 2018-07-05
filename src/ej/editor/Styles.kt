@@ -19,6 +19,8 @@ class Styles : Stylesheet() {
 		val monsterCombat by cssclass()
 		
 		val treeNode by cssclass()
+
+		val editorView by cssclass()
 		
 		val xstmt by cssclass()
 		val xstmtEditor by cssclass()
@@ -34,7 +36,7 @@ class Styles : Stylesheet() {
 	}
 	
 	init {
-		root {
+		root and editorView {
 			prefHeight = 600.px
 			prefWidth = 800.px
 		}

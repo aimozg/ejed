@@ -25,6 +25,7 @@ class EditorView : AModView() {
 //	val leftDrawer = Drawer(Side.LEFT,false,false)
 	val rightDrawer = Drawer(Side.RIGHT,false,false)
 	override val root = borderpane {
+		addClass(Styles.editorView)
 		top {
 			menubar {
 				menu("Mod") {

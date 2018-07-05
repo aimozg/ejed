@@ -34,7 +34,7 @@ encounter = element encounter {
 @XmlRootElement(name="encounter")
 class Encounter : ModDataNode {
 	@XmlTransient
-	val poolProperty = SimpleStringProperty()
+	val poolProperty = SimpleStringProperty("")
 	@ValidateNonBlank
 	@get:XmlAttribute
 	var pool:String by poolProperty

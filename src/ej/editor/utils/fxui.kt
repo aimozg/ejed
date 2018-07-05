@@ -1,13 +1,10 @@
 package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
-import javafx.beans.value.WeakChangeListener
-import javafx.collections.ObservableList
-import javafx.collections.transformation.FilteredList
+import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.Node
 import javafx.scene.control.TextArea
+import javafx.scene.control.TextField
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.GridPane
@@ -99,33 +96,6 @@ inline fun<T> TreeItem<T>.traverse(visitor:(TreeItem<T>)->Boolean) {
 }
 
 
-fun <T> ObservableValue<T>.onChangeAndNowWeak(op: (T?) -> Unit): ChangeListener<T> {
-	op(value)
-	val listener = ChangeListener<T> { _, _, newValue -> op(newValue) }
-	addListener(WeakChangeListener(listener))
-	return listener
-}
-fun <T> ObservableValue<T>.onChangeAndNow(op: (T?) -> Unit) {
-	op(value)
-	addListener{ _, _, newValue -> op(newValue) }
-}
-fun <T> ObservableValue<T>.onChangeWeak(op: (T?) -> Unit): ChangeListener<T> {
-	val listener = ChangeListener<T>{ _, _, newValue -> op(newValue) }
-	addListener(WeakChangeListener(listener))
-	return listener
-}
-
-fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> {
-	val source = this
-	return ArrayList<O>().observable().apply {
-		bind(source,transform)
-	}
-}
-
-@Suppress("UNCHECKED_CAST")
-inline fun <reified B> ObservableList<*>.filteredIsInstance():FilteredList<B> {
-	return filtered { it is B } as FilteredList<B>
-}
 
 fun<T> TreeView<T>.itemForValue(value:T):TreeItem<T>? {
 	var result:TreeItem<T>? = null
@@ -137,11 +107,70 @@ fun<T> TreeView<T>.itemForValue(value:T):TreeItem<T>? {
 	}
 	return result
 }
-fun<T> TreeView<T>.findItem(filter:(T)->Boolean):TreeItem<T>? {
+inline fun<T> TreeView<T>.findItem(filter:(T)->Boolean):TreeItem<T>? {
 	root.traverseAll {
 		if (filter(it.value)) {
 			return it
 		}
 	}
 	return null
+}
+inline fun <T> TreeView<T>.select(andScroll:Boolean = true,filter:(T)->Boolean) {
+	findItem(filter)?.let { item ->
+		selectionModel.select(item)
+		if (andScroll) scrollTo(getRow(item))
+	}
+}
+
+inline fun<T> UIComponent.textInputDialog(title:String,
+                                          label:String,
+                                          initialValue:String="",
+                                          cancelable:Boolean=true,
+                                          handler:(String)->T):T? {
+	return textInputDialog(title, label, initialValue, cancelable)?.let(handler)
+}
+class TextInputDialog : View() {
+	var result:String? = null
+	
+	val labelProperty = SimpleObjectProperty("")
+	var label by labelProperty
+	
+	val initialValueProperty = SimpleObjectProperty("")
+	var initialValue by initialValueProperty
+	
+	val cancelableProperty = SimpleObjectProperty(false)
+	var cancelable by cancelableProperty
+	
+	fun showModal(title:String,label:String,initialValue:String="",cancelable:Boolean=true):String? {
+		this.title = title
+		this.label = label
+		this.initialValue = initialValue
+		this.cancelable = cancelable
+		this.result = null
+		openModal(block = true)
+		return result
+	}
+	override val root = form {
+		fieldset {
+			lateinit var input: TextField
+			field("Label") {
+				label.textProperty().bind(labelProperty)
+				input = textfield(initialValueProperty)
+			}
+			hbox(20) {
+				//			alignment = Pos.BASELINE_CENTER
+				button("Ok").action {
+					result = input.text
+					close()
+				}
+				button("Cancel").visibleWhen(cancelableProperty).action {
+					result = null
+					close()
+				}
+			}
+		}
+	}
+}
+fun textInputDialog(title:String,label:String,initialValue:String="",cancelable:Boolean=true):String? {
+	return find<TextInputDialog>().showModal(title, label, initialValue, cancelable)
 }

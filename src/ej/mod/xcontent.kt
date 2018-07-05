@@ -1,7 +1,7 @@
 package ej.mod
 
 import ej.editor.utils.escapeXml
-import ej.editor.utils.filteredIsInstance
+import ej.editor.utils.filteredIsInstanceMutable
 import ej.utils.affixNonEmpty
 import ej.utils.crop
 import javafx.beans.property.ObjectProperty
@@ -37,7 +37,7 @@ internal fun <T> List<T>.joinToSourceString() = joinToString("") {
 }
 
 interface StoryContainer {
-	val lib: ObservableList<out StoryStmt>
+	val lib: ObservableList<StoryStmt>
 }
 interface StoryStmt : XStatement, StoryContainer {
 	val name: String
@@ -92,7 +92,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement, Sto
 	
 	val content = ArrayList<XStatement>().observable()
 	
-	override val lib = content.filteredIsInstance<StoryStmt>()
+	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
@@ -121,7 +121,7 @@ abstract class XContentContainer(override val tagName: String) : XStatement, Sto
 	override fun toString() = toSourceString().crop(40)
 }
 
-class TrimmingVisitor(val trimMode: TrimMode) : XModVisitor() {
+class TrimmingVisitor(val trimMode: TrimMode) : ModVisitor() {
 	override fun visitLib(x: XcLib) {
 		if (x.trimMode == null) super.visitLib(x)
 	}
@@ -206,7 +206,7 @@ class XcNamedText : XContentContainer("text"), StoryStmt {
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcNamedText::name)
 	
-	override val lib = content.filteredIsInstance<StoryStmt>()
+	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
 	
 	override fun attrsString() = "name='$name'"
 }
