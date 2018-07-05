@@ -39,15 +39,15 @@ class MonsterBasicView:AMonsterView("Basic") {
 				fieldset("Core") {
 					field("ID") { textfield(monster.idProperty) }
 					field("Prorotype monster") {
-						textfield(monster.baseId) // TODO select from other monsters
+						textfield(monster.baseIdProperty) // TODO select from other monsters
 					}
-					field("Name") { textfield(monster.name) }
+					field("Name") { textfield(monster.nameProperty) }
 				}
 				fieldset("Grammar") {
 					field("Group") {
 						checkbox("(use plural)", monster.pluralProperty)
 					}
-					field("Article") { textfield(monster.article) }
+					field("Article") { textfield(monster.articleProperty) }
 					label("Pronouns:")
 					field("'he'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
