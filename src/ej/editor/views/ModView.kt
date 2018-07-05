@@ -24,7 +24,10 @@ sealed class ModTreeNode {
 		override val textProperty = StringConstant.valueOf("Monsters")
 	}
 	class MonsterNode(val mod:ModData, val monster:MonsterData): ModTreeNode() {
-		override val textProperty = monster.idProperty.stringBinding{it?:""}
+		override val textProperty = monster.idProperty.stringBinding(monster.nameProperty) {
+			if (monster.id == monster.name || monster.name.isNullOrBlank()) monster.id
+			else "${monster.id} (${monster.name})"
+		}
 	}
 	class StoryNode(val story:StoryStmt): ModTreeNode() {
 		override val textProperty = story.nameProperty().stringBinding {
@@ -110,16 +113,9 @@ class ModView: AModView() {
 				hbox(5.0) {
 					vgrow = Priority.NEVER
 					alignment = Pos.BASELINE_LEFT
-					button("Monster"){isDisable=true}
-					button("Encounter"){
-						disableWhen(controller.modProperty.isNull)
-					}.action {
-						val e = Encounter().apply {
-							pool = "forest"
-							name = "Unnamed"
-						}
-						mod.encounters.add(e)
-						tree.selectionModel.select(tree.findItem{(it as? ModTreeNode.EncounterNode)?.encounter == e})
+					button("Monster").action{ newMonster() }
+					button("Encounter").action {
+						newEncounter()
 					}
 					button("Scene"){isDisable=true}
 					button("Lib"){isDisable=true}
@@ -127,6 +123,24 @@ class ModView: AModView() {
 				}
 			}
 		}
+	}
+	
+	fun newEncounter() {
+		val e = Encounter().apply {
+			pool = "forest"
+			name = "Unnamed"
+		}
+		mod.encounters.add(e)
+		tree.selectionModel.select(tree.findItem { (it as? ModTreeNode.EncounterNode)?.encounter == e })
+	}
+	
+	fun newMonster() {
+		val m = MonsterData().apply {
+			id = "Unnamed"
+			name = "Unnamed"
+		}
+		mod.monsters.add(m)
+		tree.selectionModel.select(tree.findItem { (it as? ModTreeNode.MonsterNode)?.monster == m })
 	}
 	
 	private fun TreeView<ModTreeNode>.repopulate() {

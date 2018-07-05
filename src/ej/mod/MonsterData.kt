@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.*
 @XmlRootElement(name="monster")
 class MonsterData : Patchable, ModDataNode {
 	
-	val idProperty = SimpleStringProperty()
+	val idProperty = SimpleStringProperty("")
 	@ValidateNonBlank
 	@ValidateUnique
 	@get:XmlAttribute
@@ -26,11 +26,11 @@ class MonsterData : Patchable, ModDataNode {
 	val baseIdProperty = SimpleStringProperty()
 	@get:XmlAttribute(name = "base")
 	@PatchNoMerge
-	var baseId by baseIdProperty
+	var baseId: String? by baseIdProperty
 	
 	val nameProperty = SimpleStringProperty()
 	@get:XmlElement
-	var name by nameProperty
+	var name: String? by nameProperty
 	
 	@XmlElement(name="desc")
 	private var descRaw: MonsterDesc? = null
