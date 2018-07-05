@@ -1,12 +1,11 @@
 package ej.editor.views
 
-import com.sun.webkit.dom.ElementImpl
+import com.sun.webkit.dom.HTMLElementImpl
 import ej.editor.Styles
 import javafx.beans.property.ObjectProperty
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.web.WebView
-import org.w3c.dom.events.EventListener
 import tornadofx.*
 
 /*
@@ -34,22 +33,21 @@ open class HtmlEditorLite : VBox() {
 	@Suppress("unused")
 	val webView = WebView().attachTo(this) {
 		engine.documentProperty().onChange { doc ->
-			val editable = doc?.getElementById("editable") as? ElementImpl
+			val editable = doc?.getElementById("editable") as? HTMLElementImpl
 			editable?.innerHTML = htmlContent
-			editable?.oninput = EventListener {
+			editable?.addEventListener("input",{
 				val hc = engine.executeScript("document.getElementById('editable').innerHTML") as? String
 				modifyingHc++
 				htmlContent = hc?:""
 				modifyingHc--
-//				println(hc)
-			}
+			},false)
 		}
 		hgrow = Priority.ALWAYS
 		//language=HTML
 		engine.loadContent("<html><head><style type='text/css'>*{font-family:'${Styles.FONT_FACE_TEXT}', 'serif'}</style></head><body><p contentEditable='true' id='editable'></p></body></html>")
 		htmlContentProperty.onChange {
 			if(modifyingHc==0) {
-				(engine.document?.getElementById("editable") as? ElementImpl)?.innerHTML = it ?: ""
+				(engine.document?.getElementById("editable") as? HTMLElementImpl)?.innerHTML = it ?: ""
 			}
 		}
 	}

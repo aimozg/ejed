@@ -16,6 +16,7 @@ class TextNodeLabel(tree:StatementTree, stmt: XcText): VBox() {
 		val fnExpanded = tree.expandedNodesProperty.toBinding()
 		val fnCollapsed = fnExpanded.not()
 		textflow {
+			addClass(Styles.xtext)
 			prefWidthProperty().bind(g.widthProperty())
 			maxWidthProperty().bind(g.widthProperty())
 			text(stmt.textProperty())
