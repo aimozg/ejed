@@ -4,11 +4,11 @@ import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlEnum
 import javax.xml.bind.annotation.XmlEnumValue
 
-class ModHookData : XContentContainer("hook") {
+class ModHookData : XContentContainer() {
 	@get:XmlAttribute
 	var type: HookType = HookType.DAILY
 	
-	override fun attrsString() = "type='$type'"
+	override fun toString() = defaultToString("hook","type='$type'")
 }
 
 @XmlEnum(String::class)

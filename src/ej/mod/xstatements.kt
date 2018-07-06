@@ -2,7 +2,6 @@ package ej.mod
 
 import com.sun.xml.internal.txw2.annotation.XmlElement
 import ej.utils.affix
-import ej.utils.crop
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
 import javax.xml.bind.annotation.XmlValue
@@ -13,11 +12,7 @@ class XsDisplay : XStatement {
 	@get:XmlAttribute
 	var ref: String = ""
 	
-	override val tagName get() = "display"
-	override val emptyTag get() = true
-	
-	override fun attrsString() = "ref='$ref'"
-	override fun toString() = toSourceString().crop(40)
+	override fun toString() = defaultToString("display","",ref)
 }
 
 @XmlRootElement(name = "set")
@@ -31,13 +26,13 @@ class XsSet : XStatement {
 	@get:XmlAttribute(name = "value")
 	var value: String = ""
 	
-	override val tagName get() = "set"
-	override val emptyTag get() = true
-	override fun attrsString(): String = "var='$varname'" +
+	override fun toString() = defaultToString(
+			"set",
+			"var='$varname'" +
 			inobj.affix(" in='", "'") +
 			op.affix(" op='", "'") +
-			" value='$value'/>"
-	override fun toString() = toSourceString().crop(40)
+			" value='$value'",
+			"")
 }
 
 @XmlRootElement(name = "output")
@@ -45,9 +40,7 @@ class XsOutput : XStatement {
 	@get:XmlValue
 	var expression: String = ""
 	
-	override val tagName get() = "output"
-	override fun innerXML(): String = expression
-	override fun toString() = toSourceString().crop(40)
+	override fun toString() = defaultToString("output","",expression)
 }
 
 @XmlRootElement(name = "menu")
@@ -55,9 +48,7 @@ class XsMenu : XStatement {
 	@get:XmlElement("button")
 	val buttons: MutableList<XsButton> = ArrayList()
 	
-	override val tagName get() = "menu"
-	override fun innerXML(): String = buttons.joinToSourceString()
-	override fun toString() = toSourceString().crop(40)
+	override fun toString() = defaultToString("menu","",buttons.joinToString(" "))
 }
 
 @XmlRootElement(name = "button")
@@ -74,22 +65,17 @@ class XsButton : XStatement {
 	@get:XmlElement
 	var hint: XsButtonHint? = null
 	
-	override fun innerXML() = hint?.toSourceString()?:""
-	
-	override val emptyTag: Boolean = hint == null
-	override val tagName get() = "button"
-	override fun attrsString(): String = "" +
+	override fun toString() = defaultToString("button","" +
 			"text='$text'" +
 			(if (disabled) " disabled" else "") +
-			" call='$call'>"
-	override fun toString() = toSourceString().crop(40)
+			" call='$call'",hint?.toString()?:"")
 }
 
-class XsButtonHint : XContentContainer("hint") {
+class XsButtonHint : XContentContainer() {
 	@get:XmlAttribute
 	var header: String? = null
 	
-	override fun attrsString() = header.affix("header='", "'")
+	override fun toString() = defaultToString("hint", header.affix("header='", "'"))
 }
 
 @XmlRootElement(name = "next")
@@ -97,9 +83,7 @@ class XsNext : XStatement {
 	@get:XmlValue
 	var call: String = ""
 	
-	override val tagName get() = "next"
-	override fun innerXML() = call
-	override fun toString() = toSourceString().crop(40)
+	override fun toString() = defaultToString("next","",call)
 }
 
 @XmlRootElement(name = "battle")
@@ -110,9 +94,5 @@ class XsBattle : XStatement {
 	@get:XmlAttribute
 	var options: String? = ""
 	
-	override val tagName get() = "battle"
-	override val emptyTag get() = true
-	override fun attrsString() = "monster='$monster'" +
-			options.affix(" options='", "'")
-	override fun toString() = toSourceString().crop(40)
+	override fun toString() = defaultToString("battle",options.affix(" options='", "'"),monster)
 }

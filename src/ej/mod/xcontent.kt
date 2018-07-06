@@ -1,9 +1,10 @@
 package ej.mod
 
-import ej.editor.utils.escapeXml
+import ej.editor.utils.escapeXmlAttr
 import ej.editor.utils.filteredIsInstanceMutable
-import ej.utils.affixNonEmpty
+import ej.utils.affix
 import ej.utils.crop
+import ej.utils.longSwap
 import javafx.beans.property.ObjectProperty
 import javafx.collections.ObservableList
 import tornadofx.*
@@ -13,28 +14,20 @@ import javax.xml.bind.annotation.*
 
 
 interface XStatement : ModDataNode {
-	val tagName: String
-	val emptyTag: Boolean get() = false
-	fun innerXML(): String = ""
-	fun attrsString(): String = ""
 }
 
-fun XStatement.toSourceString(): String =
-		tagOpen() + innerXML() + tagClose()
-internal fun XStatement.tagOpen() =
-		if (this is XcText) "" else
-		"<$tagName" + attrsString().affixNonEmpty(" ") + (if (emptyTag) "/>" else ">")
-internal fun XStatement.tagClose() =
-		if (this is XcText || emptyTag) "" else "</$tagName>"
-
-internal fun <T> List<T>.joinToSourceString() = joinToString("") {
-	when (it) {
-		is XStatement -> it.toSourceString()
-		is XcText -> it.text
-		is String -> it
-		else -> it.toString()
-	}
+fun XStatement.remove(item:XStatement):Boolean = when(this) {
+	is XContentContainer -> content.remove(item)
+	else -> false
 }
+fun XStatement.swap(i:Int, j:Int) = when(this) {
+	is XContentContainer -> content.longSwap(i, j)
+	else -> false
+}
+
+@Suppress("unused")
+internal fun XStatement.defaultToString(tagname:String, attrs:String, content:String) =
+		"[" + tagname + attrs.affix("(",")") + content.affix(" ") + "]"
 
 interface StoryContainer {
 	val lib: ObservableList<StoryStmt>
@@ -66,8 +59,7 @@ enum class TrimMode {
 	}
 }
 
-abstract class XContentContainer(override val tagName: String) : XStatement, StoryContainer {
-	override val emptyTag: Boolean = false
+abstract class XContentContainer : XStatement, StoryContainer {
 	
 	@XmlElementRefs(
 			XmlElementRef(name = "t", type = XcText::class),
@@ -114,12 +106,10 @@ abstract class XContentContainer(override val tagName: String) : XStatement, Sto
 //		contentRaw.addAll(content.map { (it as? XcText)?.text ?: it })
 		contentRaw.addAll(content)
 	}
-	
-	override fun innerXML(): String = if (emptyTag) "" else contentRaw.joinToSourceString()
-	override fun attrsString() = ""
-	
-	override fun toString() = toSourceString().crop(40)
+	override fun toString() = defaultToString("content")
 }
+internal fun XContentContainer.defaultToString(tagname: String, attrs: String="") =
+		defaultToString(tagname,attrs,content.joinToString(" ",limit=5))
 
 class TrimmingVisitor(val trimMode: TrimMode) : ModVisitor() {
 	override fun visitLib(x: XcLib) {
@@ -150,9 +140,7 @@ class XcText(text:String):XStatement {
 	
 	fun isEmpty():Boolean = text.isEmpty()
 	
-	override val tagName get() = "t"
-	
-	override fun innerXML(): String = text.escapeXml()
+	override fun toString() = "\""+text.crop(40).escapeXmlAttr()+"\""
 }
 
 @XmlRootElement(name = "lib")
@@ -171,12 +159,7 @@ class XcLib : StoryStmt {
 	@XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
 	
-	override val tagName: String get() = "lib"
-	override val emptyTag: Boolean get() = false
-	
-	override fun innerXML(): String = lib.joinToSourceString()
-	
-	override fun attrsString(): String = "name='$name'"
+	override fun toString() = defaultToString("lib","name='$name'",lib.joinToString(" ",limit=5))
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
@@ -192,22 +175,22 @@ class XcLib : StoryStmt {
 }
 
 @XmlRootElement(name = "scene")
-class XcScene : XContentContainer("scene"), StoryStmt {
+class XcScene : XContentContainer(), StoryStmt {
 	@get:XmlAttribute
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcScene::name)
 	
-	override fun attrsString() = "name='$name'"
+	override fun toString() = defaultToString("scene","name='$name'",lib.joinToString(" "))
 }
 
 @XmlRootElement(name="text")
-class XcNamedText : XContentContainer("text"), StoryStmt {
+class XcNamedText : XContentContainer(), StoryStmt {
 	@get:XmlAttribute
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcNamedText::name)
 	
 	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
 	
-	override fun attrsString() = "name='$name'"
+	override fun toString() = defaultToString("text","name='$name'",lib.joinToString(" "))
 }
 

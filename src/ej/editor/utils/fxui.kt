@@ -95,7 +95,11 @@ inline fun<T> TreeItem<T>.traverse(visitor:(TreeItem<T>)->Boolean) {
 	}
 }
 
-
+data class ContextualTreeSelection<T>(val item:TreeItem<T>,val parent:TreeItem<T>?,val siblings:List<TreeItem<T>>?) {
+	val value:T? get() = item.value
+	val parentValue:T? get() = parent?.value
+	constructor(item:TreeItem<T>):this(item,item.parent,item.parent?.children)
+}
 
 fun<T> TreeView<T>.itemForValue(value:T):TreeItem<T>? {
 	var result:TreeItem<T>? = null

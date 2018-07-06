@@ -22,6 +22,9 @@ val XML_ENTITIES = mapOf(
 fun String.escapeXml() = XML_ESCAPABLE_TOKENS.replace(this) {
 	XML_ENTITIES[it.value] ?: it.value
 }
+fun String.escapeXmlAttr() = XML_ATTR_ESCAPABLE_TOKENS.replace(this) {
+	XML_ENTITIES[it.value] ?: it.value
+}
 
 val java.lang.reflect.Field.isStatic get() = Modifier.isStatic(modifiers)
 

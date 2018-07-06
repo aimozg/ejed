@@ -1,20 +1,23 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.utils.ContextualTreeSelection
 import ej.editor.utils.listBinding
 import ej.editor.utils.onChangeWeak
+import ej.editor.utils.select
 import ej.mod.*
 import ej.utils.addToList
 import ej.utils.affixNonEmpty
+import ej.utils.longSwap
 import ej.utils.squeezeWs
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.control.*
+import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
-import javafx.scene.layout.VBox
 import tornadofx.*
 
 /*
@@ -63,7 +66,7 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 			addClass(Styles.xcomment)
 		}
 
-		else -> Label("<Unknown/TODO> " + stmt.toSourceString().squeezeWs()).addClass(Styles.xcommand)
+		else -> Label("TODO $stmt").addClass(Styles.xcommand)
 	}
 }
 
@@ -115,7 +118,7 @@ open class StatementTree : TreeView<XStatement>() {
 	}
 }
 
-open class XStatementTreeWithEditor : VBox() {
+open class XStatementTreeWithEditor : GridPane() {
 	var editor: Region = Pane()
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
@@ -124,18 +127,27 @@ open class XStatementTreeWithEditor : VBox() {
 	private var expandButton by singleAssign<ToggleButton>()
 	private val weakListeners = ArrayList<Any>()
 
-	val selected:XStatement? get() = tree.selectedValue
+	val contextualCurrentProperty = SimpleObjectProperty<ContextualTreeSelection<XStatement>>().apply {
+		bind(tree.selectionModel.selectedItemProperty().select { item ->
+					item.parentProperty().select { parent ->
+						parent.children.listBinding { ContextualTreeSelection(item) }
+					}
+				}
+		)
+	}
+	val contextualCurrent: ContextualTreeSelection<XStatement>? by contextualCurrentProperty
+	val selected:XStatement? get() = contextualCurrentProperty.value?.value
 	init {
-		spacing = 5.0
-		paddingAll = 5
-		hbox(5) {
+		hgap = 5.0
+		vgap = 5.0
+		row {
 			label("Options")
 			togglebutton {
 				expandButton = this
 				text = "Expand"
 			}
 		}
-		hbox(5){
+		row {
 			label("Add")
 			button("Text")
 			button("If-Else") { isDisable = true }
@@ -143,16 +155,40 @@ open class XStatementTreeWithEditor : VBox() {
 			button("Output") { isDisable = true }
 			button("Battle") { isDisable = true }
 			button("...") { isDisable = true }
+		}
+		row {
 			label("Edit")
 			button("Move Up") {
-				isDisable = true
-				disableProperty().bind(tree.selectionModel.selectedItemProperty().select { stmt ->
-					stmt.parentProperty().select { parent ->
-						parent.children.listBinding {children ->
-							children.indexOf(stmt) <= 0
+				disableProperty().bind(contextualCurrentProperty.objectBinding { cts ->
+					cts == null || cts.siblings?.firstOrNull()?.equals(cts.item)?:true
+				})
+				action {
+					val contextualCurrent = contextualCurrent ?: return@action
+					val (item, parent, siblings) = contextualCurrent
+					if (parent == null || siblings == null || parent.value == null) {
+						val i = contents.indexOf(item.value)
+						if (contents.longSwap(i, i-1)) {
+							println("[INFO] Moved up $item") // TODO owner
+							tree.select { it == item.value }
+						} else {
+							println("[WARN] Cannot move up $item")
+						}
+					} else {
+						val i = siblings.indexOf(item)
+						if (parent.value?.swap(i, i-1) == true) {
+							println("[INFO] Moved up $item") // TODO owner
+							tree.select { it == item.value }
+						} else {
+							println("[WARN] Cannot move up $item")
 						}
 					}
+				}
+			}
+			button("Move Down") {
+				disableProperty().bind(contextualCurrentProperty.objectBinding { cts ->
+					cts == null || cts.siblings?.lastOrNull()?.equals(cts.item)?:true
 				})
+				
 				action {
 					val selected = selected
 					when (selected) {
@@ -160,22 +196,43 @@ open class XStatementTreeWithEditor : VBox() {
 					}
 				}
 			}
-//			button("Move Down")
-		}
-		splitPane.attachTo(this) {
-			orientation = Orientation.VERTICAL
-			vgrow = Priority.ALWAYS
-			items += tree.apply {
-				vgrow = Priority.SOMETIMES
-				selectionModel.selectedItemProperty().onChangeWeak { treeItem ->
-					splitPane.items -= editor
-					val value = treeItem?.value
-					if (value != null) splitPane.items +=  StmtEditorBody.bodyFor(value).also { editor = it }
-				}.addToList(weakListeners)
-				expandButton.isSelected = expandedNodes
-				expandedNodesProperty.bind(expandButton.selectedProperty())
+			button("Remove") {
+				disableProperty().bind(contextualCurrentProperty.isNull)
+				action {
+					val parent = contextualCurrent?.parentValue
+					val item = contextualCurrent?.value ?: return@action
+					if (parent == null) {
+						if (contents.remove(item)) {
+							println("[INFO] Removed $item") // TODO owner
+						} else {
+							println("[WARN] Cannot remove $item")
+						}
+					} else {
+						if (parent.remove(item)) {
+							println("[INFO] Removed $item from $parent")
+						} else {
+							println("[WARN] Cannot remove $item from $parent")
+						}
+					}
+				}
 			}
 		}
-		
+		row {
+			splitPane.attachTo(this) {
+				orientation = Orientation.VERTICAL
+				gridpaneConstraints { columnSpan = GridPane.REMAINING }
+				vgrow = Priority.ALWAYS
+				items += tree.apply {
+					vgrow = Priority.SOMETIMES
+					contextualCurrentProperty.onChangeWeak { cts ->
+						splitPane.items -= editor
+						val value = cts?.item?.value
+						if (value != null) splitPane.items += StmtEditorBody.bodyFor(value).also { editor = it }
+					}.addToList(weakListeners)
+					expandButton.isSelected = expandedNodes
+					expandedNodesProperty.bind(expandButton.selectedProperty())
+				}
+			}
+		}
 	}
 }

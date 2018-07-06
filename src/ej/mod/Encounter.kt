@@ -61,6 +61,10 @@ class Encounter : ModDataNode {
 	var scene by sceneProperty
 	
 	@XmlRootElement(name="scene")
-	class EncounterScene : XContentContainer("scene")
+	class EncounterScene : XContentContainer() {
+		override fun toString(): String {
+			return defaultToString("scene")
+		}
+	}
 	
 }

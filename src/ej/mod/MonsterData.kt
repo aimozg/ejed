@@ -66,7 +66,7 @@ class MonsterData : Patchable, ModDataNode {
 	val script = ModScript()
 	
 	@XmlRootElement(name="desc")
-	class MonsterDesc : XContentContainer("desc")
+	class MonsterDesc : XContentContainer()
 	
 	class Pronouns : Patchable {
 		@get:XmlAttribute
