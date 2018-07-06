@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.utils.RichTextProcessor
 import ej.mod.*
 import javafx.geometry.Pos
 import javafx.scene.control.Label
@@ -17,6 +18,19 @@ import java.util.concurrent.atomic.AtomicReference
  */
 
 private val cachedEditor = AtomicReference<HtmlEditorLite?>(null)
+private val FlashPermittedElements:Map<String,Set<String>> = mapOf(
+		"a" to setOf("target","href"),
+		"b" to emptySet(),
+		"br" to emptySet(),
+		"font" to setOf("color","face","size"),
+		"i" to emptySet(),
+		"img" to setOf("src","width","height","align","hspace","vspace","id","checkPolicyFile"),
+		"li" to emptySet(),
+		"p" to setOf("class","align"),
+		"span" to setOf("class"),
+		"textformat" to setOf("blockindent", "indent", "leading", "leftmargin", "rightmargin", "tabstops"),
+		"u" to emptySet()
+)
 open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	init {
 		addClass(Styles.xstmtEditor)
@@ -27,6 +41,18 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 		init {
 			synchronized(Companion) {
 				cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
+					processor = object:RichTextProcessor() {
+						override fun takeBegin(tag: String) =
+								if (tag in FlashPermittedElements) TAKE
+								else SKIP
+						
+						override fun takeEnd(tag: String) = takeBegin(tag)
+						
+						override fun takeAttr(tag: String, name: String, value: String) =
+								if (name in FlashPermittedElements.getOrDefault(tag,emptySet())) TAKE
+								else SKIP
+						
+					}
 					sceneProperty().onChange {
 						if (it == null) cachedEditor.compareAndSet(null, this)
 					}

@@ -2,6 +2,7 @@ package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
 import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
@@ -162,14 +163,21 @@ class TextInputDialog : View() {
 				input = textfield(initialValueProperty)
 			}
 			hbox(20) {
-				//			alignment = Pos.BASELINE_CENTER
-				button("Ok").action {
-					result = input.text
-					close()
+				alignment = Pos.BASELINE_CENTER
+				button("Ok") {
+					shortcut("Return")
+					action {
+						result = input.text
+						close()
+					}
 				}
-				button("Cancel").visibleWhen(cancelableProperty).action {
-					result = null
-					close()
+				button("Cancel") {
+					shortcut("Escape")
+					visibleWhen(cancelableProperty)
+					action {
+						result = null
+						close()
+					}
 				}
 			}
 		}

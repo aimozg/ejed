@@ -2,6 +2,7 @@ package ej.editor.views
 
 import com.sun.webkit.dom.HTMLElementImpl
 import ej.editor.Styles
+import ej.editor.utils.RichTextProcessor
 import javafx.beans.property.ObjectProperty
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -29,6 +30,7 @@ open class HtmlEditorLite : VBox() {
 		htmlContent = prop.value
 		htmlContentBidi = prop
 	}
+	var processor:RichTextProcessor? = null
 	
 	@Suppress("unused")
 	val webView = WebView().attachTo(this) {
@@ -36,9 +38,9 @@ open class HtmlEditorLite : VBox() {
 			val editable = doc?.getElementById("editable") as? HTMLElementImpl
 			editable?.innerHTML = htmlContent
 			editable?.addEventListener("input",{
-				val hc = engine.executeScript("document.getElementById('editable').innerHTML") as? String
+				val hc = engine.executeScript("document.getElementById('editable').innerHTML") as? String ?: ""
 				modifyingHc++
-				htmlContent = hc?:""
+				htmlContent = processor?.process(hc)?:hc
 				modifyingHc--
 			},false)
 		}

@@ -77,7 +77,7 @@ monster = element monster {
         ATrim?,
         content*
     }?
-    & element plural { empty }?
+    & element plural { 'true' | 'false' }?
     & element a { text }?
     & element pronouns {
         attribute he { text },
@@ -216,7 +216,7 @@ script = element script {
 # scenes
 scene-fin = menu | next | scenefin-if | battle
 menu = element menu {
-    button+
+    content* & button+
 }
 button = element button {
     attribute text { text },
@@ -229,7 +229,8 @@ button = element button {
     }?
 }
 next = element next {
-   text
+   attribute ref { text },
+   empty
 }
 battle = element battle {
     attribute monster { text },
