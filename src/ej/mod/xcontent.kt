@@ -4,7 +4,6 @@ import ej.editor.utils.escapeXmlAttr
 import ej.editor.utils.filteredIsInstanceMutable
 import ej.utils.affix
 import ej.utils.crop
-import ej.utils.longSwap
 import javafx.beans.property.ObjectProperty
 import javafx.collections.ObservableList
 import tornadofx.*
@@ -15,15 +14,10 @@ import javax.xml.bind.annotation.*
 
 interface XStatement : ModDataNode {
 }
+interface XComplexStatement: XStatement {
+	val content: ObservableList<XStatement>
+}
 
-fun XStatement.remove(item:XStatement):Boolean = when(this) {
-	is XContentContainer -> content.remove(item)
-	else -> false
-}
-fun XStatement.swap(i:Int, j:Int) = when(this) {
-	is XContentContainer -> content.longSwap(i, j)
-	else -> false
-}
 
 @Suppress("unused")
 internal fun XStatement.defaultToString(tagname:String, attrs:String, content:String) =
@@ -59,7 +53,7 @@ enum class TrimMode {
 	}
 }
 
-abstract class XContentContainer : XStatement, StoryContainer {
+abstract class XContentContainer : XComplexStatement, StoryContainer {
 	
 	@XmlElementRefs(
 			XmlElementRef(name = "t", type = XcText::class),
@@ -82,7 +76,7 @@ abstract class XContentContainer : XStatement, StoryContainer {
 	@get:XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
 	
-	val content = ArrayList<XStatement>().observable()
+	override val content = ArrayList<XStatement>().observable()
 	
 	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
 	

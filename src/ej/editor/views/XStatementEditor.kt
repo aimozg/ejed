@@ -39,7 +39,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 	
 	class DisplayStmt(stmt:XsDisplay) : StmtEditorBody<XsDisplay>(stmt) {
 		init {
-			label("Display text: ")
+			label("Display subscene: ")
 			textfield(stmt.ref)
 		}
 	}

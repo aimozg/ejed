@@ -2,13 +2,12 @@ package ej.editor.views
 
 import ej.editor.Styles
 import ej.editor.utils.ContextualTreeSelection
+import ej.editor.utils.findItem
 import ej.editor.utils.listBinding
 import ej.editor.utils.onChangeWeak
-import ej.editor.utils.select
 import ej.mod.*
 import ej.utils.addToList
 import ej.utils.affixNonEmpty
-import ej.utils.longSwap
 import ej.utils.squeezeWs
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
@@ -136,7 +135,57 @@ open class XStatementTreeWithEditor : GridPane() {
 		)
 	}
 	val contextualCurrent: ContextualTreeSelection<XStatement>? by contextualCurrentProperty
-	val selected:XStatement? get() = contextualCurrentProperty.value?.value
+
+	fun indexOfStmt(item:TreeItem<XStatement>):Int {
+		val srclist = (item.parent?.value as? XComplexStatement)?.content?:contents
+		return srclist.indexOf(item.value)
+	}
+	fun removeStmt(item:TreeItem<XStatement>) {
+		val me = item.value
+		val src = item.parent?.value
+		if (src == null) {
+			contents.remove(me)
+		} else {
+			(src as XComplexStatement).content.remove(me)
+		}
+		println("[INFO] Removed $me}") // TODO owner
+	}
+	fun insertStmt(me:XStatement, dest:TreeItem<XStatement>?, destIndex:Int) {
+		if (dest == null) {
+			contents.add(destIndex, me)
+		} else {
+			(dest.value as XComplexStatement).content.add(destIndex, me)
+		}
+		println("[INFO] Inserted $me") // TODO owner
+	}
+	fun moveStmt(item:TreeItem<XStatement>, dest:TreeItem<XStatement>?, destIndex: Int) {
+		val wasExpanded = item.isExpanded
+		val me = item.value
+		removeStmt(item)
+		insertStmt(me, dest, destIndex)
+		tree.findItem { it == me }?.let { item2 ->
+			if (wasExpanded) item2.expandAll()
+			tree.selectionModel.select(item2)
+		}
+	}
+	fun posForInsertion():Pair<TreeItem<XStatement>?,Int> {
+		val cc = contextualCurrent ?: return (null to 0)
+		val cci = cc.item
+		val ccp = cc.parent
+		val ccv = cc.value
+		if (cci.isLeaf && ccv is XComplexStatement) {
+			return cci to 0
+		}
+		if (cc.inRoot) {
+			return null to indexOfStmt(cci)
+		}
+		return ccp to indexOfStmt(cci)
+	}
+	fun insertStmtHere(me:XStatement) {
+		val pos = posForInsertion()
+		insertStmt(me,pos.first,pos.second)
+	}
+
 	init {
 		hgap = 5.0
 		vgap = 5.0
@@ -149,11 +198,11 @@ open class XStatementTreeWithEditor : GridPane() {
 		}
 		row {
 			label("Add")
-			button("Text")
+			button("Text").action { insertStmtHere(XcText("Input text here")) }
 			button("If-Else") { isDisable = true }
-			button("Display") { isDisable = true }
-			button("Output") { isDisable = true }
-			button("Battle") { isDisable = true }
+			button("Display").action { insertStmtHere(XsDisplay()) }
+			button("Output").action { insertStmtHere(XsOutput()) }
+			button("Battle").action { insertStmtHere(XsBattle()) }
 			button("...") { isDisable = true }
 		}
 		row {
@@ -164,24 +213,7 @@ open class XStatementTreeWithEditor : GridPane() {
 				})
 				action {
 					val contextualCurrent = contextualCurrent ?: return@action
-					val (item, parent, siblings) = contextualCurrent
-					if (parent == null || siblings == null || parent.value == null) {
-						val i = contents.indexOf(item.value)
-						if (contents.longSwap(i, i-1)) {
-							println("[INFO] Moved up $item") // TODO owner
-							tree.select { it == item.value }
-						} else {
-							println("[WARN] Cannot move up $item")
-						}
-					} else {
-						val i = siblings.indexOf(item)
-						if (parent.value?.swap(i, i-1) == true) {
-							println("[INFO] Moved up $item") // TODO owner
-							tree.select { it == item.value }
-						} else {
-							println("[WARN] Cannot move up $item")
-						}
-					}
+					moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item)-1)
 				}
 			}
 			button("Move Down") {
@@ -190,30 +222,14 @@ open class XStatementTreeWithEditor : GridPane() {
 				})
 				
 				action {
-					val selected = selected
-					when (selected) {
-						// todo
-					}
+					val contextualCurrent = contextualCurrent ?: return@action
+					moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item)+1)
 				}
 			}
 			button("Remove") {
 				disableProperty().bind(contextualCurrentProperty.isNull)
 				action {
-					val parent = contextualCurrent?.parentValue
-					val item = contextualCurrent?.value ?: return@action
-					if (parent == null) {
-						if (contents.remove(item)) {
-							println("[INFO] Removed $item") // TODO owner
-						} else {
-							println("[WARN] Cannot remove $item")
-						}
-					} else {
-						if (parent.remove(item)) {
-							println("[INFO] Removed $item from $parent")
-						} else {
-							println("[WARN] Cannot remove $item from $parent")
-						}
-					}
+					removeStmt(contextualCurrent?.item ?: return@action)
 				}
 			}
 		}
