@@ -5,7 +5,9 @@ import ej.editor.utils.TextAreaOutputStream
 import ej.editor.utils.onChangeAndNow
 import ej.editor.views.ModListView
 import ej.editor.views.ModView
+import ej.mod.ModData
 import javafx.geometry.Side
+import javafx.scene.input.KeyCombination
 import tornadofx.*
 import java.io.PrintStream
 
@@ -29,8 +31,11 @@ class EditorView : AModView() {
 		top {
 			menubar {
 				menu("Mod") {
-					item("New") {
-						isDisable = true
+					item("New").action {
+						val name = ej.editor.utils.textInputDialog("New mod","Enter new mod name","unnamed") ?: return@action
+						controller.mod = ModData().apply {
+							this.name = name
+						}
 					}
 					item("Open...").action {
 						if (center.uiComponent<ModListView>() != null) {
@@ -39,12 +44,12 @@ class EditorView : AModView() {
 							center = find<ModListView>().root
 						}
 					}
-					item("Save") {
+					item("Save", KeyCombination.valueOf("Ctrl+S")) {
 						enableWhen(controller.modProperty.isNotNull)
 					}.action {
 						controller.saveMod()
 					}
-					item("Save As...") {
+					item("Save As...", KeyCombination.valueOf("Ctrl+Shift+S")) {
 						enableWhen(controller.modProperty.isNotNull)
 					}.action {
 						controller.saveModAs()
