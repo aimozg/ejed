@@ -2,6 +2,7 @@ package ej.mod
 
 import ej.editor.utils.escapeXmlAttr
 import ej.editor.utils.filteredIsInstanceMutable
+import ej.editor.utils.observableUnique
 import ej.utils.affix
 import ej.utils.crop
 import javafx.beans.property.ObjectProperty
@@ -76,7 +77,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	@get:XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
 	
-	override val content = ArrayList<XStatement>().observable()
+	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observableUnique()
 	
 	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
 	
@@ -148,7 +149,7 @@ class XcLib : StoryStmt {
 			XmlElement(name = "scene", type = XcScene::class),
 			XmlElement(name = "text", type = XcNamedText::class)
 	)
-	override val lib = ArrayList<StoryStmt>().observable()
+	override val lib = ArrayList<StoryStmt>().observableUnique()
 
 	@XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit

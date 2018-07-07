@@ -1,5 +1,6 @@
 package ej.editor.utils
 
+import com.sun.javafx.collections.ObservableListWrapper
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
@@ -59,6 +60,15 @@ fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> {
 	val source = this
 	return ArrayList<O>().observable().apply {
 		bind(source,transform)
+	}
+}
+fun <T> List<T>.observableUnique():ObservableList<T> = object: ObservableListWrapper<T>(this.observable()) {
+	override fun hashCode(): Int {
+		return System.identityHashCode(this)
+	}
+	
+	override fun equals(other: Any?): Boolean {
+		return this === other
 	}
 }
 

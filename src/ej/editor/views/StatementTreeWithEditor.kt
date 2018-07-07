@@ -12,6 +12,7 @@ import ej.utils.addToList
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
 import javafx.geometry.Orientation
 import javafx.scene.control.SplitPane
 import javafx.scene.control.ToggleButton
@@ -38,7 +39,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
 	val contentsProperty = tree.contentsProperty
-	var contents by contentsProperty
+	var contents: ObservableList<XStatement> by contentsProperty
 	private var expandButton by singleAssign<ToggleButton>()
 	private val weakListeners = ArrayList<Any>()
 

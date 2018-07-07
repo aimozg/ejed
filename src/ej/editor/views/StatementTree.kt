@@ -5,6 +5,7 @@ import ej.editor.stmts.manager
 import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.binding1
 import ej.editor.utils.binding2
+import ej.editor.utils.observableUnique
 import ej.mod.*
 import ej.utils.affixNonEmpty
 import javafx.beans.property.SimpleObjectProperty
@@ -42,7 +43,7 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 }
 
 open class StatementTree : TreeView<XStatement>() {
-	val contentsProperty = SimpleObjectProperty(ArrayList<XStatement>().observable())
+	val contentsProperty = SimpleObjectProperty(ArrayList<XStatement>().observableUnique())
 	var contents by contentsProperty
 	
 	val expandedNodesProperty = SimpleObjectProperty<Boolean>(false)
