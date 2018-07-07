@@ -2,8 +2,10 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.utils.binding4
+import ej.editor.utils.isNullOrEmpty
 import ej.editor.views.StatementTree
 import ej.mod.XsSet
+import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 
 /*
@@ -13,19 +15,51 @@ import tornadofx.*
 
 object SetMgr : StatementManager<XsSet>() {
 	override fun editorBody(stmt: XsSet) = defaultEditorBody() {
-		label("Property ")
-		textfield(stmt.varname)
-		checkbox("in object") {
-			isDisable = stmt.inobj.isNullOrBlank()
+		label(stmt.opProperty.stringBinding {
+			when (it) {
+				null, "=", "assign" -> "Set to "
+				"+", "+=", "add" -> "Add "
+				"-" -> "Subtract "
+				"*" -> "Multiply by "
+				"/" -> "Divide by "
+				else -> it
+			}
+		})
+		textfield(stmt.valueProperty)
+		label(stmt.opProperty.stringBinding {
+			when (it) {
+				null, "=", "assign",
+				"*", "/" -> "property"
+				"+", "+=", "add" -> "to property"
+				"-" -> "from property "
+				else -> "property"
+			}
+		})
+		textfield(stmt.varnameProperty) {
+			prefColumnCount = 6
 		}
-		when (stmt.op) {
-			null, "=", "assign" -> label("set to")
-			"+", "+=", "add" -> label("add ")
-			"-" -> label("subtract ")
-			"*" -> label("multiply by ")
-			"/" -> label("divide by ")
+		checkbox("of object") {
+			selectedProperty().bindBidirectional(object : SimpleObjectProperty<Boolean>() {
+				override fun setValue(v: Boolean?) {
+					if (v == true) {
+						if (stmt.inobj.isEmpty()) {
+							stmt.inobj = "mod"
+						}
+					} else {
+						stmt.inobj = ""
+					}
+				}
+				
+				init {
+					bind(stmt.inobjProperty.isNullOrEmpty().not())
+				}
+			})
 		}
-		textfield(stmt.value)
+		textfield(stmt.inobjProperty) {
+			disableWhen { stmt.inobjProperty.isNullOrEmpty() }
+			prefColumnCount = 6
+		}
+		
 	}
 	
 	override fun treeGraphic(stmt: XsSet, tree: StatementTree) =

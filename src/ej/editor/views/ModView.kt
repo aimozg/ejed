@@ -63,7 +63,7 @@ sealed class ModTreeNode {
 class ModView: AModView() {
 	
 	val treeWithEditor by lazy {
-		StatementTreeWithEditor().apply {
+		StatementTreeWithEditor(mod).apply {
 			vgrow = Priority.ALWAYS
 		}
 	}

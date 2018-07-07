@@ -1,6 +1,7 @@
 package ej.editor.utils
 
 import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
@@ -19,6 +20,9 @@ import java.util.concurrent.Callable
  * Created by aimozg on 05.07.2018.
  * Confidential until published on GitHub
  */
+
+fun ObservableValue<out String?>.isNullOrEmpty(): BooleanBinding =
+		booleanBinding { it.isNullOrEmpty() }
 
 fun <T> ObservableValue<T>.onChangeAndNowWeak(op: (T?) -> Unit): ChangeListener<T> {
 	op(value)

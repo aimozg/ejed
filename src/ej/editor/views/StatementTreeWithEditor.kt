@@ -23,7 +23,7 @@ import tornadofx.*
 val DATAFORMAT_XSTATEMENT = DataFormat("application/x-ejed-xstatement")
 fun Dragboard.hasStatement() = hasContent(DATAFORMAT_XSTATEMENT)
 
-open class StatementTreeWithEditor : VBox() {
+open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	var editor: Region = Pane()
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
@@ -191,6 +191,11 @@ open class StatementTreeWithEditor : VBox() {
 					})
 					action { insertStmtHere(XlElse()) }
 				}
+				button("Set var").action { insertStmtHere(XsSet().apply {
+					inobj = "state"
+					varname = mod.stateVars.firstOrNull()?.name?:"flag1"
+					value = "1"
+				}) }
 				button("Display").action { insertStmtHere(XsDisplay()) }
 				button("Output").action { insertStmtHere(XsOutput()) }
 			}
