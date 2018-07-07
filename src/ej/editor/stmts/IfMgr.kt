@@ -10,7 +10,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 object IfMgr : StatementManager<XlIf>() {
-	override fun editorBody(stmt: XlIf) = StmtEditorBody(stmt) {
+	override fun editorBody(stmt: XlIf) = defaultEditorBody() {
 		label("If condition ")
 		textfield(stmt.testProperty)
 		label(" is true")
@@ -18,11 +18,9 @@ object IfMgr : StatementManager<XlIf>() {
 	}
 	
 	override fun treeGraphic(stmt: XlIf, tree: StatementTree) =
-			StmtEditorLabel(stmt) {
-				label(
-						stmt.testProperty.stringBinding { "If: $it" }
+			simpleTreeLabel(
+					stmt.testProperty.stringBinding { "If: $it" }
 				).addClass(Styles.xlogic)
-			}
 	
 }
 

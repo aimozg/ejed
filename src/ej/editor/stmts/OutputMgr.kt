@@ -8,13 +8,13 @@ import javafx.scene.layout.Priority
 import tornadofx.*
 
 object OutputMgr : StatementManager<XsOutput>() {
-	override fun editorBody(stmt: XsOutput) = StmtEditorBody(stmt) {
+	override fun editorBody(stmt: XsOutput) = defaultEditorBody() {
 		label("Evaluate and display:")
 		textfield(stmt.expression) { hgrow = Priority.ALWAYS }
 	}
 	
 	override fun treeGraphic(stmt: XsOutput, tree: StatementTree) =
-			StmtEditorLabel(stmt) {
-				label("Output: ${stmt.expression.squeezeWs()}").addClass(Styles.xcommand)
-			}
+			simpleTreeLabel(stmt.expressionProperty.stringBinding {
+				"Output: ${it?.squeezeWs()}"
+			}).addClass(Styles.xcommand)
 }

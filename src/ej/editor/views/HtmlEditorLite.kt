@@ -2,7 +2,7 @@ package ej.editor.views
 
 import com.sun.webkit.dom.HTMLElementImpl
 import ej.editor.Styles
-import ej.editor.utils.RichTextProcessor
+import ej.editor.utils.XmlTextProcessor
 import javafx.beans.property.ObjectProperty
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -30,7 +30,7 @@ open class HtmlEditorLite : VBox() {
 		htmlContent = prop.value
 		htmlContentBidi = prop
 	}
-	var processor:RichTextProcessor? = null
+	var processor:XmlTextProcessor? = null
 	
 	@Suppress("unused")
 	val webView = WebView().attachTo(this) {

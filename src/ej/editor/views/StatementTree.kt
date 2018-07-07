@@ -1,13 +1,14 @@
 package ej.editor.views
 
 import ej.editor.Styles
-import ej.editor.stmts.StmtEditorLabel
 import ej.editor.stmts.manager
+import ej.editor.stmts.simpleTreeLabel
+import ej.editor.utils.binding1
+import ej.editor.utils.binding2
 import ej.mod.*
 import ej.utils.affixNonEmpty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
-import javafx.scene.control.Label
 import javafx.scene.control.TreeCell
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
@@ -21,41 +22,22 @@ import tornadofx.*
 
 fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 	return when (stmt) {
-		is XlElse -> Label("Else:").addClass(Styles.xlogic)
-		is XlElseIf -> Label("Else if: ${stmt.test}").addClass(Styles.xlogic)
-		is XcText -> TextNodeLabel(tree, stmt)
 
-		is XsSet -> Label().apply{
-			addClass(Styles.xcommand)
-			val s:String = if (stmt.inobj != null) {
-				"property '${stmt.varname}' of ${stmt.inobj}"
-			} else {
-				"variable '${stmt.varname}'"
-			}
-			text = when (stmt.op) {
-				"add", "+", "+=" -> "Add ${stmt.value} to $s"
-				null, "set", "=" -> "Set ${stmt.value} to $s"
-				else -> "Apply ${stmt.op}${stmt.value} to $s"
-			}
-		}
-		is XsBattle ->
-			Label(
-					"Battle ${stmt.monster}" + (stmt.options.affixNonEmpty(" with options: "))
-			).addClass(Styles.xcommand)
+		is XsBattle -> simpleTreeLabel(
+				binding2(stmt.monsterProperty,stmt.optionsProperty) { monster, options ->
+					"Battle $monster" + (options.affixNonEmpty(" with options: "))
+				}
+		).addClass(Styles.xcommand)
 		
-		is XcLib -> Label().apply {
-			textProperty().bind(stmt.nameProperty().stringBinding{ "<lib $it>" })
-			addClass(Styles.xcomment)
-		}
-		is XcNamedText -> Label().apply {
-			textProperty().bind(stmt.nameProperty().stringBinding{ "<text $it>" })
-			addClass(Styles.xcomment)
-		}
+		is XcLib -> simpleTreeLabel(
+				binding1(stmt.nameProperty()){ "<lib $it>" }
+		).addClass(Styles.xcomment)
+		is XcNamedText -> simpleTreeLabel(
+				binding1(stmt.nameProperty()){ "<text $it>" }
+		).addClass(Styles.xcomment)
 
 		else -> stmt.manager()?.treeGraphic(stmt,tree) ?:
-				StmtEditorLabel(stmt) {
-					label("TODO $stmt").addClass(Styles.xcommand)
-				}
+				simpleTreeLabel("TODO $stmt").addClass(Styles.xcommand)
 	}
 }
 

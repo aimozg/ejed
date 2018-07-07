@@ -2,29 +2,48 @@ package ej.mod
 
 import com.sun.xml.internal.txw2.annotation.XmlElement
 import ej.utils.affix
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import tornadofx.*
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
+import javax.xml.bind.annotation.XmlTransient
 import javax.xml.bind.annotation.XmlValue
 
 
 @XmlRootElement(name = "display")
 class XsDisplay : XStatement {
+	@XmlTransient
+	val refProperty = SimpleStringProperty("")
 	@get:XmlAttribute
-	var ref: String = ""
+	var ref: String by refProperty
 	
 	override fun toString() = defaultToString("display","",ref)
 }
 
 @XmlRootElement(name = "set")
 class XsSet : XStatement {
+	@XmlTransient
+	val varnameProperty = SimpleObjectProperty("")
 	@get:XmlAttribute(name = "var")
-	var varname: String = ""
+	var varname: String by varnameProperty
+	
+	@XmlTransient
+	val inobjProperty = SimpleObjectProperty<String?>( null)
 	@get:XmlAttribute(name = "in")
-	var inobj: String? = null
+	var inobj: String? by inobjProperty
+	
+	// TODO enum
+	@XmlTransient
+	val opProperty = SimpleObjectProperty<String?>( null)
 	@get:XmlAttribute(name = "op")
-	var op: String? = null // TODO enum
+	var op: String? by opProperty
+	
+	@XmlTransient
+	val valueProperty = SimpleObjectProperty("")
 	@get:XmlAttribute(name = "value")
-	var value: String = ""
+	var value: String by valueProperty
+	
 	
 	override fun toString() = defaultToString(
 			"set",
@@ -37,8 +56,10 @@ class XsSet : XStatement {
 
 @XmlRootElement(name = "output")
 class XsOutput : XStatement {
+	@XmlTransient
+	val expressionProperty = SimpleStringProperty("")
 	@get:XmlValue
-	var expression: String = ""
+	var expression by expressionProperty
 	
 	override fun toString() = defaultToString("output","",expression)
 }
@@ -88,11 +109,15 @@ class XsNext : XStatement {
 
 @XmlRootElement(name = "battle")
 class XsBattle : XStatement {
+	@XmlTransient
+	val monsterProperty = SimpleStringProperty("")
 	@get:XmlAttribute
-	var monster: String = ""
+	var monster by monsterProperty
 	
+	@XmlTransient
+	val optionsProperty = SimpleStringProperty("")
 	@get:XmlAttribute
-	var options: String? = ""
+	var options by optionsProperty
 	
 	override fun toString() = defaultToString("battle",options.affix(" options='", "'"),monster)
 }

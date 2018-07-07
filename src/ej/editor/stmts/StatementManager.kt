@@ -3,9 +3,10 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.views.StatementTree
 import ej.mod.*
+import javafx.beans.value.ObservableValue
 import javafx.geometry.Pos
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Priority
+import javafx.scene.control.Label
+import javafx.scene.layout.*
 import tornadofx.*
 
 /*
@@ -14,32 +15,43 @@ import tornadofx.*
  */
 
 abstract class StatementManager<T:XStatement> {
-	abstract fun editorBody(stmt:T):StmtEditorBody
-	abstract fun treeGraphic(stmt:T, tree: StatementTree): StmtEditorLabel
+	abstract fun editorBody(stmt:T):Pane
+	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
 }
 
-open class StmtEditorBody(val stmt:XStatement) : HBox() {
-	init {
-		addClass(Styles.xstmtEditor)
-		hgrow = Priority.ALWAYS
-		alignment = Pos.BASELINE_LEFT
-	}
-}
-inline fun StmtEditorBody(stmt:XStatement,init:StmtEditorBody.()->Unit):StmtEditorBody =
-		StmtEditorBody(stmt).apply(init)
-open class StmtEditorLabel(val stmt:XStatement):HBox() {
+inline fun defaultEditorBody(init:HBox.()->Unit):HBox =
+		HBox().apply {
+			addClass(Styles.xstmtEditor)
+			hgrow = Priority.ALWAYS
+			alignment = Pos.BASELINE_LEFT
+			init()
+		}
+inline fun vboxEditorBody(init:VBox.()->Unit):VBox =
+		VBox().apply {
+			addClass(Styles.xstmtEditor)
+			hgrow = Priority.ALWAYS
+			alignment = Pos.BASELINE_LEFT
+			init()
+		}
 
-}
-inline fun StmtEditorLabel(stmt:XStatement,init:StmtEditorLabel.()->Unit):StmtEditorLabel =
-		StmtEditorLabel(stmt).apply(init)
-
+inline fun simpleTreeLabel(text:String="",init: Label.()->Unit={}):Label =
+		Label(text).apply {
+			init()
+		}
+inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={}):Label =
+		Label().apply {
+			textProperty().bind(text)
+			init()
+		}
 
 @Suppress("UNCHECKED_CAST")
 fun<T:XStatement> T.manager():StatementManager<T>? = when(this) {
 	is XsDisplay -> DisplayMgr as StatementManager<T>
 	is XsOutput -> OutputMgr as StatementManager<T>
+	is XsSet -> SetMgr as StatementManager<T>
 	is XlIf -> IfMgr as StatementManager<T>
 	is XlElseIf -> ElseIfMgr as StatementManager<T>
 	is XlElse -> ElseMgr as StatementManager<T>
+	is XcText -> TextMgr as StatementManager<T>
 	else -> null
 }

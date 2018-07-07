@@ -2,10 +2,7 @@ package ej.editor.views
 
 import com.sun.javafx.binding.StringConstant
 import ej.editor.AModView
-import ej.editor.utils.onChangeAndNow
-import ej.editor.utils.select
-import ej.editor.utils.textInputDialog
-import ej.editor.utils.transformed
+import ej.editor.utils.*
 import ej.mod.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
@@ -31,12 +28,12 @@ sealed class ModTreeNode {
 		}
 	}
 	class StoryNode(val story:StoryStmt): ModTreeNode() {
-		override val textProperty = story.nameProperty().stringBinding {
+		override val textProperty = binding1(story.nameProperty()) {
 			when(story) {
 				is XcScene -> "(Scene) $it"
 				is XcNamedText -> "(Subscene) $it"
 				is XcLib -> "$it/"
-				else -> it
+				else -> it?:""
 			}
 		}
 		override val population = story.lib.transformed { StoryNode(it) }
@@ -100,15 +97,6 @@ class ModView: AModView() {
 			item("Mod contents") {
 				paddingAll = 5.0
 				spacing = 5.0
-				tree.attachTo(this) {
-					onUserSelect {
-						selectModEntry(it)
-					}
-					cellFormat {
-						textProperty().bind(it.textProperty)
-					}
-					vgrow = Priority.ALWAYS
-				}
 				expanded = true
 				label("Add: ")
 				hbox(5.0) {
@@ -161,6 +149,15 @@ class ModView: AModView() {
 							addScene(parent, XcNamedText().apply {name = dialogResult })
 						}
 					}
+				}
+				tree.attachTo(this) {
+					onUserSelect {
+						selectModEntry(it)
+					}
+					cellFormat {
+						textProperty().bind(it.textProperty)
+					}
+					vgrow = Priority.ALWAYS
 				}
 			}
 		}

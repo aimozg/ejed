@@ -7,11 +7,13 @@ import tornadofx.*
 
 object DisplayMgr : StatementManager<XsDisplay>() {
 	override fun treeGraphic(stmt: XsDisplay, tree: StatementTree) =
-			StmtEditorLabel(stmt) {
-				label("Display: ${stmt.ref}").addClass(Styles.xcommand)
+			simpleTreeLabel(
+					stmt.refProperty.stringBinding{"Display: ${stmt.ref}"}
+			) {
+				addClass(Styles.xcommand)
 			}
 	
-	override fun editorBody(stmt: XsDisplay) = StmtEditorBody(stmt) {
+	override fun editorBody(stmt: XsDisplay) = defaultEditorBody() {
 		label("Display subscene: ")
 		textfield(stmt.ref)
 	}

@@ -1,6 +1,8 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.manager
 import ej.editor.utils.ContextualTreeSelection
 import ej.editor.utils.findItem
 import ej.editor.utils.listBinding
@@ -11,10 +13,7 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import javafx.geometry.Orientation
-import javafx.scene.control.SplitPane
-import javafx.scene.control.ToggleButton
-import javafx.scene.control.TreeCell
-import javafx.scene.control.TreeItem
+import javafx.scene.control.*
 import javafx.scene.input.DataFormat
 import javafx.scene.input.Dragboard
 import javafx.scene.input.TransferMode
@@ -252,13 +251,16 @@ open class StatementTreeWithEditor : VBox() {
 				expandedNodesProperty.bind(expandButton.selectedProperty())
 			}
 			contextualCurrentProperty.onChangeWeak { cts ->
-				splitPane.items -= editor
 				val value = cts?.item?.value
-				if (value != null) splitPane.items += StmtEditorBodies.bodyFor(value).also {
+				editor = value?.let { stmt ->
+					stmt.manager()?.editorBody(value)
+							?: defaultEditorBody { label("TODO ${stmt.javaClass}") }
+				} ?: Label("<nothing>")
+				editor.apply {
 					vgrow = Priority.SOMETIMES
 					hgrow = Priority.ALWAYS
-					editor = it
 				}
+				splitPane.items[1] = editor
 			}.addToList(weakListeners)
 			items += editor
 		}

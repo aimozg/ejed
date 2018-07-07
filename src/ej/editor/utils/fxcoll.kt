@@ -1,5 +1,6 @@
 package ej.editor.utils
 
+import javafx.beans.binding.Bindings
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
@@ -12,6 +13,7 @@ import javafx.collections.WeakListChangeListener
 import javafx.collections.transformation.FilteredList
 import tornadofx.*
 import java.util.*
+import java.util.concurrent.Callable
 
 /*
  * Created by aimozg on 05.07.2018.
@@ -55,6 +57,36 @@ fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> {
 		bind(source,transform)
 	}
 }
+
+fun <T1,R> binding1(prop1:ObservableValue<T1>,
+                    op:(T1?)->R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value)
+		}, prop1)
+
+fun <T1,T2,R> binding2(prop1:ObservableValue<T1>,
+                       prop2:ObservableValue<T2>,
+                       op:(T1?,T2?)->R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value,prop2.value)
+		}, prop1, prop2)
+
+fun <T1,T2,T3,R> binding3(prop1:ObservableValue<T1>,
+                          prop2:ObservableValue<T2>,
+                          prop3:ObservableValue<T3>,
+                          op:(T1?,T2?,T3?)->R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value,prop2.value,prop3.value)
+		}, prop1, prop2, prop3)
+
+fun <T1,T2,T3,T4,R> binding4(prop1:ObservableValue<T1>,
+                          prop2:ObservableValue<T2>,
+                          prop3:ObservableValue<T3>,
+                          prop4:ObservableValue<T4>,
+                          op:(T1?,T2?,T3?,T4?)->R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value,prop2.value,prop3.value,prop4.value)
+		}, prop1, prop2, prop3,prop4)
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified B> ObservableList<*>.filteredIsInstance(): FilteredList<B> {

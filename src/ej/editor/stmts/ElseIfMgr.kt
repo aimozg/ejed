@@ -6,7 +6,7 @@ import ej.mod.XlElseIf
 import tornadofx.*
 
 object ElseIfMgr : StatementManager<XlElseIf>() {
-	override fun editorBody(stmt: XlElseIf) = StmtEditorBody(stmt) {
+	override fun editorBody(stmt: XlElseIf) = defaultEditorBody() {
 		label("Else, if condition ")
 		textfield(stmt.testProperty)
 		label(" is true")
@@ -14,11 +14,9 @@ object ElseIfMgr : StatementManager<XlElseIf>() {
 	}
 	
 	override fun treeGraphic(stmt: XlElseIf, tree: StatementTree) =
-			StmtEditorLabel(stmt) {
-				label(
-						stmt.testProperty.stringBinding { "Else If: $it" }
-				).addClass(Styles.xlogic)
-			}
+			simpleTreeLabel(
+					stmt.testProperty.stringBinding { "Else If: $it" }
+			).addClass(Styles.xlogic)
 	
 }
 

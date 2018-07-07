@@ -6,13 +6,11 @@ import ej.mod.XlElse
 import tornadofx.*
 
 object ElseMgr : StatementManager<XlElse>() {
-	override fun editorBody(stmt: XlElse) = StmtEditorBody(stmt) {
+	override fun editorBody(stmt: XlElse) = defaultEditorBody() {
 		label("Else")
 	}
 	
 	override fun treeGraphic(stmt: XlElse, tree: StatementTree) =
-			StmtEditorLabel(stmt) {
-				label("Else:").addClass(Styles.xlogic)
-			}
+			simpleTreeLabel("Else:").addClass(Styles.xlogic)
 	
 }
