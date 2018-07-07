@@ -109,6 +109,7 @@ abstract class XmlTextProcessor {
 				c.eat(1)
 			} else break
 		}
+		rslt.append(c.s)
 		return rslt.toString()
 	}
 	protected abstract fun testBegin(tag:String):Action

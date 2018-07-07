@@ -44,8 +44,8 @@ class Styles : Stylesheet() {
 	
 	init {
 		root and editorView {
-			prefHeight = 600.px
-			prefWidth = 800.px
+			prefWidth = 1200.px
+			prefHeight = 800.px
 		}
 		textArea and consola {
 			baseColor= Color.BLACK

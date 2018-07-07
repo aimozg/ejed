@@ -13,18 +13,28 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import javafx.geometry.Orientation
-import javafx.scene.control.*
+import javafx.scene.control.SplitPane
+import javafx.scene.control.ToggleButton
+import javafx.scene.control.TreeCell
+import javafx.scene.control.TreeItem
 import javafx.scene.input.DataFormat
 import javafx.scene.input.Dragboard
 import javafx.scene.input.TransferMode
-import javafx.scene.layout.*
+import javafx.scene.layout.GridPane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
+import javafx.scene.layout.VBox
 import tornadofx.*
 
 val DATAFORMAT_XSTATEMENT = DataFormat("application/x-ejed-xstatement")
 fun Dragboard.hasStatement() = hasContent(DATAFORMAT_XSTATEMENT)
 
 open class StatementTreeWithEditor(val mod:ModData) : VBox() {
-	var editor: Region = Pane()
+	var editor: Region = defaultEditorBody {
+		label("<nothing selected>")
+		vgrow = Priority.ALWAYS
+		hgrow = Priority.ALWAYS
+	}
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
 	val contentsProperty = tree.contentsProperty
@@ -260,7 +270,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				editor = value?.let { stmt ->
 					stmt.manager()?.editorBody(value)
 							?: defaultEditorBody { label("TODO ${stmt.javaClass}") }
-				} ?: Label("<nothing>")
+				} ?: defaultEditorBody { label("<nothing selected>") }
 				editor.apply {
 					vgrow = Priority.SOMETIMES
 					hgrow = Priority.ALWAYS
@@ -268,6 +278,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				splitPane.items[1] = editor
 			}.addToList(weakListeners)
 			items += editor
+			setDividerPosition(0,0.5)
 		}
 	}
 }
