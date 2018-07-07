@@ -13,10 +13,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.control.*
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
+import javafx.scene.layout.*
 import tornadofx.*
 
 /*
@@ -117,7 +114,7 @@ open class StatementTree : TreeView<XStatement>() {
 	}
 }
 
-open class XStatementTreeWithEditor : GridPane() {
+open class XStatementTreeWithEditor : VBox() {
 	var editor: Region = Pane()
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
@@ -187,68 +184,75 @@ open class XStatementTreeWithEditor : GridPane() {
 	}
 
 	init {
-		hgap = 5.0
-		vgap = 5.0
-		row {
-			label("Options")
-			togglebutton {
-				expandButton = this
-				text = "Expand"
+		gridpane {
+			hgap = 5.0
+			vgap = 5.0
+			row {
+				label("Options")
+				togglebutton {
+					expandButton = this
+					text = "Expand"
+				}
+			}
+			row {
+				label("Add")
+				button("Text").action { insertStmtHere(XcText("Input text here")) }
+				button("If-Else") { isDisable = true }
+				button("Display").action { insertStmtHere(XsDisplay()) }
+				button("Output").action { insertStmtHere(XsOutput()) }
+				button("Battle").action { insertStmtHere(XsBattle()) }
+				button("...") { isDisable = true }
+			}
+			row {
+				label("Edit")
+				button("Move Up") {
+					disableProperty().bind(contextualCurrentProperty.objectBinding { cts ->
+						cts == null || cts.siblings?.firstOrNull()?.equals(cts.item) ?: true
+					})
+					action {
+						val contextualCurrent = contextualCurrent ?: return@action
+						moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item) - 1)
+					}
+				}
+				button("Move Down") {
+					disableProperty().bind(contextualCurrentProperty.objectBinding { cts ->
+						cts == null || cts.siblings?.lastOrNull()?.equals(cts.item) ?: true
+					})
+					
+					action {
+						val contextualCurrent = contextualCurrent ?: return@action
+						moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item) + 1)
+					}
+				}
+				button("Remove") {
+					disableProperty().bind(contextualCurrentProperty.isNull)
+					action {
+						removeStmt(contextualCurrent?.item ?: return@action)
+					}
+				}
 			}
 		}
-		row {
-			label("Add")
-			button("Text").action { insertStmtHere(XcText("Input text here")) }
-			button("If-Else") { isDisable = true }
-			button("Display").action { insertStmtHere(XsDisplay()) }
-			button("Output").action { insertStmtHere(XsOutput()) }
-			button("Battle").action { insertStmtHere(XsBattle()) }
-			button("...") { isDisable = true }
-		}
-		row {
-			label("Edit")
-			button("Move Up") {
-				disableProperty().bind(contextualCurrentProperty.objectBinding { cts ->
-					cts == null || cts.siblings?.firstOrNull()?.equals(cts.item)?:true
-				})
-				action {
-					val contextualCurrent = contextualCurrent ?: return@action
-					moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item)-1)
-				}
+		splitPane.attachTo(this) {
+			orientation = Orientation.VERTICAL
+			gridpaneConstraints { columnSpan = GridPane.REMAINING }
+			vgrow = Priority.ALWAYS
+			hgrow = Priority.ALWAYS
+			items += tree.apply {
+				vgrow = Priority.SOMETIMES
+				hgrow = Priority.ALWAYS
+				contextualCurrentProperty.onChangeWeak { cts ->
+					splitPane.items -= editor
+					val value = cts?.item?.value
+					if (value != null) splitPane.items += StmtEditorBody.bodyFor(value).also {
+						vgrow = Priority.SOMETIMES
+						hgrow = Priority.ALWAYS
+						editor = it
+					}
+				}.addToList(weakListeners)
+				expandButton.isSelected = expandedNodes
+				expandedNodesProperty.bind(expandButton.selectedProperty())
 			}
-			button("Move Down") {
-				disableProperty().bind(contextualCurrentProperty.objectBinding { cts ->
-					cts == null || cts.siblings?.lastOrNull()?.equals(cts.item)?:true
-				})
-				
-				action {
-					val contextualCurrent = contextualCurrent ?: return@action
-					moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item)+1)
-				}
-			}
-			button("Remove") {
-				disableProperty().bind(contextualCurrentProperty.isNull)
-				action {
-					removeStmt(contextualCurrent?.item ?: return@action)
-				}
-			}
-		}
-		row {
-			splitPane.attachTo(this) {
-				orientation = Orientation.VERTICAL
-				gridpaneConstraints { columnSpan = GridPane.REMAINING }
-				vgrow = Priority.ALWAYS
-				items += tree.apply {
-					vgrow = Priority.SOMETIMES
-					contextualCurrentProperty.onChangeWeak { cts ->
-						splitPane.items -= editor
-						val value = cts?.item?.value
-						if (value != null) splitPane.items += StmtEditorBody.bodyFor(value).also { editor = it }
-					}.addToList(weakListeners)
-					expandButton.isSelected = expandedNodes
-					expandedNodesProperty.bind(expandButton.selectedProperty())
-				}
-			}
+			items += editor
 		}
 	}
 }

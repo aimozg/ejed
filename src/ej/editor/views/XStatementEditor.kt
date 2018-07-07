@@ -41,6 +41,7 @@ open class StmtEditorBody<T:XStatement> constructor(val stmt:T) : HBox() {
 		init {
 			synchronized(Companion) {
 				cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
+					hgrow = Priority.ALWAYS
 					processor = object:RichTextProcessor() {
 						override fun takeBegin(tag: String) =
 								if (tag in FlashPermittedElements) TAKE
