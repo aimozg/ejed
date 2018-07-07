@@ -8,6 +8,7 @@ import ej.utils.affixNonEmpty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.control.Label
+import javafx.scene.control.TreeCell
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Region
@@ -66,6 +67,7 @@ open class StatementTree : TreeView<XStatement>() {
 	var expandedNodes by expandedNodesProperty
 	
 	private val fakeRoot = TreeItem<XStatement>()
+	var cellDecorator: ((TreeCell<XStatement>)->Unit)? = null
 	fun repopulate() {
 		populate {
 			val stmt = it.value
@@ -84,11 +86,12 @@ open class StatementTree : TreeView<XStatement>() {
 		val tree = this
 		cellFormat {
 			val cell = this
-			this.prefWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
-			this.maxWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
+			cell.addClass(Styles.treeCell)
+			cell.prefWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
+			cell.maxWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			alignment = Pos.TOP_LEFT
 			graphic = statementTreeGraphic(tree,it).also { g ->
-				g.addClass(Styles.treeNode)
+				g.addClass(Styles.treeGraphic)
 				g.maxWidthProperty().bind(
 					cell.maxWidthProperty()
 							.doubleBinding(g.layoutXProperty()) { cellMaxWidth ->
@@ -98,6 +101,7 @@ open class StatementTree : TreeView<XStatement>() {
 							}
 				)
 			}
+			cellDecorator?.invoke(cell)
 		}
 		
 		contentsProperty.onChange {

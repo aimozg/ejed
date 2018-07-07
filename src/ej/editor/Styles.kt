@@ -18,7 +18,8 @@ class Styles : Stylesheet() {
 		val consola by cssclass()
 		val monsterCombat by cssclass()
 		
-		val treeNode by cssclass()
+		val treeCell by cssclass()
+		val treeGraphic by cssclass()
 
 		val editorView by cssclass()
 		
@@ -31,6 +32,12 @@ class Styles : Stylesheet() {
 		val xcomment by cssclass()
 		val smallButton by cssclass()
 		val smallButtonSpace by cssclass()
+		
+		val dragover by cssclass()
+		val dragoverFromTop by cssclass()
+		val dragoverFromBottom by cssclass()
+		
+		val toolbarGrid by cssclass()
 		
 		const val MAX_DEPTH = 10
 	}
@@ -167,6 +174,20 @@ class Styles : Stylesheet() {
 				fontFamily = FONT_FACE_SCRIPT
 				fill = Color.DIMGRAY
 			}
+		}
+		treeCell {
+			and(dragover) {
+				treeGraphic { borderColor += box(Color.GREEN) }
+				and(dragoverFromTop) {
+					treeGraphic { borderWidth += box(2.px, 0.px, 0.px, 0.px) }
+				}
+				and(dragoverFromBottom) {
+					treeGraphic { borderWidth += box(0.px, 0.px, 2.px, 0.px) }
+				}
+			}
+		}
+		toolbarGrid contains button {
+			prefWidth = 60.px
 		}
 	}
 }
