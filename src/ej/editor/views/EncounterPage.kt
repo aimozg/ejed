@@ -32,7 +32,7 @@ class EncounterPage : AModView("Encounter"){
 				}
 			}
 		}
-		XStatementTreeWithEditor().attachTo(this) {
+		StatementTreeWithEditor().attachTo(this) {
 			contents = encounter.scene.content
 			vgrow = Priority.SOMETIMES
 		}

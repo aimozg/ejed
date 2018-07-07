@@ -137,7 +137,7 @@ class MonsterBodyView():AMonsterView("Body") {
 }
 
 class MonsterDescView():AMonsterView("Description") {
-	val editor = XStatementTreeWithEditor()
+	val editor = StatementTreeWithEditor()
 	
 	override val root = vbox {
 		editor.attachTo(this) {

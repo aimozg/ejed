@@ -5,11 +5,14 @@ import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
 
 @XmlRootElement(name="if")
-class XlIf : XContentContainer(), XStatement {
+class XlIf(test:String) : XContentContainer(), XStatement {
 	
 	@get:XmlAttribute
-	var test: String by property("")
+	var test: String by property(test)
 	fun testProperty() = getProperty(XlIf::test)
+	
+	@Suppress("unused")
+	constructor():this("")
 	
 	override fun toString() = defaultToString("if","test=$test")
 }
