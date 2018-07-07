@@ -3,7 +3,6 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.views.StatementTree
 import ej.mod.XlIf
-import javafx.scene.control.Label
 import tornadofx.*
 
 /*
@@ -11,7 +10,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 object IfMgr : StatementManager<XlIf>() {
-	override fun editorBody(stmt: XlIf) = StmtEditorBody<XlIf> {
+	override fun editorBody(stmt: XlIf) = StmtEditorBody(stmt) {
 		label("If condition ")
 		textfield(stmt.testProperty())
 		label(" is true")
@@ -19,11 +18,10 @@ object IfMgr : StatementManager<XlIf>() {
 	}
 	
 	override fun treeGraphic(stmt: XlIf, tree: StatementTree) =
-			Label().apply{
-				textProperty().bind(
+			StmtEditorLabel(stmt) {
+				label(
 						stmt.testProperty().stringBinding { "If: $it" }
-				)
-				addClass(Styles.xlogic)
+				).addClass(Styles.xlogic)
 			}
 	
 }

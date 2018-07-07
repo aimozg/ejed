@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.stmts.StmtEditorLabel
 import ej.editor.stmts.manager
 import ej.mod.*
 import ej.utils.affixNonEmpty
@@ -51,7 +52,9 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 		}
 
 		else -> stmt.manager()?.treeGraphic(stmt,tree) ?:
-			Label("TODO $stmt").addClass(Styles.xcommand)
+				StmtEditorLabel(stmt) {
+					label("TODO $stmt").addClass(Styles.xcommand)
+				}
 	}
 }
 

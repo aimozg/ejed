@@ -9,7 +9,6 @@ import ej.mod.XsOutput
 import javafx.geometry.Pos
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
 import tornadofx.*
 
 /*
@@ -18,21 +17,25 @@ import tornadofx.*
  */
 
 abstract class StatementManager<T:XStatement> {
-	abstract fun editorBody(stmt:T):StmtEditorBody<T>
-	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
+	abstract fun editorBody(stmt:T):StmtEditorBody
+	abstract fun treeGraphic(stmt:T, tree: StatementTree): StmtEditorLabel
 }
 
-open class StmtEditorBody<T:XStatement> : HBox() {
+open class StmtEditorBody(val stmt:XStatement) : HBox() {
 	init {
 		addClass(Styles.xstmtEditor)
-		alignment = Pos.BASELINE_LEFT
 		hgrow = Priority.ALWAYS
-		spacing = 2.0
-		paddingAll = 5.0
+		alignment = Pos.BASELINE_LEFT
 	}
 }
-inline fun<T:XStatement> StmtEditorBody(init:StmtEditorBody<T>.()->Unit):StmtEditorBody<T> =
-		StmtEditorBody<T>().apply(init)
+inline fun StmtEditorBody(stmt:XStatement,init:StmtEditorBody.()->Unit):StmtEditorBody =
+		StmtEditorBody(stmt).apply(init)
+open class StmtEditorLabel(val stmt:XStatement):HBox() {
+
+}
+inline fun StmtEditorLabel(stmt:XStatement,init:StmtEditorLabel.()->Unit):StmtEditorLabel =
+		StmtEditorLabel(stmt).apply(init)
+
 
 @Suppress("UNCHECKED_CAST")
 fun<T:XStatement> T.manager():StatementManager<T>? = when(this) {

@@ -136,8 +136,9 @@ class Styles : Stylesheet() {
 				}
 			}
 			xstmtEditor {
+				alignment = Pos.BASELINE_LEFT // doesn't work =(
 				spacing = 2.px
-				alignment = Pos.BASELINE_LEFT
+				padding = box(5.px)
 			}
 		}
 		xtext {

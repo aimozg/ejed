@@ -3,11 +3,12 @@ package ej.editor.views
 import ej.editor.stmts.StmtEditorBody
 import ej.editor.stmts.manager
 import ej.editor.utils.RichTextProcessor
-import ej.mod.*
+import ej.mod.XStatement
+import ej.mod.XcText
+import ej.mod.XsSet
 import javafx.scene.control.Label
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
-import javafx.scene.layout.VBox
 import tornadofx.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -67,7 +68,7 @@ class FlashTextProcessor : RichTextProcessor() {
 }
 class StmtEditorBodies {
 	
-	class ForText(stmt:XcText) : StmtEditorBody<XcText>() {
+	class ForText(stmt:XcText) : StmtEditorBody(stmt) {
 		init {
 			synchronized(Companion) {
 				cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
@@ -82,7 +83,7 @@ class StmtEditorBodies {
 			}
 		}
 	}
-	class SetStmt(stmt:XsSet) : StmtEditorBody<XsSet>() {
+	class SetStmt(stmt:XsSet) : StmtEditorBody(stmt) {
 		init {
 			label("Property ")
 			textfield(stmt.varname)
@@ -106,22 +107,13 @@ class StmtEditorBodies {
 				null -> Label("<nothing>")
 
 				is XsSet -> SetStmt(stmt)
-				is XsMenu -> VBox().apply { label("TODO MenuStmt(stmt)") }
-				is XsButton -> VBox().apply { label("TODO ButtonStmt(stmt)") }
-				is XsButtonHint -> VBox().apply { label("TODO ButtonHintStmt(stmt)") }
-				is XsNext -> VBox().apply { label("TODO NextStmt(stmt)") }
-				is XsBattle -> VBox().apply { label("TODO BattleStmt(stmt)") }
 				
-				is XlElse -> VBox().apply { label("TODO ElseStmt(stmt)") }
-				is XlElseIf -> VBox().apply { label("TODO ElseIfStmt(stmt)") }
-				is XlSwitch -> VBox().apply { label("TODO SwitchStmt(stmt)") }
-				
-				is XcLib -> VBox().apply { label(stmt.nameProperty().stringBinding{"Text library $it"}) }
 				is XcText -> ForText(stmt)
 				
-				is MonsterData.MonsterDesc -> VBox().apply { label("<Monster Description>") }
 				else -> stmt.manager()?.editorBody(stmt) ?:
-					VBox().apply { label("<unknown ${stmt.javaClass}>") }
+						StmtEditorBody(stmt) {
+							label("TODO ${stmt.javaClass}")
+						}
 			}
 		}
 	}
