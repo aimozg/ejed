@@ -17,19 +17,54 @@ import java.util.concurrent.atomic.AtomicReference
  */
 
 private val cachedEditor = AtomicReference<HtmlEditorLite?>(null)
-private val FlashPermittedElements:Map<String,Set<String>> = mapOf(
-		"a" to setOf("target","href"),
-		"b" to emptySet(),
-		"br" to emptySet(),
-		"font" to setOf("color","face","size"),
-		"i" to emptySet(),
-		"img" to setOf("src","width","height","align","hspace","vspace","id","checkPolicyFile"),
-		"li" to emptySet(),
-		"p" to setOf("class","align"),
-		"span" to setOf("class"),
-		"textformat" to setOf("blockindent", "indent", "leading", "leftmargin", "rightmargin", "tabstops"),
-		"u" to emptySet()
-)
+
+class FlashTextProcessor : RichTextProcessor() {
+	override fun testBegin(tag: String) = when(tag) {
+		"div" -> renameTag("br")
+		in FlashPermittedElements -> take()
+		else -> skip()
+	}
+	var skippedSpans:Int = 0
+	
+	override fun testOpen(tag: String, attrs: StringBuilder,single:Boolean) =
+			if (tag == "span" && attrs.isBlank()) {
+				skippedSpans++
+				skip()
+			} else take()
+	
+	override fun testEnd(tag: String) = when(tag) {
+		"span" -> if (skippedSpans > 0) {
+			skippedSpans--
+			skip()
+		} else take()
+		"div" -> skip()
+		in FlashPermittedElements -> take()
+		else -> skip()
+	}
+	
+	override fun testAttr(tag: String, name: String, value: String) =
+			when(tag) {
+				in FlashPermittedElements ->
+					if (name in FlashPermittedElements.getOrDefault(name,emptySet())) take()
+					else skip()
+				else -> skip()
+			}
+	companion object {
+		private val FlashPermittedElements:Map<String,Set<String>> = mapOf(
+				"a" to setOf("target","href"),
+				"b" to emptySet(),
+				"br" to emptySet(),
+				"font" to setOf("color","face","size"),
+				"i" to emptySet(),
+				"img" to setOf("src","width","height","align","hspace","vspace","id","checkPolicyFile"),
+				"li" to emptySet(),
+				"p" to setOf("class","align"),
+				"span" to setOf("class"),
+				"textformat" to setOf("blockindent", "indent", "leading", "leftmargin", "rightmargin", "tabstops"),
+				"u" to emptySet()
+		)
+	}
+}
 class StmtEditorBodies {
 	
 	class ForText(stmt:XcText) : StmtEditorBody<XcText>() {
@@ -37,18 +72,7 @@ class StmtEditorBodies {
 			synchronized(Companion) {
 				cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
 					hgrow = Priority.ALWAYS
-					processor = object:RichTextProcessor() {
-						override fun takeBegin(tag: String) =
-								if (tag in FlashPermittedElements) TAKE
-								else SKIP
-						
-						override fun takeEnd(tag: String) = takeBegin(tag)
-						
-						override fun takeAttr(tag: String, name: String, value: String) =
-								if (name in FlashPermittedElements.getOrDefault(tag,emptySet())) TAKE
-								else SKIP
-						
-					}
+					processor = FlashTextProcessor()
 					sceneProperty().onChange {
 						if (it == null) cachedEditor.compareAndSet(null, this)
 					}

@@ -29,13 +29,26 @@ fun String.escapeXmlAttr() = XML_ATTR_ESCAPABLE_TOKENS.replace(this) {
 
 val java.lang.reflect.Field.isStatic get() = Modifier.isStatic(modifiers)
 
+fun Pair<String,String>.toXmlAttrString() = " $first=\"${second.escapeXmlAttr()}\""
+fun StringBuilder.appendXmlAttrs(vararg attrs:Pair<String,String>) {
+	for (attr in attrs) {
+		append(attr.toXmlAttrString())
+	}
+}
+
 abstract class RichTextProcessor {
-	@JvmField
-	protected val TAKE = 1
-	@JvmField
-	protected val SKIP = 2
-	@JvmField
-	protected val SKIP_TAG = 3
+	protected sealed class Action(val code:Int) {
+		class Take():Action(1)
+		class Skip():Action(2)
+		class SkipTag():Action(3)
+		class RenameTag(val newname:String):Action(4)
+		class TakeAndAddAttrs(val items:Array<out Pair<String,String>>):Action(6)
+	}
+	protected fun take() = Action.Take()
+	protected fun skip() = Action.Skip()
+	protected fun skipTag() = Action.SkipTag()
+	protected fun renameTag(newname:String) = Action.RenameTag(newname)
+	protected fun takeWith(vararg attrs:Pair<String,String>) = Action.TakeAndAddAttrs(attrs)
 	// TODO MOD_TAG, MOD_ATTR_NAME, MOD_ATTR_VALUE
 	fun process(source:String):String {
 		val c = Context(source)
@@ -44,22 +57,51 @@ abstract class RichTextProcessor {
 			rslt.append(c.eatUntil("<"))
 			if (c.eat(LA_BEGIN) != null) {
 				// <element
-				val tbuf = StringBuilder(c.eaten)
-				val tag = c.match.groupValues[1]
-				var skip = takeBegin(tag) != TAKE
+				var tag = c.match.groupValues[1]
+				var skip = false
+				val attrs = StringBuilder()
+				testBegin(tag).let { action ->
+					when(action) {
+						is Action.Take -> {}
+						is Action.Skip,
+						is Action.SkipTag -> { skip = true}
+						is RichTextProcessor.Action.RenameTag -> {
+							tag = action.newname
+						}
+						is RichTextProcessor.Action.TakeAndAddAttrs -> {
+							attrs.appendXmlAttrs(*action.items)
+						}
+					}
+				}
+				
+				val single:Boolean
 				while (true) {
 					c.eatWs()
 					if (c.eat(LA_ATTR) != null || c.eat(LA_FLAG) != null) {
 						if (!skip) {
-							when (takeAttr(tag, c.match.groupValues[1], c.match.groupValues[2])) {
-								TAKE -> tbuf.append(c.eaten)
-								SKIP_TAG -> skip = true
-								SKIP -> {
+							val attrname = c.match.groupValues[1]
+							val attrvalue = c.match.groupValues[2]
+							testAttr(tag, attrname, attrvalue).let { action ->
+								when(action) {
+									is RichTextProcessor.Action.Take -> {
+										attrs.appendXmlAttrs(attrname to attrvalue)
+									}
+									is RichTextProcessor.Action.Skip -> {}
+									is RichTextProcessor.Action.SkipTag -> {
+										skip = true
+									}
+									is RichTextProcessor.Action.RenameTag -> {
+										tag = action.newname
+									}
+									is RichTextProcessor.Action.TakeAndAddAttrs -> {
+										attrs.appendXmlAttrs(attrname to attrvalue)
+										attrs.appendXmlAttrs(*action.items)
+									}
 								}
 							}
 						}
 					} else if (c.eat(LA_OPEN_OR_SINGLE) != null) {
-						tbuf.append(c.eaten)
+						single = c.eaten =="/>"
 						break
 					} else {
 						skip = true
@@ -67,11 +109,35 @@ abstract class RichTextProcessor {
 						c.eat(1)
 					}
 				}
-				if (!skip) rslt.append(tbuf)
+				if (!skip) {
+					testOpen(tag,attrs,single).let {action ->
+						when(action) {
+							is RichTextProcessor.Action.Take -> {}
+							is RichTextProcessor.Action.Skip,
+							is RichTextProcessor.Action.SkipTag -> skip = true
+							is RichTextProcessor.Action.RenameTag -> tag = action.newname
+							is RichTextProcessor.Action.TakeAndAddAttrs -> {
+								attrs.appendXmlAttrs(*action.items)
+							}
+						}
+					}
+					if (!skip) {
+						rslt.append('<', tag, attrs)
+						if (single) rslt.append('/')
+						rslt.append('>')
+					}
+				}
 			} else if (c.eat(LA_END) != null) {
 				// </element>
-				if (takeEnd(c.match.groupValues[1]) == TAKE) {
-					rslt.append(c.eaten)
+				val tag = c.match.groupValues[1]
+				testEnd(tag).let { action ->
+					when(action) {
+						is RichTextProcessor.Action.Take -> rslt.append(c.eaten)
+						is RichTextProcessor.Action.Skip,
+						is RichTextProcessor.Action.SkipTag -> {}
+						is RichTextProcessor.Action.RenameTag -> rslt.append('<','/',action.newname,'>')
+						is RichTextProcessor.Action.TakeAndAddAttrs -> kotlin.error("Cannot $action in testEnd")
+					}
 				}
 			} else if (c.isNotEmpty()) {
 				c.eat(1)
@@ -79,9 +145,10 @@ abstract class RichTextProcessor {
 		}
 		return rslt.toString()
 	}
-	abstract fun takeBegin(tag:String):Int
-	abstract fun takeEnd(tag:String):Int
-	abstract fun takeAttr(tag:String,name:String,value:String):Int
+	protected abstract fun testBegin(tag:String):Action
+	protected abstract fun testOpen(tag:String,attrs:StringBuilder,single:Boolean):Action
+	protected abstract fun testEnd(tag:String):Action
+	protected abstract fun testAttr(tag:String, name:String, value:String):Action
 	class Context(var s:String) {
 		fun eatWs():String {
 			return eat(LA_WS)?.value?:""
@@ -113,10 +180,10 @@ abstract class RichTextProcessor {
 	companion object {
 		
 		private val LA_WS = Regex("""^\s++""")
-		private val LA_BEGIN = Regex("""^<([^"<>&=\s]++)""") // 1 = tag name
-		private val LA_ATTR = Regex("""^([^"<>&=\s]++)="?([^"<>]++)"?""") // 1 = name, 2 = value
-		private val LA_FLAG = Regex("""^([^"<>&=\s]++)()(?!=)""") // 1 = name, 2 = empty
+		private val LA_BEGIN = Regex("""^<([^"</>&=\s]++)""") // 1 = tag name
+		private val LA_ATTR = Regex("""^([^"</>&=\s]++)="?([^"<>]++)"?""") // 1 = name, 2 = value
+		private val LA_FLAG = Regex("""^([^"</>&=\s]++)()(?!=)""") // 1 = name, 2 = empty
 		private val LA_OPEN_OR_SINGLE = Regex("""^/?>""")
-		private val LA_END = Regex("""^</([^"<>&=\s]++)>""") // 1 = tag name
+		private val LA_END = Regex("""^</([^"</>&=\s]++)>""") // 1 = tag name
 	}
 }

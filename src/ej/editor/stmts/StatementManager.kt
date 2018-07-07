@@ -28,6 +28,7 @@ open class StmtEditorBody<T:XStatement> : HBox() {
 		alignment = Pos.BASELINE_LEFT
 		hgrow = Priority.ALWAYS
 		spacing = 2.0
+		paddingAll = 5.0
 	}
 }
 inline fun<T:XStatement> StmtEditorBody(init:StmtEditorBody<T>.()->Unit):StmtEditorBody<T> =
