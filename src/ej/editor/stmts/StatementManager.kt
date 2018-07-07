@@ -2,10 +2,7 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.views.StatementTree
-import ej.mod.XStatement
-import ej.mod.XlIf
-import ej.mod.XsDisplay
-import ej.mod.XsOutput
+import ej.mod.*
 import javafx.geometry.Pos
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -42,5 +39,7 @@ fun<T:XStatement> T.manager():StatementManager<T>? = when(this) {
 	is XsDisplay -> DisplayMgr as StatementManager<T>
 	is XsOutput -> OutputMgr as StatementManager<T>
 	is XlIf -> IfMgr as StatementManager<T>
+	is XlElseIf -> ElseIfMgr as StatementManager<T>
+	is XlElse -> ElseMgr as StatementManager<T>
 	else -> null
 }

@@ -7,7 +7,9 @@ import ej.editor.utils.listBinding
 import ej.editor.utils.onChangeWeak
 import ej.mod.*
 import ej.utils.addToList
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.ObservableValue
 import javafx.geometry.Orientation
 import javafx.scene.control.SplitPane
 import javafx.scene.control.ToggleButton
@@ -53,7 +55,8 @@ open class StatementTreeWithEditor : VBox() {
 		} else {
 			(src as XComplexStatement).content.remove(me)
 		}
-		println("[INFO] Removed $me}") // TODO owner
+		println("[INFO] Removed $me")
+		posForInsertionInvalidator.value++
 	}
 	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int) {
 		if (dest == null || dest.parent == null) {
@@ -61,28 +64,25 @@ open class StatementTreeWithEditor : VBox() {
 		} else {
 			(dest.value as XComplexStatement).content.add(destIndex, me)
 		}
-		println("[INFO] Inserted $me") // TODO owner
+		println("[INFO] Inserted $me")
+		posForInsertionInvalidator.value++
 	}
 	fun moveStmt(item: TreeItem<XStatement>, dest: TreeItem<XStatement>?, destIndex: Int) {
 		val wasExpanded = item.isExpanded
 		val me = item.value
-		val shift:Int = if (item.parent == dest) {
-			val oidx = item.parent.children.indexOf(item)
-			when {
-				oidx == destIndex -> return
-				oidx < destIndex -> -1
-				else -> 0
-			}
-		} else 0
 		removeStmt(item)
-		insertStmt(me, dest, destIndex + shift)
+		insertStmt(me, dest, destIndex)
 		tree.findItem { it == me }?.let { item2 ->
 			if (wasExpanded) item2.expandAll()
 			tree.selectionModel.select(item2)
 		}
 	}
-	fun posForInsertion():Pair<TreeItem<XStatement>?,Int> {
-		val cc = contextualCurrent ?: return (null to 0)
+	private val posForInsertionInvalidator = SimpleIntegerProperty(0)
+	val posForInsertionProperty: ObservableValue<Pair<TreeItem<XStatement>?, Int>?> = contextualCurrentProperty.objectBinding(posForInsertionInvalidator) { cc ->
+		posForInsertion(cc)
+	}
+	fun posForInsertion(cc: ContextualTreeSelection<XStatement>? = contextualCurrent):Pair<TreeItem<XStatement>?,Int> {
+		cc ?: return (null to 0)
 		val cci = cc.item
 		val ccp = cc.parent
 		val ccv = cc.value
@@ -90,9 +90,9 @@ open class StatementTreeWithEditor : VBox() {
 			return cci to 0
 		}
 		if (cc.inRoot) {
-			return null to indexOfStmt(cci)
+			return null to indexOfStmt(cci)+1
 		}
-		return ccp to indexOfStmt(cci)
+		return ccp to indexOfStmt(cci)+1
 	}
 	fun insertStmtHere(me: XStatement) {
 		val pos = posForInsertion()
@@ -163,13 +163,51 @@ open class StatementTreeWithEditor : VBox() {
 					text = "Expand"
 				}
 			}
+			// Basic and flow control
 			row {
 				label("Add")
 				button("Text").action { insertStmtHere(XcText("Input text here")) }
 				button("If").action { insertStmtHere(XlIf("false")) }
+				button("ElseIf") {
+					disableWhen(posForInsertionProperty.booleanBinding { position ->
+						// Disable if not inside <if> or has <else> before the insert position
+						val target = (position?.first?.value as? XlIf)?.content
+						val index = position?.second
+						target == null
+								|| index == null
+								|| target.subList(0, index).any { it is XlElse }
+						
+					})
+					action { insertStmtHere(XlElseIf("false")) }
+				}
+				button("Else") {
+					disableWhen(posForInsertionProperty.booleanBinding { position ->
+						// Disable if not inside <if>, has <else>, or has <elseif> after insert position
+						val target = (position?.first?.value as? XlIf)?.content
+						val index = position?.second
+						target == null
+								|| index == null
+								|| target.any { it is XlElse }
+								|| target.subList(index, target.size).any { it is XlElseIf }
+					})
+					action { insertStmtHere(XlElse()) }
+				}
 				button("Display").action { insertStmtHere(XsDisplay()) }
 				button("Output").action { insertStmtHere(XsOutput()) }
+			}
+			// Scene-enders
+			row {
+				label("")
+				button("Next") { isDisable = true }
+				button("Menu") { isDisable = true }
+				button("Button") { isDisable = true }
+				button("Forward") { isDisable = true }
 				button("Battle").action { insertStmtHere(XsBattle()) }
+			}
+			// Other actions
+			row {
+				label("")
+				button("DynStats") { isDisable = true }
 				button("...") { isDisable = true }
 			}
 			row {

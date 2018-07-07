@@ -1,18 +1,21 @@
 package ej.mod
 
+import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlRootElement
+import javax.xml.bind.annotation.XmlTransient
 
 @XmlRootElement(name="if")
-class XlIf(test:String) : XContentContainer(), XStatement {
+class XlIf() : XContentContainer(), XStatement {
+	constructor(test:String):this() {
+		this.test = test
+	}
 	
+	@XmlTransient
+	val testProperty = SimpleStringProperty("")
 	@get:XmlAttribute
-	var test: String by property(test)
-	fun testProperty() = getProperty(XlIf::test)
-	
-	@Suppress("unused")
-	constructor():this("")
+	var test: String by testProperty
 	
 	override fun toString() = defaultToString("if","test=$test")
 }
@@ -23,9 +26,15 @@ class XlElse : XStatement {
 }
 
 @XmlRootElement(name="elseif")
-class XlElseIf : XStatement {
+class XlElseIf() : XStatement {
+	constructor(test:String):this() {
+		this.test = test
+	}
+	
+	@XmlTransient
+	val testProperty = SimpleStringProperty("")
 	@get:XmlAttribute
-	var test:String = ""
+	var test: String by testProperty
 	
 	override fun toString() = defaultToString("elseif","test='$test'","")
 }
