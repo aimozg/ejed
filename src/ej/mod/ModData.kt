@@ -100,7 +100,7 @@ class StylingVisitor : ReplacingVisitor() {
 		if (x.isEmpty()) remove(x)
 	}
 	
-	override fun visitAnyContentContainer(x: XContentContainer) {
+	/*override fun visitAnyContentContainer(x: XContentContainer) {
 		super.visitAnyContentContainer(x)
 		var merged = false
 		for ((i,stmt) in x.content.withIndex()) {
@@ -112,7 +112,7 @@ class StylingVisitor : ReplacingVisitor() {
 			}
 		}
 		if (merged) x.content.removeAll { it is XcText && it.isEmpty()}
-	}
+	}*/
 }
 
 val DefaultModData by lazy {

@@ -111,7 +111,7 @@ open class StatementTreeWithEditor : VBox() {
 					})
 					action {
 						val contextualCurrent = contextualCurrent ?: return@action
-						moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item) - 1)
+						moveStmt(contextualCurrent.item, contextualCurrent.parent, indexOfStmt(contextualCurrent.item) - 1)
 					}
 				}
 				button("Move Down") {
@@ -121,7 +121,7 @@ open class StatementTreeWithEditor : VBox() {
 					
 					action {
 						val contextualCurrent = contextualCurrent ?: return@action
-						moveStmt(contextualCurrent.item, null, indexOfStmt(contextualCurrent.item) + 1)
+						moveStmt(contextualCurrent.item, contextualCurrent.parent, indexOfStmt(contextualCurrent.item) + 1)
 					}
 				}
 				button("Remove") {
