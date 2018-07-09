@@ -1,0 +1,73 @@
+buildscript {
+    ext.kotlin_version = '1.2.51'
+
+    repositories {
+        maven {     url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+apply plugin: 'kotlin-platform-jvm'
+
+repositories {
+    maven {     url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+    mavenCentral()
+    jcenter()
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['resources']
+        }
+    }
+}
+
+jar {
+    classifier = 'lite'
+    manifest {
+        attributes(
+                'Main-Class': 'ej.editor.EditorApp',
+                'Class-Path': project.name+'-libs.jar'
+        )
+    }
+}
+
+task libsJar(type: Jar) {
+    classifier = 'libs'
+    group = 'build'
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/MANIFEST.MF"
+    }
+}
+task fatJar(type: Jar) {
+    manifest.from jar.manifest
+    group = 'build'
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/MANIFEST.MF"
+    }
+    with jar
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "no.tornado:tornadofx:1.7.16"
+    testCompile "junit:junit:4.12"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+}
