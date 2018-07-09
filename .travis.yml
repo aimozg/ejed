@@ -18,5 +18,6 @@ deploy:
    - build/libs/Editor-libs.jar
   on:
     repo: aimozg/ejed
+    all_branches: true
   prerelease: true
   body: "Use at your own risk. When updating, you don't need to re-download Editor-libs.jar unless its size is different."
