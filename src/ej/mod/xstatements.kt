@@ -65,11 +65,9 @@ class XsOutput : XStatement {
 }
 
 @XmlRootElement(name = "menu")
-class XsMenu : XStatement {
-	@get:XmlElement("button")
-	val buttons: MutableList<XsButton> = ArrayList()
+class XsMenu : XContentContainer() {
 	
-	override fun toString() = defaultToString("menu","",buttons.joinToString(" "))
+	override fun toString() = defaultToString("menu","")
 }
 
 @XmlRootElement(name = "button")

@@ -172,7 +172,7 @@ class Styles : Stylesheet() {
 		xcomment {
 			text {
 				fontFamily = FONT_FACE_SCRIPT
-				fill = Color.DIMGRAY
+				fill = c("#252")
 			}
 		}
 		treeCell {

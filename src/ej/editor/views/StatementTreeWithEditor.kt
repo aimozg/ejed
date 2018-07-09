@@ -68,7 +68,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		println("[INFO] Removed $me")
 		posForInsertionInvalidator.value++
 	}
-	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int) {
+	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int, focus:Boolean) {
 		if (dest == null || dest.parent == null) {
 			contents.add(destIndex, me)
 		} else {
@@ -76,17 +76,23 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		}
 		println("[INFO] Inserted $me")
 		posForInsertionInvalidator.value++
+		if (focus) focusOnStatement(me)
 	}
-	fun moveStmt(item: TreeItem<XStatement>, dest: TreeItem<XStatement>?, destIndex: Int) {
+	fun moveStmt(item: TreeItem<XStatement>, dest: TreeItem<XStatement>?, destIndex: Int,focus:Boolean=true) {
 		val wasExpanded = item.isExpanded
 		val me = item.value
 		removeStmt(item)
-		insertStmt(me, dest, destIndex)
+		insertStmt(me, dest, destIndex, false)
+		if (me != null && focus) focusOnStatement(me, wasExpanded)
+	}
+	
+	fun focusOnStatement(me: XStatement, expand: Boolean = false) {
 		tree.findItem { it == me }?.let { item2 ->
-			if (wasExpanded) item2.expandAll()
+			if (expand) item2.expandAll()
 			tree.selectionModel.select(item2)
 		}
 	}
+	
 	private val posForInsertionInvalidator = SimpleIntegerProperty(0)
 	val posForInsertionProperty: ObservableValue<Pair<TreeItem<XStatement>?, Int>?> = contextualCurrentProperty.objectBinding(posForInsertionInvalidator) { cc ->
 		posForInsertion(cc)
@@ -106,7 +112,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	}
 	fun insertStmtHere(me: XStatement) {
 		val pos = posForInsertion()
-		insertStmt(me,pos.first,pos.second)
+		insertStmt(me,pos.first,pos.second,true)
 	}
 	var wasDragFromTop:Boolean = false
 	var dragContent:TreeItem<XStatement>? = null
@@ -177,7 +183,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			row {
 				label("Add")
 				button("Text").action { insertStmtHere(XcText("Input text here")) }
-				button("If").action { insertStmtHere(XlIf("false")) }
+				button("If") {
+					action {
+						insertStmtHere(XlIf("").apply {
+							content += XlElseIf("")
+							content += XlElse()
+						})
+					}
+				}
 				button("ElseIf") {
 					disableWhen(posForInsertionProperty.booleanBinding { position ->
 						// Disable if not inside <if> or has <else> before the insert position
@@ -188,7 +201,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 								|| target.subList(0, index).any { it is XlElse }
 						
 					})
-					action { insertStmtHere(XlElseIf("false")) }
+					action { insertStmtHere(XlElseIf("")) }
 				}
 				button("Else") {
 					disableWhen(posForInsertionProperty.booleanBinding { position ->
@@ -209,11 +222,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				}) }
 				button("Display").action { insertStmtHere(XsDisplay()) }
 				button("Output").action { insertStmtHere(XsOutput()) }
+				button("Comment").action { insertStmtHere(XlComment("")) }
 			}
 			// Scene-enders
 			row {
 				label("")
-				button("Next") { isDisable = true }
+				button("Next") {
+					insertStmtHere(XsMenu())
+				}
 				button("Menu") { isDisable = true }
 				button("Button") { isDisable = true }
 				button("Forward") { isDisable = true }

@@ -39,14 +39,21 @@ open class HtmlEditorLite : VBox() {
 			editable?.innerHTML = htmlContent
 			editable?.addEventListener("input",{
 				val hc = engine.executeScript("document.getElementById('editable').innerHTML") as? String ?: ""
-				modifyingHc++
-				htmlContent = processor?.process(hc)?:hc
-				modifyingHc--
+				try {
+					modifyingHc++
+					htmlContent = processor?.process(hc) ?: hc
+				} finally {
+					modifyingHc--
+				}
 			},false)
 		}
 		hgrow = Priority.ALWAYS
 		//language=HTML
-		engine.loadContent("<html><head><style type='text/css'>*{font-family:'${Styles.FONT_FACE_TEXT}', 'serif'}</style></head><body><p contentEditable='true' id='editable'></p></body></html>")
+		engine.loadContent("<!DOCTYPE html><html><head><style type='text/css'>" +
+				                   "#editable{" +
+				                   /**/"min-height:calc(99vh - 16px - 1em);" + // 8px body padding 1em p margin top
+				                   /**/"font-family:'${Styles.FONT_FACE_TEXT}', 'serif'}</style>" +
+				                   "</head><body><p contentEditable='true' id='editable'></p></body></html>")
 		htmlContentProperty.onChange {
 			if(modifyingHc==0) {
 				(engine.document?.getElementById("editable") as? HTMLElementImpl)?.innerHTML = it ?: ""

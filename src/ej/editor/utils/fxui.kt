@@ -1,14 +1,10 @@
 package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
-import javafx.beans.property.SimpleObjectProperty
-import javafx.geometry.Pos
 import javafx.scene.Node
-import javafx.scene.control.TextArea
-import javafx.scene.control.TextField
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeView
+import javafx.scene.control.*
 import javafx.scene.layout.GridPane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.text.Text
 import tornadofx.*
@@ -127,62 +123,26 @@ inline fun <T> TreeView<T>.select(andScroll:Boolean = true,filter:(T)->Boolean) 
 	}
 }
 
-inline fun<T> UIComponent.textInputDialog(title:String,
-                                          label:String,
-                                          initialValue:String="",
-                                          cancelable:Boolean=true,
-                                          handler:(String)->T):T? {
+inline fun <T> textInputDialog(title: String,
+                               label: String,
+                               initialValue: String = "",
+                               cancelable: Boolean = true,
+                               handler: (String) -> T): T? {
 	return textInputDialog(title, label, initialValue, cancelable)?.let(handler)
 }
-class TextInputDialog : View() {
-	var result:String? = null
-	
-	val labelProperty = SimpleObjectProperty("")
-	var label by labelProperty
-	
-	val initialValueProperty = SimpleObjectProperty("")
-	var initialValue by initialValueProperty
-	
-	val cancelableProperty = SimpleObjectProperty(false)
-	var cancelable by cancelableProperty
-	
-	fun showModal(title:String,label:String,initialValue:String="",cancelable:Boolean=true):String? {
-		this.title = title
-		this.label = label
-		this.initialValue = initialValue
-		this.cancelable = cancelable
-		this.result = null
-		openModal(block = true)
-		return result
+
+fun textInputDialog(
+		title: String,
+		label: String,
+		initialValue: String = "",
+		cancelable: Boolean = true): String? {
+	val dialog = TextInputDialog(initialValue)
+	dialog.title = title
+//	dialog.headerText = "Look, a Text Input Dialog"
+	dialog.dialogPane.header = HBox()
+	dialog.contentText = label
+	if (!cancelable) {
+		dialog.dialogPane.buttonTypes.remove(ButtonType.CANCEL)
 	}
-	override val root = form {
-		fieldset {
-			lateinit var input: TextField
-			field("Label") {
-				label.textProperty().bind(labelProperty)
-				input = textfield(initialValueProperty)
-			}
-			hbox(20) {
-				alignment = Pos.BASELINE_CENTER
-				button("Ok") {
-					shortcut("Return")
-					action {
-						result = input.text
-						close()
-					}
-				}
-				button("Cancel") {
-					shortcut("Escape")
-					visibleWhen(cancelableProperty)
-					action {
-						result = null
-						close()
-					}
-				}
-			}
-		}
-	}
-}
-fun textInputDialog(title:String,label:String,initialValue:String="",cancelable:Boolean=true):String? {
-	return find<TextInputDialog>().showModal(title, label, initialValue, cancelable)
+	return dialog.showAndWait().orElse(null)
 }

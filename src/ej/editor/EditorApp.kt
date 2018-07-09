@@ -3,6 +3,7 @@ package ej.editor
 import ej.editor.utils.SplittingOutputStream
 import ej.editor.utils.TextAreaOutputStream
 import ej.editor.utils.onChangeAndNow
+import ej.editor.utils.textInputDialog
 import ej.editor.views.ModListView
 import ej.editor.views.ModView
 import ej.mod.ModData
@@ -32,7 +33,7 @@ class EditorView : AModView() {
 			menubar {
 				menu("Mod") {
 					item("New").action {
-						val name = ej.editor.utils.textInputDialog("New mod","Enter new mod name","unnamed") ?: return@action
+						val name = textInputDialog("New mod","Enter new mod name","unnamed") ?: return@action
 						controller.mod = ModData().apply {
 							this.name = name
 						}

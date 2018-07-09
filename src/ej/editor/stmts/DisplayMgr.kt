@@ -8,7 +8,7 @@ import tornadofx.*
 object DisplayMgr : StatementManager<XsDisplay>() {
 	override fun treeGraphic(stmt: XsDisplay, tree: StatementTree) =
 			simpleTreeLabel(
-					stmt.refProperty.stringBinding{"Display: ${stmt.ref}"}
+					stmt.refProperty.stringBinding{"Display: $it"}
 			) {
 				addClass(Styles.xcommand)
 			}

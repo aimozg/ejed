@@ -304,7 +304,8 @@ set = element set {
 output = element output { expression }
 # #############################################
 # xlogic
-xxc-logic = if | switch
+xxc-logic = if | switch | comment
+comment = element comment { text }
 array-content-expression = text
 if = element if {
     attribute test { expression },

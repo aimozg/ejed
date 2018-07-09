@@ -45,13 +45,17 @@ inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={})
 		}
 
 @Suppress("UNCHECKED_CAST")
-fun<T:XStatement> T.manager():StatementManager<T>? = when(this) {
-	is XsDisplay -> DisplayMgr as StatementManager<T>
-	is XsOutput -> OutputMgr as StatementManager<T>
-	is XsSet -> SetMgr as StatementManager<T>
-	is XlIf -> IfMgr as StatementManager<T>
-	is XlElseIf -> ElseIfMgr as StatementManager<T>
-	is XlElse -> ElseMgr as StatementManager<T>
-	is XcText -> TextMgr as StatementManager<T>
+fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) {
+	XsDisplay::class.java -> DisplayMgr as StatementManager<T>
+	XsOutput::class.java -> OutputMgr as StatementManager<T>
+	XsSet::class.java -> SetMgr as StatementManager<T>
+	XlIf::class.java -> IfMgr as StatementManager<T>
+	XlElseIf::class.java -> ElseIfMgr as StatementManager<T>
+	XlElse::class.java -> ElseMgr as StatementManager<T>
+	XlComment::class.java -> CommentMgr as StatementManager<T>
+	XcText::class.java -> TextMgr as StatementManager<T>
 	else -> null
 }
+
+inline fun<reified T:XStatement> statementManager():StatementManager<T>? = T::class.java.statementManager()
+fun<T:XStatement> T.manager():StatementManager<T>? = javaClass.statementManager()

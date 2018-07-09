@@ -67,6 +67,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 			XmlElementRef(name = "else", type = XlElse::class),
 			XmlElementRef(name = "elseif", type = XlElseIf::class),
 			XmlElementRef(name = "switch", type = XlSwitch::class),
+			XmlElementRef(name = "comment", type = XlComment::class),
 			XmlElementRef(name = "menu", type = XsMenu::class),
 			XmlElementRef(name = "next", type = XsNext::class),
 			XmlElementRef(name = "battle", type = XsBattle::class)
