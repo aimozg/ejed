@@ -35,7 +35,6 @@ sourceSets {
 }
 
 jar {
-    classifier = 'lite'
     manifest {
         attributes(
                 'Main-Class': 'ej.editor.EditorApp',
@@ -54,6 +53,7 @@ task libsJar(type: Jar) {
     }
 }
 task fatJar(type: Jar) {
+    classifier = 'fat'
     manifest.from jar.manifest
     group = 'build'
     from {

@@ -7,11 +7,16 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-script: gradle jar
+script: gradle jar libsJar
 deploy:
   provider: releases
+  skip_cleanup: true
   api_key:
     secure: IeqDUEETw6ekwT/XGoLzWau5N4WAFkxFtbPCvxQSomHVkOahPW7jSDE3JLbSP//IHx9vcIJ4HmSryIcOjSPCzsElScF0sfhd0L898tEjCOOqiAHWNVgoGVhCQ2WfPFgiJG8BAKWQb3hsLLWCKTp+8Nyf+dyQE+6IflMch4yH8ACJrLWPZesFtYvaVzW0m3agofmVij09SXrjPHu/jvolXReyy2/tDgCHGjjCZbcTFswWIfWMelzJX3a0DgtNR0MVdrK35HW1X1Ll5psVtdNhwDN/1vRnvXD5Ij8bszVcMQe3d7EwNMo0+LvQ2D6ty6DHAX2Ap2dzTPlLWzxAjLYne88o3m4SEfD6x/WQ8LJJJpTn//IGkyrT4EKwAU6cIsXltF/MC0J5J1NOLrD1mZSKASoiMylBI1haflWRScvSSR0VgeBsDOhKM6e1t2uJNNocUmVICFZ8RXIYm4+b8llfJJpf9F4K9IB1HCVnxFjGZ68DGPSkTuaIYfMgnGcrSMFyg0QAQXiZxnURqhw5ZPLSQNdVUVOpRO+ORC/6dKrqDUe8J8mqhWm5y+9hZdqtMOb4NuQ/LI9DIL8cqyfVNIvkHFuitDVdWDNUsuJyoALE3UxrK8ru8zxw6yDYbI3WQCvJqBO87C0kfcU8YrPkE7xA+z8ljmlElsqrj6KR8dHbZyY=
-  file: build/libs/Editor-lite.jar
+  file:
+   - build/libs/Editor.jar
+   - build/libs/Editor-libs.jar
   on:
     repo: aimozg/ejed
+  prerelease: true
+  body: "Use at your own risk. When updating, you don't need to re-download Editor-libs.jar unless its size is different."
