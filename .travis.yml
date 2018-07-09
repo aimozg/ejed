@@ -7,7 +7,10 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-install: openjfx
+addons:
+  apt:
+    packages:
+    - openjfx
 script: gradle jar
 deploy:
   provider: releases
