@@ -49,6 +49,7 @@ class EditorController : Controller() {
 	
 	fun saveMod() {
 		val file = mod?.sourceFile?.takeIf { it.exists() && it.isFile && it.canWrite() } ?: return saveModAs()
+		file.renameTo(File(file.parent,file.nameWithoutExtension+".bak"))
 		println("Saving to $file")
 		ModData.jaxbContext.createMarshaller().marshal(mod, file)
 	}

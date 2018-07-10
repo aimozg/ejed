@@ -1,7 +1,6 @@
 package ej.mod
 
 import ej.editor.utils.escapeXmlAttr
-import ej.editor.utils.filteredIsInstanceMutable
 import ej.editor.utils.observableUnique
 import ej.utils.affix
 import ej.utils.crop
@@ -70,6 +69,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 			XmlElementRef(name = "comment", type = XlComment::class),
 			XmlElementRef(name = "menu", type = XsMenu::class),
 			XmlElementRef(name = "next", type = XsNext::class),
+			XmlElementRef(name = "button", type = XsButton::class),
 			XmlElementRef(name = "battle", type = XsBattle::class)
 	)
 	@XmlMixed
@@ -80,15 +80,18 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	
 	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observableUnique()
 	
-	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
+	override val lib = ArrayList<StoryStmt>().observableUnique()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
-		content.clear()
-		content.addAll(contentRaw.map {
-					it as? XStatement
+		val stmts = contentRaw.map {
+			it as? XStatement
 					?: XcText(it.toString())
-		})
+		}
+		content.clear()
+		content.addAll(stmts.filter { it !is StoryStmt })
+		lib.clear()
+		lib.addAll(stmts.filterIsInstance<StoryStmt>())
 		contentRaw.clear()
 		trimMode?.let { trimMode ->
 			TrimmingVisitor(trimMode).visitAllStatements(content)
@@ -99,7 +102,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	private fun beforeMarshal(marshaller: Marshaller) {
 		trimMode = null
 		contentRaw.clear()
-//		contentRaw.addAll(content.map { (it as? XcText)?.text ?: it })
+		contentRaw.addAll(lib)
 		contentRaw.addAll(content)
 	}
 	override fun toString() = defaultToString("content")
@@ -184,8 +187,6 @@ class XcNamedText : XContentContainer(), StoryStmt {
 	@get:XmlAttribute
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcNamedText::name)
-	
-	override val lib = content.filteredIsInstanceMutable<StoryStmt>()
 	
 	override fun toString() = defaultToString("text","name='$name'",lib.joinToString(" "))
 }

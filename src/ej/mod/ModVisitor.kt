@@ -42,6 +42,15 @@ abstract class ModVisitor {
 	open fun visitBattle(x:XsBattle) {
 		visitAnyStmt(x)
 	}
+	open fun visitButton(x:XsButton) {
+		visitAnyStmt(x)
+	}
+	open fun visitMenu(x:XsMenu) {
+		visitAnyContentContainer(x)
+	}
+	open fun visitNext(x:XsNext) {
+		visitAnyStmt(x)
+	}
 	open fun visitIf(x:XlIf){
 		visitAnyContentContainer(x)
 	}
@@ -49,6 +58,9 @@ abstract class ModVisitor {
 		visitAnyStmt(x)
 	}
 	open fun visitElse(x:XlElse) {
+		visitAnyStmt(x)
+	}
+	open fun visitComment(x:XlComment){
 		visitAnyStmt(x)
 	}
 	open fun visitMod(x:ModData) {
@@ -95,10 +107,14 @@ fun ModDataNode.visit(visitor:ModVisitor) {
 		is XsOutput -> visitor.visitOutput(this)
 		is XsDisplay -> visitor.visitDisplay(this)
 		is XsBattle -> visitor.visitBattle(this)
+		is XsNext -> visitor.visitNext(this)
+		is XsMenu -> visitor.visitMenu(this)
+		is XsButton -> visitor.visitButton(this)
 
 		is XlIf -> visitor.visitIf(this)
 		is XlElseIf -> visitor.visitElseif(this)
 		is XlElse -> visitor.visitElse(this)
+		is XlComment -> visitor.visitComment(this)
 		
 		is XContentContainer -> {
 			println("[WARN] Generic container ${this.javaClass}")

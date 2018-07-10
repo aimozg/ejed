@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 object TextMgr: StatementManager<XcText>() {
 	private val cachedEditor = AtomicReference<HtmlEditorLite?>(null)
 	
-	override fun editorBody(stmt: XcText) = vboxEditorBody {
+	override fun editorBody(stmt: XcText) = defaultEditorBody(VBox()) {
 		(cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
 			hgrow = Priority.ALWAYS
 			processor = FlashTextProcessor()

@@ -13,9 +13,9 @@ object DisplayMgr : StatementManager<XsDisplay>() {
 				addClass(Styles.xcommand)
 			}
 	
-	override fun editorBody(stmt: XsDisplay) = defaultEditorBody() {
+	override fun editorBody(stmt: XsDisplay) = defaultEditorBody {
 		label("Display subscene: ")
-		textfield(stmt.ref)
+		textfield(stmt.refProperty)
 	}
 	
 }

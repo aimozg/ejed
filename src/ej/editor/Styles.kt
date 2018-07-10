@@ -187,7 +187,8 @@ class Styles : Stylesheet() {
 			}
 		}
 		toolbarGrid contains button {
-			prefWidth = 60.px
+			prefWidth = 80.px
+			padding = box(4.px)
 		}
 	}
 }

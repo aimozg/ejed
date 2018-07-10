@@ -6,7 +6,7 @@ import ej.mod.XlElse
 import tornadofx.*
 
 object ElseMgr : StatementManager<XlElse>() {
-	override fun editorBody(stmt: XlElse) = defaultEditorBody() {
+	override fun editorBody(stmt: XlElse) = defaultEditorBody {
 		label("Else")
 	}
 	

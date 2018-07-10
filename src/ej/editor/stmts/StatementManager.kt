@@ -6,6 +6,8 @@ import ej.mod.*
 import javafx.beans.value.ObservableValue
 import javafx.geometry.Pos
 import javafx.scene.control.Label
+import javafx.scene.control.Labeled
+import javafx.scene.control.TextField
 import javafx.scene.layout.*
 import tornadofx.*
 
@@ -19,18 +21,22 @@ abstract class StatementManager<T:XStatement> {
 	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
 }
 
-inline fun defaultEditorBody(init:HBox.()->Unit):HBox =
-		HBox().apply {
+inline fun defaultEditorBody(init:HBox.()->Unit):HBox = defaultEditorBody(HBox(),init)
+inline fun<T:Pane> defaultEditorBody(pane:T, init:T.()->Unit):T =
+		pane.apply {
 			addClass(Styles.xstmtEditor)
 			hgrow = Priority.ALWAYS
-			alignment = Pos.BASELINE_LEFT
-			init()
-		}
-inline fun vboxEditorBody(init:VBox.()->Unit):VBox =
-		VBox().apply {
-			addClass(Styles.xstmtEditor)
-			hgrow = Priority.ALWAYS
-			alignment = Pos.BASELINE_LEFT
+			(when (this) {
+				is HBox -> alignmentProperty()
+				is VBox -> alignmentProperty()
+				is FlowPane -> alignmentProperty()
+				is TilePane -> alignmentProperty()
+				is GridPane -> alignmentProperty()
+				is StackPane -> alignmentProperty()
+				is Labeled -> alignmentProperty()
+				is TextField -> alignmentProperty()
+				else -> null
+			})?.set(Pos.BASELINE_LEFT)
 			init()
 		}
 
@@ -46,13 +52,18 @@ inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={})
 
 @Suppress("UNCHECKED_CAST")
 fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) {
+//	XsBattle::class.java -> BattleMgr as StatementManager<T> TODO
 	XsDisplay::class.java -> DisplayMgr as StatementManager<T>
 	XsOutput::class.java -> OutputMgr as StatementManager<T>
 	XsSet::class.java -> SetMgr as StatementManager<T>
+	XsMenu::class.java -> MenuMgr as StatementManager<T>
+	XsNext::class.java -> NextMgr as StatementManager<T>
+	XsButton::class.java -> ButtonMgr as StatementManager<T>
 	XlIf::class.java -> IfMgr as StatementManager<T>
 	XlElseIf::class.java -> ElseIfMgr as StatementManager<T>
 	XlElse::class.java -> ElseMgr as StatementManager<T>
 	XlComment::class.java -> CommentMgr as StatementManager<T>
+//	XlSwitch::class.java -> SwitchMgr as StatementManager<T> TODO
 	XcText::class.java -> TextMgr as StatementManager<T>
 	else -> null
 }

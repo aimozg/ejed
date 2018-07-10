@@ -14,7 +14,7 @@ import tornadofx.*
  */
 
 object SetMgr : StatementManager<XsSet>() {
-	override fun editorBody(stmt: XsSet) = defaultEditorBody() {
+	override fun editorBody(stmt: XsSet) = defaultEditorBody {
 		label(stmt.opProperty.stringBinding {
 			when (it) {
 				null, "=", "assign" -> "Set to "

@@ -2,6 +2,7 @@ package ej.mod
 
 import com.sun.xml.internal.txw2.annotation.XmlElement
 import ej.utils.affix
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
@@ -71,23 +72,41 @@ class XsMenu : XContentContainer() {
 }
 
 @XmlRootElement(name = "button")
-class XsButton : XStatement {
-	@get:XmlAttribute
-	var text: String = ""
+class XsButton() : XStatement {
+	constructor(text:String):this() {
+		this.text =text
+	}
 	
+	@XmlTransient
+	val textProperty = SimpleStringProperty("")
 	@get:XmlAttribute
-	var disabled: Boolean = false
+	var text by textProperty
 	
+	@XmlTransient
+	val disabledProperty = SimpleBooleanProperty(false)
 	@get:XmlAttribute
-	var call: String = ""
+	var disabled by disabledProperty
 	
+	@XmlTransient
+	val refProperty = SimpleStringProperty("")
+	@get:XmlAttribute
+	var ref by refProperty
+	
+	@XmlTransient
+	val posProperty = SimpleObjectProperty<Int?>(null)
+	@get:XmlAttribute
+	var pos:Int? by posProperty
+	
+	@XmlTransient
+	val hintProperty = SimpleObjectProperty<XsButtonHint>()
 	@get:XmlElement
-	var hint: XsButtonHint? = null
+	var hint by hintProperty
 	
-	override fun toString() = defaultToString("button","" +
+	
+	override fun toString() = defaultToString("button", "" +
 			"text='$text'" +
 			(if (disabled) " disabled" else "") +
-			" call='$call'",hint?.toString()?:"")
+			" ref='$ref'", hint?.toString()?:"")
 }
 
 class XsButtonHint : XContentContainer() {
@@ -99,10 +118,13 @@ class XsButtonHint : XContentContainer() {
 
 @XmlRootElement(name = "next")
 class XsNext : XStatement {
-	@get:XmlValue
-	var call: String = ""
+	@XmlTransient
+	val refProperty = SimpleStringProperty("")
+	@get:XmlAttribute
+	var ref by refProperty
 	
-	override fun toString() = defaultToString("next","",call)
+	
+	override fun toString() = defaultToString("next", "", ref)
 }
 
 @XmlRootElement(name = "battle")

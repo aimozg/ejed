@@ -76,7 +76,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		}
 		println("[INFO] Inserted $me")
 		posForInsertionInvalidator.value++
-		if (focus) focusOnStatement(me)
+		if (focus) focusOnStatement(me, true)
 	}
 	fun moveStmt(item: TreeItem<XStatement>, dest: TreeItem<XStatement>?, destIndex: Int,focus:Boolean=true) {
 		val wasExpanded = item.isExpanded
@@ -182,6 +182,19 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			// Basic and flow control
 			row {
 				label("Add")
+				/*
+				 * TODO more restrictions:
+				 * - <menu>/<next>/<forward><battle>:
+				 *   * only in <scene>
+				 *   * must be last
+				 *   * are mutually exclusive
+				 * - <menu>:
+				 *   * cannot be nested
+				 *   * must have at least one non-disabled button
+				 * - <display> only <text>,
+				 * - <forward>/<next>/<button> only to <scene>
+				 * - No actions allowed in <monster> desc and <button> hint
+				 */
 				button("Text").action { insertStmtHere(XcText("Input text here")) }
 				button("If") {
 					action {
@@ -227,19 +240,38 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			// Scene-enders
 			row {
 				label("")
-				button("Next") {
-					insertStmtHere(XsMenu())
+				button("Next").action {
+					insertStmtHere(XsNext())
 				}
-				button("Menu") { isDisable = true }
-				button("Button") { isDisable = true }
-				button("Forward") { isDisable = true }
+				button("Menu").action {
+					insertStmtHere(XsMenu().also {
+						it.content.add(XsButton("Yes"))
+						it.content.add(XsButton("No"))
+					})
+				}
+				button("Button").action {
+					disableWhen(posForInsertionProperty.booleanBinding { pfi ->
+						generateSequence(pfi?.first) { it.parent }.none { it.value is XsMenu }
+					})
+					insertStmtHere(XsButton("Click me"))
+				}
+				button("Forward") {
+					isDisable = true
+					action {}
+				}
 				button("Battle").action { insertStmtHere(XsBattle()) }
 			}
 			// Other actions
 			row {
 				label("")
-				button("DynStats") { isDisable = true }
-				button("...") { isDisable = true }
+				button("DynStats") {
+					isDisable = true
+					action {}
+				}
+				button("...") {
+					isDisable = true
+					action {}
+				}
 			}
 			row {
 				label("Edit")

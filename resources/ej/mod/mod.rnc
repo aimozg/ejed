@@ -1,7 +1,6 @@
 namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
 
 expression = text
-ATrim = attribute trim { 'none' | 'unindent' | 'trim' }
 
 start = mod
 
@@ -28,24 +27,20 @@ var = element var {
 }
 hook = element hook {
     attribute type { 'daily' | 'hourly' },
-    ATrim?,
     content*
 }
 exportable = monster | script | storynode | encounter
 storynode = lib | scene | Text
 lib = element lib {
     attribute name { text },
-    ATrim?,
     storynode*
 }
 Text = element text {
     attribute name { text },
-    ATrim?,
     content*
 }
 scene = element scene {
     attribute name { text },
-    ATrim?,
     content*,
     scene-fin
 }
@@ -74,7 +69,6 @@ monster = element monster {
     & attribute base { text }?
     & element name { text }?
     & element desc {
-        ATrim?,
         content*
     }?
     & element plural { 'true' | 'false' }?
@@ -219,13 +213,12 @@ menu = element menu {
     content* & button+
 }
 button = element button {
-    attribute text { text },
-    attribute disabled { empty }?,
-    attribute call { text },
-    element hint {
-        attribute header { text }?,
-        ATrim?,
-        content
+    attribute text { text }
+    & attribute disabled { 'true' | 'false' }?
+    & attribute ref { text }
+    & element hint {
+        attribute header { text }?
+        & content
     }?
 }
 next = element next {
@@ -236,31 +229,9 @@ battle = element battle {
     attribute monster { text },
     attribute options { text }?
 }
-#extend-story = element extend-story { namedBlock }
-#zone = element zone {
-#    namedBlock,
-#    encounter*
-#}
-#extend-zone = element extend-zone {
-#    namedBlock,
-#    encounter*
-#}
-#encounter = element encounter {
-#    attribute name { text },
-#    attribute chance { expression }?,
-#    attribute when { expression }?,
-#    content*
-#}
-#Include = element include {
-#    attribute path { text },
-#    attribute required { "true" | "false" }?,
-#    empty
-#}
-
 
 scenefin-if = element if {
     attribute test { expression },
-    ATrim?,
     content*,
     scene-fin,
     scenefin-elseif*,
@@ -284,7 +255,6 @@ scenefin-else = (
 content =
     text | t | xcc-statement | xxc-logic
 t = element t {
-    ATrim?,
     text
 }
 xcc-statement = display | set | output | lib
@@ -312,7 +282,6 @@ if = element if {
     (if-big | if-short)
 }
 if-big = (
-    ATrim?,
     content*,
     elseif*,
     else?
@@ -347,10 +316,8 @@ case = element case {
     attribute ne { expression }?,
     attribute lte { expression }?,
     attribute gte { expression }?,
-    ATrim?,
     content*
 }
 Default = element default {
-    ATrim?,
     content*
 }
