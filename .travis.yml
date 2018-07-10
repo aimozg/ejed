@@ -22,6 +22,7 @@ deploy:
     repo: aimozg/ejed
     all_branches: true
   prerelease: true
+  overwrite: true
   body: "Use at your own risk. When updating, you don't need to re-download Editor-libs.jar unless its size is different."
 notifications:
   email: false
