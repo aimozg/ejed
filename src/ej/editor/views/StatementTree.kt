@@ -3,9 +3,11 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.manager
 import ej.editor.stmts.simpleTreeLabel
-import ej.editor.utils.*
+import ej.editor.utils.ObservableSingletonList
+import ej.editor.utils.observableConcatenation
+import ej.editor.utils.observableUnique
+import ej.editor.utils.transformed
 import ej.mod.*
-import ej.utils.affixNonEmpty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.control.TreeCell
@@ -20,24 +22,25 @@ import tornadofx.*
  */
 
 fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
-	return when (stmt) {
+	return stmt.manager()?.treeGraphic(stmt,tree) ?:
+	simpleTreeLabel("TODO $stmt").addClass(Styles.xcommand)
+//	return when (stmt) {
 
-		is XsBattle -> simpleTreeLabel(
-				binding2(stmt.monsterProperty,stmt.optionsProperty) { monster, options ->
-					"Battle $monster" + (options.affixNonEmpty(" with options: "))
-				}
-		).addClass(Styles.xcommand)
-		
-		is XcLib -> simpleTreeLabel(
-				binding1(stmt.nameProperty()){ "<lib $it>" }
-		).addClass(Styles.xcomment)
-		is XcNamedText -> simpleTreeLabel(
-				binding1(stmt.nameProperty()){ "<text $it>" }
-		).addClass(Styles.xcomment)
-
-		else -> stmt.manager()?.treeGraphic(stmt,tree) ?:
-				simpleTreeLabel("TODO $stmt").addClass(Styles.xcommand)
-	}
+//		is XsBattle -> simpleTreeLabel(
+//				bindingN(stmt.monsterProperty,stmt.optionsProperty) { monster, options ->
+//					"Battle $monster" + (options.affixNonEmpty(" with options: "))
+//				}
+//		).addClass(Styles.xcommand)
+//
+//		is XcLib -> simpleTreeLabel(
+//				bindingN(stmt.nameProperty()){ "<lib $it>" }
+//		).addClass(Styles.xcomment)
+//		is XcNamedText -> simpleTreeLabel(
+//				bindingN(stmt.nameProperty()){ "<text $it>" }
+//		).addClass(Styles.xcomment)
+//
+//		else ->
+//	}
 }
 
 sealed class StatementTreeItem(open val stmt:XStatement?) {
@@ -85,6 +88,15 @@ open class StatementTree : TreeView<StatementTreeItem>() {
 								},
 								ObservableSingletonList(sti.stmt.elseGroupProperty).transformed { e ->
 									StatementTreeItem.ElseNode(sti.stmt, e)
+								}
+						)
+					is XlSwitch ->
+						observableConcatenation(
+								sti.stmt.branches.transformed { e ->
+									StatementTreeItem.Statement(e)
+								},
+								ObservableSingletonList(sti.stmt.defaultBranchProperty).transformed { e ->
+									StatementTreeItem.Statement(e)
 								}
 						)
 					is XContentContainer -> sti.stmt.content.transformed {

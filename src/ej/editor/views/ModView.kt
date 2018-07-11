@@ -28,7 +28,7 @@ sealed class ModTreeNode {
 		}
 	}
 	class StoryNode(val story:StoryStmt): ModTreeNode() {
-		override val textProperty = binding1(story.nameProperty()) {
+		override val textProperty = bindingN(story.nameProperty()) {
 			when(story) {
 				is XcScene -> "(Scene) $it"
 				is XcNamedText -> "(Subscene) $it"

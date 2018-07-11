@@ -68,6 +68,11 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					is XlElse -> target.elseGroup = null
 					else -> kotlin.error("Cannot remove $me from $target")
 				}
+				is XlSwitch -> when(me) {
+					is XlSwitchCase -> target.branches.remove(me)
+					is XlSwitchDefault -> target.defaultBranch = null
+					else -> kotlin.error("Cannot remove $me from $target")
+				}
 				is XComplexStatement -> target.content.remove(me)
 				else -> kotlin.error("Cannot remove $me from $target")
 			}
@@ -86,6 +91,13 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					is XlElse -> target.elseGroup = me
 					else -> kotlin.error("Cannot insert $me in $target")
 				}
+				is XlSwitch -> when (me) {
+					is XlSwitchCase ->
+						target.branches.add(destIndex, me)
+					is XlSwitchDefault ->
+						target.defaultBranch = me
+					else -> kotlin.error("Cannot insert $me in $target")
+				}
 				is XComplexStatement -> target.content.add(destIndex, me)
 				else -> kotlin.error("Cannot insert $me in $target")
 			}
@@ -99,8 +111,10 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		return when (target) {
 			is XlIf -> me is XlIf
 					|| me is PartOfIf
+			is XlSwitch -> me is PartOfSwitch
 			is XComplexStatement,
 			null -> me !is PartOfIf
+					&& me !is PartOfSwitch
 			else -> false
 		}
 	}
@@ -277,7 +291,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					text = "Expand"
 				}
 			}
-			// Basic and flow control
+			// Basic
 			row {
 				label("Add")
 				/*
@@ -294,6 +308,18 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				 * - No actions allowed in <monster> desc and <button> hint
 				 */
 				button("Text").action { insertStmtHere(XcText("Input text here")) }
+				button("Set var").action { insertStmtHere(XsSet().apply {
+					inobj = "state"
+					varname = mod.stateVars.firstOrNull()?.name?:"flag1"
+					value = "1"
+				}) }
+				button("Display").action { insertStmtHere(XsDisplay()) }
+				button("Output").action { insertStmtHere(XsOutput()) }
+				button("Comment").action { insertStmtHere(XlComment("")) }
+			}
+			// Flow control
+			row {
+				label("")
 				button("If") {
 					action {
 						insertStmtHere(XlIf("").apply {
@@ -330,14 +356,42 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					})
 					action { insertStmtHere(XlElse()) }
 				}
-				button("Set var").action { insertStmtHere(XsSet().apply {
-					inobj = "state"
-					varname = mod.stateVars.firstOrNull()?.name?:"flag1"
-					value = "1"
-				}) }
-				button("Display").action { insertStmtHere(XsDisplay()) }
-				button("Output").action { insertStmtHere(XsOutput()) }
-				button("Comment").action { insertStmtHere(XlComment("")) }
+				hbox()
+				button("Choose") {
+					action {
+						val stmt = XlSwitch().apply {
+							value = "rand(100)"
+							branches += XlSwitchCase().apply { lte = "50" }
+							defaultBranch = XlSwitchDefault()
+						}
+						val pos = posForInsertion()
+						if (canInsert(stmt,pos.first)) {
+							insertStmtHere(stmt)
+						}
+					}
+				}
+				button("Branch") {
+					action {
+						val cc = contextualCurrent ?: return@action
+						val stmt = XlSwitchCase().apply { test = "true" }
+						if (cc.value?.stmt is XlSwitch) {
+							insertStmt(stmt,cc.item,0,true)
+						} else if (cc.parent?.value?.stmt is XlSwitch) {
+							insertStmt(stmt, cc.parent, indexOfStmt(cc.item), true)
+						}
+					}
+				}
+				button("Default") {
+					action {
+						val cc = contextualCurrent ?: return@action
+						val stmt = XlSwitchDefault()
+						if (cc.value?.stmt is XlSwitch) {
+							insertStmt(stmt,cc.item,0,true)
+						} else if (cc.parent?.value?.stmt is XlSwitch) {
+							insertStmt(stmt, cc.parent, indexOfStmt(cc.item), true)
+						}
+					}
+				}
 			}
 			// Scene-enders
 			row {

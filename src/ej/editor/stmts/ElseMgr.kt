@@ -7,7 +7,7 @@ import tornadofx.*
 
 object ElseMgr : StatementManager<XlElse>() {
 	override fun editorBody(stmt: XlElse) = defaultEditorBody {
-		label("Else")
+		label("Else branch")
 	}
 	
 	override fun treeGraphic(stmt: XlElse, tree: StatementTree) =

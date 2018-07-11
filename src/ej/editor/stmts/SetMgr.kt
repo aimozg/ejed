@@ -1,11 +1,11 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
-import ej.editor.utils.binding4
+import ej.editor.utils.bindingN
 import ej.editor.utils.isNullOrEmpty
+import ej.editor.utils.stringValueToggler
 import ej.editor.views.StatementTree
 import ej.mod.XsSet
-import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 
 /*
@@ -38,23 +38,7 @@ object SetMgr : StatementManager<XsSet>() {
 		textfield(stmt.varnameProperty) {
 			prefColumnCount = 6
 		}
-		checkbox("of object") {
-			selectedProperty().bindBidirectional(object : SimpleObjectProperty<Boolean>() {
-				override fun setValue(v: Boolean?) {
-					if (v == true) {
-						if (stmt.inobj.isEmpty()) {
-							stmt.inobj = "mod"
-						}
-					} else {
-						stmt.inobj = ""
-					}
-				}
-				
-				init {
-					bind(stmt.inobjProperty.isNullOrEmpty().not())
-				}
-			})
-		}
+		checkbox("of object", stringValueToggler(stmt.inobjProperty,"mod"))
 		textfield(stmt.inobjProperty) {
 			disableWhen { stmt.inobjProperty.isNullOrEmpty() }
 			prefColumnCount = 6
@@ -64,7 +48,7 @@ object SetMgr : StatementManager<XsSet>() {
 	
 	override fun treeGraphic(stmt: XsSet, tree: StatementTree) =
 			simpleTreeLabel(
-					binding4(stmt.inobjProperty,
+					bindingN(stmt.inobjProperty,
 					         stmt.varnameProperty,
 					         stmt.opProperty,
 					         stmt.valueProperty){inobj,varname,op,value ->

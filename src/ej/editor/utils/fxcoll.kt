@@ -76,35 +76,68 @@ fun <T> List<T>.observableUnique():ObservableList<T> = object: ObservableListWra
 	}
 }
 
-fun <T1,R> binding1(prop1:ObservableValue<T1>,
-                    op:(T1?)->R): ObservableValue<R> =
+fun <T1, R> bindingN(prop1: ObservableValue<T1>,
+                     op: (T1?) -> R): ObservableValue<R> =
 		Bindings.createObjectBinding(Callable {
 			op(prop1.value)
 		}, prop1)
 
-fun <T1,T2,R> binding2(prop1:ObservableValue<T1>,
-                       prop2:ObservableValue<T2>,
-                       op:(T1?,T2?)->R): ObservableValue<R> =
+fun <T1, T2, R> bindingN(prop1: ObservableValue<T1>,
+                         prop2: ObservableValue<T2>,
+                         op: (T1?, T2?) -> R): ObservableValue<R> =
 		Bindings.createObjectBinding(Callable {
-			op(prop1.value,prop2.value)
+			op(prop1.value, prop2.value)
 		}, prop1, prop2)
 
-fun <T1,T2,T3,R> binding3(prop1:ObservableValue<T1>,
-                          prop2:ObservableValue<T2>,
-                          prop3:ObservableValue<T3>,
-                          op:(T1?,T2?,T3?)->R): ObservableValue<R> =
+fun <T1, T2, T3, R> bindingN(prop1: ObservableValue<T1>,
+                             prop2: ObservableValue<T2>,
+                             prop3: ObservableValue<T3>,
+                             op: (T1?, T2?, T3?) -> R): ObservableValue<R> =
 		Bindings.createObjectBinding(Callable {
-			op(prop1.value,prop2.value,prop3.value)
+			op(prop1.value, prop2.value, prop3.value)
 		}, prop1, prop2, prop3)
 
-fun <T1,T2,T3,T4,R> binding4(prop1:ObservableValue<T1>,
-                          prop2:ObservableValue<T2>,
-                          prop3:ObservableValue<T3>,
-                          prop4:ObservableValue<T4>,
-                          op:(T1?,T2?,T3?,T4?)->R): ObservableValue<R> =
+fun <T1, T2, T3, T4, R> bindingN(prop1: ObservableValue<T1>,
+                                 prop2: ObservableValue<T2>,
+                                 prop3: ObservableValue<T3>,
+                                 prop4: ObservableValue<T4>,
+                                 op: (T1?, T2?, T3?, T4?) -> R): ObservableValue<R> =
 		Bindings.createObjectBinding(Callable {
-			op(prop1.value,prop2.value,prop3.value,prop4.value)
-		}, prop1, prop2, prop3,prop4)
+			op(prop1.value, prop2.value, prop3.value, prop4.value)
+		}, prop1, prop2, prop3, prop4)
+
+fun <T1, T2, T3, T4, T5, R> bindingN(prop1: ObservableValue<T1>,
+                                     prop2: ObservableValue<T2>,
+                                     prop3: ObservableValue<T3>,
+                                     prop4: ObservableValue<T4>,
+                                     prop5: ObservableValue<T5>,
+                                     op: (T1?, T2?, T3?, T4?, T5?) -> R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value, prop2.value, prop3.value, prop4.value, prop5.value)
+		}, prop1, prop2, prop3, prop4, prop5)
+
+fun <T1, T2, T3, T4, T5, T6, R> bindingN(prop1: ObservableValue<T1>,
+                                         prop2: ObservableValue<T2>,
+                                         prop3: ObservableValue<T3>,
+                                         prop4: ObservableValue<T4>,
+                                         prop5: ObservableValue<T5>,
+                                         prop6: ObservableValue<T6>,
+                                         op: (T1?, T2?, T3?, T4?, T5?, T6?) -> R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value, prop2.value, prop3.value, prop4.value, prop5.value, prop6.value)
+		}, prop1, prop2, prop3, prop4, prop5, prop6)
+
+fun <T1, T2, T3, T4, T5, T6, T7, R> bindingN(prop1: ObservableValue<T1>,
+                                             prop2: ObservableValue<T2>,
+                                             prop3: ObservableValue<T3>,
+                                             prop4: ObservableValue<T4>,
+                                             prop5: ObservableValue<T5>,
+                                             prop6: ObservableValue<T6>,
+                                             prop7: ObservableValue<T7>,
+                                             op: (T1?, T2?, T3?, T4?, T5?, T6?, T7?) -> R): ObservableValue<R> =
+		Bindings.createObjectBinding(Callable {
+			op(prop1.value, prop2.value, prop3.value, prop4.value, prop5.value, prop6.value, prop7.value)
+		}, prop1, prop2, prop3, prop4, prop5, prop6, prop7)
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified B> ObservableList<*>.filteredIsInstance(): FilteredList<B> {
@@ -118,3 +151,19 @@ inline fun<reified B> ObservableList<*>.filteredIsInstanceMutable() =
 
 fun<E> observableConcatenation(vararg lists:ObservableList<out E>):ObservableList<E> =
 		AggregatedObservableArrayList(*lists).aggregatedList
+
+fun stringValueToggler(source: Property<out String?>,defaultTrueValue:String) = object:SimpleObjectProperty<Boolean>() {
+	override fun setValue(v: Boolean?) {
+		if (v == true) {
+			val srcVal = source.value
+			if (srcVal.isNullOrEmpty()) {
+				source.value = defaultTrueValue
+			}
+		} else {
+			source.value = ""
+		}
+	}
+	init {
+		bind(source.isNullOrEmpty().not())
+	}
+}

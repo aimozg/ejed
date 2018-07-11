@@ -64,7 +64,9 @@ fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) 
 	XlElseIf::class.java -> ElseIfMgr
 	XlElse::class.java -> ElseMgr
 	XlComment::class.java -> CommentMgr
-//	XlSwitch::class.java -> SwitchMgr TODO
+	XlSwitch::class.java -> SwitchMgr
+	XlSwitchCase::class.java -> SwitchCaseMgr
+	XlSwitchDefault::class.java -> SwitchDefaultMgr
 	XcText::class.java -> TextMgr
 	else -> null
 } as StatementManager<T>?

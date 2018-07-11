@@ -1,7 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
-import ej.editor.utils.binding3
+import ej.editor.utils.bindingN
 import ej.editor.views.StatementTree
 import ej.mod.XsButton
 import tornadofx.*
@@ -17,9 +17,9 @@ object ButtonMgr : StatementManager<XsButton>() {
 	}
 	
 	override fun treeGraphic(stmt: XsButton, tree: StatementTree) = simpleTreeLabel(
-			binding3(stmt.textProperty,
-			                         stmt.refProperty,
-			                         stmt.disabledProperty) { text, ref, disabled ->
+			bindingN(stmt.textProperty,
+			         stmt.refProperty,
+			         stmt.disabledProperty) { text, ref, disabled ->
 				(if (disabled == true) "(disabled) " else "") + "[$text] --> $ref"
 			}
 	).addClass(Styles.xlogic)

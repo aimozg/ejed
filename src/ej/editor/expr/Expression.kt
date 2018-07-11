@@ -28,7 +28,7 @@ enum class Operator(val repr:String,val priority:Int,vararg val aliases:String) 
 	OR("or",10,"||"),
 	AND("and",20,"&&"),
 	LT("<",30,"lt"),
-	LTE("<=",30,"lte","le","leq"),//≤
+	LTE("<=",30,"lte","le","leq"),// ≤
 	GT(">",30,"gt"),
 	GTE(">=",30,"gte","ge","geq"), // ≥
 	NEQ("!=",30,"ne","neq","!=="), // ≠

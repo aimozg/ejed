@@ -1,9 +1,12 @@
 package ej.mod
 
+import ej.editor.utils.observableUnique
+import ej.utils.affix
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 import javax.xml.bind.annotation.XmlAttribute
+import javax.xml.bind.annotation.XmlElement
 import javax.xml.bind.annotation.XmlRootElement
 import javax.xml.bind.annotation.XmlTransient
 
@@ -145,9 +148,74 @@ internal class XmlFlatElseif() : XStatement {
 
 @XmlRootElement(name="switch")
 class XlSwitch : XStatement {
-	init {
-		TODO("<switch> NYI")
-	}
-	override fun toString() = defaultToString("switch","","")
 	
+	@XmlTransient
+	val valueProperty = SimpleStringProperty(null)
+	@get:XmlAttribute
+	var value:String? by valueProperty
+	
+	@XmlElement(name="switch")
+	val branches = ArrayList<XlSwitchCase>().observableUnique()
+	
+	@XmlTransient
+	val defaultBranchProperty = SimpleObjectProperty<XlSwitchDefault?>(null)
+	@get:XmlElement(name="default")
+	var defaultBranch: XlSwitchDefault? by defaultBranchProperty
+	
+	override fun toString() = defaultToString("switch",value.affix("value="),branches.joinToString()+defaultBranch?.toString()?.affix(" "))
+	
+}
+sealed class PartOfSwitch: XContentContainer()
+@XmlRootElement(name="case")
+class XlSwitchCase : PartOfSwitch() {
+	
+	@XmlTransient
+	val testProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="test")
+	var test:String? by testProperty
+	
+	@XmlTransient
+	val valueProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="value")
+	var value:String? by valueProperty
+	
+	@XmlTransient
+	val neProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="ne")
+	var ne:String? by neProperty
+	
+	@XmlTransient
+	val ltProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="lt")
+	var lt:String? by ltProperty
+	
+	@XmlTransient
+	val gtProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="gt")
+	var gt:String? by gtProperty
+	
+	@XmlTransient
+	val lteProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="lte")
+	var lte:String? by lteProperty
+	
+	@XmlTransient
+	val gteProperty = SimpleStringProperty(null)
+	@get:XmlAttribute(name="gte")
+	var gte:String? by gteProperty
+	
+	override fun toString() = defaultToString(
+			"case", test.affix("test=") +
+			value.affix(" value=")+
+			ne.affix(" ne=")+
+			lt.affix(" lt=")+
+			gt.affix(" gt=")+
+			lte.affix(" lte=")+
+			gte.affix(" gte=")
+	)
+}
+
+@XmlRootElement(name="default")
+class XlSwitchDefault : PartOfSwitch() {
+	override fun toString() = defaultToString("default")
 }
