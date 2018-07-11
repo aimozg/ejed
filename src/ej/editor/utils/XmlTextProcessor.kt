@@ -2,11 +2,11 @@ package ej.editor.utils
 
 import ej.utils.crop
 
-abstract class XmlTextProcessor {
-	protected sealed class Action(val code:Int) {
-		class Take():Action(1)
-		class Skip():Action(2)
-		class SkipTag():Action(3)
+abstract class XmlTextProcessor : AbstractParser<String>(){
+	protected sealed class Action(@Suppress("unused") val code:Int) {
+		class Take :Action(1)
+		class Skip :Action(2)
+		class SkipTag :Action(3)
 		class RenameTag(val newname:String):Action(4)
 		class TakeAndAddAttrs(val items:Array<out Pair<String,String>>):Action(6)
 	}
@@ -16,14 +16,13 @@ abstract class XmlTextProcessor {
 	protected fun renameTag(newname:String) = Action.RenameTag(newname)
 	protected fun takeWith(vararg attrs:Pair<String,String>) = Action.TakeAndAddAttrs(attrs)
 	// TODO MOD_TAG, MOD_ATTR_NAME, MOD_ATTR_VALUE
-	fun process(source:String):String {
-		val c = Context(source)
+	override fun Context.doParse(): String {
 		val rslt = StringBuilder(source.length*2/3+1)
-		while (c.isNotEmpty()) {
-			rslt.append(c.eatUntil("<"))
-			if (c.eat(LA_BEGIN) != null) {
+		while (isNotEmpty()) {
+			rslt.append(eatenUntil("<")?:"")
+			if (eat(LA_BEGIN)) {
 				// <element
-				var tag = c.match.groupValues[1]
+				var tag = match.groupValues[1]
 				var skip = false
 				val attrs = StringBuilder()
 				testBegin(tag).let { action ->
@@ -42,11 +41,11 @@ abstract class XmlTextProcessor {
 				
 				val single:Boolean
 				while (true) {
-					c.eatWs()
-					if (c.eat(LA_ATTR) != null || c.eat(LA_FLAG) != null) {
+					eatWs()
+					if (eat(LA_ATTR) || eat(LA_FLAG)) {
 						if (!skip) {
-							val attrname = c.match.groupValues[1]
-							val attrvalue = c.match.groupValues[2]
+							val attrname = match.groupValues[1]
+							val attrvalue = match.groupValues[2]
 							testAttr(tag, attrname, attrvalue).let { action ->
 								when(action) {
 									is XmlTextProcessor.Action.Take -> {
@@ -66,13 +65,13 @@ abstract class XmlTextProcessor {
 								}
 							}
 						}
-					} else if (c.eat(LA_OPEN_OR_SINGLE) != null) {
-						single = c.eaten =="/>"
+					} else if (eat(LA_OPEN_OR_SINGLE)) {
+						single = eaten =="/>"
 						break
 					} else {
 						skip = true
-						println("[WARN] Malformed XML near ${c.s.crop(20)}")
-						c.eat(1)
+						println("[WARN] Malformed XML near ${str.crop(20)}")
+						eat(1)
 					}
 				}
 				if (!skip) {
@@ -93,60 +92,32 @@ abstract class XmlTextProcessor {
 						rslt.append('>')
 					}
 				}
-			} else if (c.eat(LA_END) != null) {
+			} else if (eat(LA_END)) {
 				// </element>
-				val tag = c.match.groupValues[1]
+				val tag = match.groupValues[1]
 				testEnd(tag).let { action ->
 					when(action) {
-						is XmlTextProcessor.Action.Take -> rslt.append(c.eaten)
+						is XmlTextProcessor.Action.Take -> rslt.append(eaten)
 						is XmlTextProcessor.Action.Skip,
 						is XmlTextProcessor.Action.SkipTag -> {}
 						is XmlTextProcessor.Action.RenameTag -> rslt.append('<', '/', action.newname, '>')
 						is XmlTextProcessor.Action.TakeAndAddAttrs -> kotlin.error("Cannot $action in testEnd")
 					}
 				}
-			} else if (c.isNotEmpty()) {
-				c.eat(1)
+			} else if (isNotEmpty()) {
+				eat(1)
 			} else break
 		}
-		rslt.append(c.s)
+		rslt.append(str)
 		return rslt.toString()
 	}
+	
 	protected abstract fun testBegin(tag:String):Action
 	protected abstract fun testOpen(tag:String,attrs:StringBuilder,single:Boolean):Action
 	protected abstract fun testEnd(tag:String):Action
 	protected abstract fun testAttr(tag:String, name:String, value:String):Action
-	class Context(var s:String) {
-		fun eatWs():String {
-			return eat(LA_WS)?.value?:""
-		}
-		fun eat(n:Int):String {
-			eaten = s.substring(0,n)
-			s = s.substring(n)
-			return eaten
-		}
-		fun eat(prefix:String):String? {
-			if (s.startsWith(prefix)) {
-				return eat(prefix.length)
-			}
-			return null
-		}
-		fun eat(rex:Regex):MatchResult? {
-			match = rex.find(s) ?: return null
-			eat(match.value.length)
-			return match
-		}
-		fun eatUntil(sub:String):String {
-			val i = s.indexOf(sub)
-			return if (i > 0) eat(i) else ""
-		}
-		var eaten:String = ""
-		var match:MatchResult = Regex(".*").matchEntire("")!!
-		fun isNotEmpty() = s.isNotEmpty()
-	}
 	companion object {
 		
-		private val LA_WS = Regex("""^\s++""")
 		private val LA_BEGIN = Regex("""^<([^"</>&=\s]++)""") // 1 = tag name
 		private val LA_ATTR = Regex("""^([^"</>&=\s]++)="?([^"<>]++)"?""") // 1 = name, 2 = value
 		private val LA_FLAG = Regex("""^([^"</>&=\s]++)()(?!=)""") // 1 = name, 2 = empty

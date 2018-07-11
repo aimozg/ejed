@@ -41,7 +41,7 @@ open class HtmlEditorLite : VBox() {
 				val hc = engine.executeScript("document.getElementById('editable').innerHTML") as? String ?: ""
 				try {
 					modifyingHc++
-					htmlContent = processor?.process(hc) ?: hc
+					htmlContent = processor?.parse(hc) ?: hc
 				} finally {
 					modifyingHc--
 				}

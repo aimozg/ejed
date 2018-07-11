@@ -1,8 +1,10 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.observableXExpression
 import ej.editor.views.StatementTree
 import ej.mod.XlIf
+import javafx.scene.layout.Priority
 import tornadofx.*
 
 /*
@@ -12,14 +14,14 @@ import tornadofx.*
 object IfMgr : StatementManager<XlIf>() {
 	override fun editorBody(stmt: XlIf) = defaultEditorBody{
 		label("If condition ")
-		textfield(stmt.testProperty)
+		textfield(stmt.testProperty) { hgrow = Priority.SOMETIMES }
 		label(" is true")
 		// TODO else, elseif
 	}
 	
 	override fun treeGraphic(stmt: XlIf, tree: StatementTree) =
 			simpleTreeLabel(
-					stmt.testProperty.stringBinding { "If: $it" }
+					observableXExpression(stmt.testProperty, "If ")
 				).addClass(Styles.xlogic)
 	
 }

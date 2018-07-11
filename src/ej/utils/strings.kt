@@ -22,3 +22,17 @@ private val REGEX_WHITESPACE = Regex("\\s++")
 fun String.squeezeWs(): String {
 	return replace(REGEX_WHITESPACE, " ").trim()
 }
+private val JS_ESCAPABLE_TOKENS = Regex("""["'\r\n\t\\]""")
+private val JS_ESCAPES = mapOf(
+		"\"" to """\"""",
+		"\'" to """\'""",
+		"\r" to """\r""",
+		"\n" to """\n""",
+		"\t" to """\t""",
+		"\\" to """\\"""
+)
+
+fun String.escapeJs() = JS_ESCAPABLE_TOKENS.replace(this) {
+	JS_ESCAPES[it.value] ?: it.value
+}
+fun String.toJsString():String = "'${escapeJs()}'"
