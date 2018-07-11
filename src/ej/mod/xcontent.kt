@@ -2,7 +2,7 @@ package ej.mod
 
 import ej.editor.utils.escapeXmlAttr
 import ej.editor.utils.observableUnique
-import ej.utils.affix
+import ej.utils.affixNonEmpty
 import ej.utils.crop
 import javafx.beans.property.ObjectProperty
 import javafx.collections.ObservableList
@@ -21,7 +21,7 @@ interface XComplexStatement: XStatement {
 
 @Suppress("unused")
 internal fun XStatement.defaultToString(tagname:String, attrs:String, content:String) =
-		"[" + tagname + attrs.affix("(",")") + content.affix(" ") + "]"
+		"[" + tagname + attrs.affixNonEmpty("(",")") + content.affixNonEmpty(": ") + "]"
 
 interface StoryContainer {
 	val lib: ObservableList<StoryStmt>
@@ -62,9 +62,10 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 			XmlElementRef(name = "output", type = XsOutput::class),
 			XmlElementRef(name = "lib", type = XcLib::class),
 			XmlElementRef(name = "text", type = XcNamedText::class),
-			XmlElementRef(name = "if", type = XlIf::class),
-			XmlElementRef(name = "else", type = XlElse::class),
-			XmlElementRef(name = "elseif", type = XlElseIf::class),
+			XmlElementRef(name = "scene", type = XcScene::class),
+			XmlElementRef(name = "if", type = XmlFlatIf::class),
+			XmlElementRef(name = "else", type = XmlFlatElse::class),
+			XmlElementRef(name = "elseif", type = XmlFlatElseif::class),
 			XmlElementRef(name = "switch", type = XlSwitch::class),
 			XmlElementRef(name = "comment", type = XlComment::class),
 			XmlElementRef(name = "menu", type = XsMenu::class),
@@ -85,7 +86,8 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
 		val stmts = contentRaw.map {
-			it as? XStatement
+			(it as? XmlFlatIf)?.grouped()
+					?: it as? XStatement
 					?: XcText(it.toString())
 		}
 		content.clear()
@@ -103,7 +105,9 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 		trimMode = null
 		contentRaw.clear()
 		contentRaw.addAll(lib)
-		contentRaw.addAll(content)
+		contentRaw.addAll(content.map {
+			(it as? XlIf)?.ungrouped() ?: it
+		})
 	}
 	override fun toString() = defaultToString("content")
 }

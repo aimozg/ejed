@@ -3,9 +3,7 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.manager
 import ej.editor.stmts.simpleTreeLabel
-import ej.editor.utils.binding1
-import ej.editor.utils.binding2
-import ej.editor.utils.observableUnique
+import ej.editor.utils.*
 import ej.mod.*
 import ej.utils.affixNonEmpty
 import javafx.beans.property.SimpleObjectProperty
@@ -42,30 +40,68 @@ fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 	}
 }
 
-open class StatementTree : TreeView<XStatement>() {
+sealed class StatementTreeItem(open val stmt:XStatement?) {
+	override fun toString(): String {
+		return stmt?.toString()?:javaClass.simpleName
+	}
+	
+	open fun statementTreeGraphic(tree:StatementTree):Region =
+			stmt?.let { stmt -> statementTreeGraphic(tree,stmt)} ?:
+			simpleTreeLabel("<nothing>")
+	class Statement(override val stmt:XStatement): StatementTreeItem(stmt)
+	class RootItem: StatementTreeItem(null) {
+		override fun statementTreeGraphic(tree: StatementTree) = simpleTreeLabel("<root>")
+	}
+	abstract class ContentGroupNode(override val stmt:XContentContainer):StatementTreeItem(stmt)
+	class ThenNode(val parent:XlIf, override val stmt: XlThen):ContentGroupNode(stmt)
+	class ElseIfNode(val parent:XlIf, override val stmt: XlElseIf):ContentGroupNode(stmt)
+	class ElseNode(val parent:XlIf, override val stmt: XlElse):ContentGroupNode(stmt)
+}
+
+open class StatementTree : TreeView<StatementTreeItem>() {
 	val contentsProperty = SimpleObjectProperty(ArrayList<XStatement>().observableUnique())
 	var contents by contentsProperty
 	
 	val expandedNodesProperty = SimpleObjectProperty<Boolean>(false)
 	var expandedNodes by expandedNodesProperty
 	
-	private val fakeRoot = TreeItem<XStatement>()
-	var cellDecorator: ((TreeCell<XStatement>)->Unit)? = null
+	var cellDecorator: ((TreeCell<StatementTreeItem>)->Unit)? = null
 	fun repopulate() {
-		populate {
-			val stmt = it.value
-			when (stmt) {
-				null -> if (it == fakeRoot) contents else emptyList()
-				is XcLib, is XcNamedText -> emptyList()
-				is XContentContainer -> stmt.content
-				else -> emptyList()
+		populate { treeItem ->
+			val sti = treeItem.value
+			when (sti) {
+				null -> emptyList()
+				is StatementTreeItem.RootItem -> contents.transformed {
+					StatementTreeItem.Statement(it)
+				}
+				is StatementTreeItem.Statement -> when (sti.stmt) {
+					is XlIf ->
+						observableConcatenation(
+								listOf(
+										StatementTreeItem.ThenNode(sti.stmt, sti.stmt.thenGroup)
+								).observable(),
+								sti.stmt.elseifGroups.transformed { e ->
+									StatementTreeItem.ElseIfNode(sti.stmt, e)
+								},
+								ObservableSingletonList(sti.stmt.elseGroupProperty).transformed { e ->
+									StatementTreeItem.ElseNode(sti.stmt, e)
+								}
+						)
+					is XContentContainer -> sti.stmt.content.transformed {
+						StatementTreeItem.Statement(it)
+					}
+					else -> emptyList()
+				}
+				is StatementTreeItem.ContentGroupNode -> sti.stmt.content.transformed {
+					StatementTreeItem.Statement(it)
+				}
 			}
 		}
 	}
 	
 	init {
 		isShowRoot = false
-		root = fakeRoot
+		root = TreeItem(StatementTreeItem.RootItem())
 		val tree = this
 		cellFormat {
 			val cell = this
@@ -73,7 +109,7 @@ open class StatementTree : TreeView<XStatement>() {
 			cell.prefWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			cell.maxWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			alignment = Pos.TOP_LEFT
-			graphic = statementTreeGraphic(tree,it).also { g ->
+			graphic = it.statementTreeGraphic(tree).also { g ->
 				g.addClass(Styles.treeGraphic)
 				g.maxWidthProperty().bind(
 					cell.maxWidthProperty()

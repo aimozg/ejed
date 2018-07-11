@@ -52,12 +52,19 @@ abstract class ModVisitor {
 		visitAnyStmt(x)
 	}
 	open fun visitIf(x:XlIf){
+		visitAnyStmt(x)
+		visitAnyContentContainer(x.thenGroup)
+		for (elseifGroup in x.elseifGroups) {
+			visitElseif(elseifGroup)
+		}
+		x.elseGroup?.let {
+			visitElse(it)
+		}
+	}
+	open fun visitElseif(x: XlElseIf) {
 		visitAnyContentContainer(x)
 	}
-	open fun visitElseif(x:XlElseIf) {
-		visitAnyStmt(x)
-	}
-	open fun visitElse(x:XlElse) {
+	open fun visitElse(x: XlElse) {
 		visitAnyStmt(x)
 	}
 	open fun visitComment(x:XlComment){

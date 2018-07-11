@@ -10,7 +10,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 object IfMgr : StatementManager<XlIf>() {
-	override fun editorBody(stmt: XlIf) = defaultEditorBody() {
+	override fun editorBody(stmt: XlIf) = defaultEditorBody{
 		label("If condition ")
 		textfield(stmt.testProperty)
 		label(" is true")

@@ -43,7 +43,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	private var expandButton by singleAssign<ToggleButton>()
 	private val weakListeners = ArrayList<Any>()
 
-	val contextualCurrentProperty = SimpleObjectProperty<ContextualTreeSelection<XStatement>>().apply {
+	val contextualCurrentProperty = SimpleObjectProperty<ContextualTreeSelection<StatementTreeItem>>().apply {
 		bind(tree.selectionModel.selectedItemProperty().select { item ->
 					item.parentProperty().select { parent ->
 						parent.children.listBinding { ContextualTreeSelection(item) }
@@ -51,39 +51,99 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				}
 		)
 	}
-	val contextualCurrent: ContextualTreeSelection<XStatement>? by contextualCurrentProperty
+	val contextualCurrent: ContextualTreeSelection<StatementTreeItem>? by contextualCurrentProperty
 
-	fun indexOfStmt(item: TreeItem<XStatement>):Int {
-		val srclist = (item.parent?.value as? XComplexStatement)?.content?:contents
-		return srclist.indexOf(item.value)
+	fun indexOfStmt(item: TreeItem<StatementTreeItem>):Int {
+		return item.parent?.children?.indexOf(item)?:contents.indexOf(item.value.stmt)
 	}
-	fun removeStmt(item: TreeItem<XStatement>) {
-		val me = item.value
-		val src = item.parent?.value
-		if (src == null) {
+	fun removeStmt(item: TreeItem<StatementTreeItem>) {
+		val me = item.value.stmt
+		val target = item.parent?.value?.stmt
+		if (target == null) {
 			contents.remove(me)
 		} else {
-			(src as XComplexStatement).content.remove(me)
+			when (target) {
+				is XlIf -> when (me) {
+					is XlElseIf -> target.elseifGroups.remove(me)
+					is XlElse -> target.elseGroup = null
+					else -> kotlin.error("Cannot remove $me from $target")
+				}
+				is XComplexStatement -> target.content.remove(me)
+				else -> kotlin.error("Cannot remove $me from $target")
+			}
 		}
 		println("[INFO] Removed $me")
 		posForInsertionInvalidator.value++
 	}
-	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int, focus:Boolean) {
+	fun insertStmt(me: XStatement, dest: TreeItem<StatementTreeItem>?, destIndex:Int, focus:Boolean) {
 		if (dest == null || dest.parent == null) {
 			contents.add(destIndex, me)
 		} else {
-			(dest.value as XComplexStatement).content.add(destIndex, me)
+			val target = dest.value.stmt
+			when (target) {
+				is XlIf -> when (me) {
+					is XlElseIf -> target.elseifGroups.add(destIndex, me)
+					is XlElse -> target.elseGroup = me
+					else -> kotlin.error("Cannot insert $me in $target")
+				}
+				is XComplexStatement -> target.content.add(destIndex, me)
+				else -> kotlin.error("Cannot insert $me in $target")
+			}
 		}
 		println("[INFO] Inserted $me")
 		posForInsertionInvalidator.value++
 		if (focus) focusOnStatement(me, true)
 	}
-	fun moveStmt(item: TreeItem<XStatement>, dest: TreeItem<XStatement>?, destIndex: Int,focus:Boolean=true) {
+	fun canInsert(me: XStatement, dest: TreeItem<StatementTreeItem>?):Boolean {
+		val target = dest?.value?.stmt
+		return when (target) {
+			is XlIf -> me is XlIf
+					|| me is PartOfIf
+			is XComplexStatement,
+			null -> me !is PartOfIf
+			else -> false
+		}
+	}
+	fun moveStmt(item: TreeItem<StatementTreeItem>, dest: TreeItem<StatementTreeItem>?, destIndex: Int,focus:Boolean=true) {
 		val wasExpanded = item.isExpanded
-		val me = item.value
-		removeStmt(item)
-		insertStmt(me, dest, destIndex, false)
-		if (me != null && focus) focusOnStatement(me, wasExpanded)
+		val me = item.value.stmt ?: return
+		if (!canInsert(me,dest)) {
+			println("[WARN] Cannot insert $me into $dest")
+			return
+		}
+		val target = dest?.value?.stmt
+		if (target is XlIf) {
+			val targetElse = target.elseGroup
+			if (me is XlThen) {
+				val tmp = ArrayList(me.content)
+				me.content.clear()
+				target.thenGroup.content.addAll(tmp)
+			} else if (me is XlElse && targetElse != null) {
+				val tmp = ArrayList(me.content)
+				me.content.clear()
+				targetElse.content.addAll(tmp)
+			} else if (me is XlIf) {
+				removeStmt(item)
+				target.elseifGroups.add(XlElseIf(me.test).also { elseif ->
+					elseif.content.addAll(me.thenGroup.content)
+				})
+				target.elseifGroups.addAll(me.elseifGroups)
+				me.elseGroup?.let { myElse ->
+					if (targetElse == null) {
+						target.elseGroup = myElse
+					} else {
+						targetElse.content.addAll(myElse.content)
+					}
+				}
+			} else {
+				removeStmt(item)
+				insertStmt(me, dest, destIndex, false)
+			}
+		} else {
+			removeStmt(item)
+			insertStmt(me, dest, destIndex, false)
+		}
+		if (focus) focusOnStatement(me, wasExpanded)
 	}
 	
 	fun focusOnStatement(me: XStatement, expand: Boolean = false) {
@@ -94,10 +154,10 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	}
 	
 	private val posForInsertionInvalidator = SimpleIntegerProperty(0)
-	val posForInsertionProperty: ObservableValue<Pair<TreeItem<XStatement>?, Int>?> = contextualCurrentProperty.objectBinding(posForInsertionInvalidator) { cc ->
+	val posForInsertionProperty: ObservableValue<Pair<TreeItem<StatementTreeItem>?, Int>?> = contextualCurrentProperty.objectBinding(posForInsertionInvalidator) { cc ->
 		posForInsertion(cc)
 	}
-	fun posForInsertion(cc: ContextualTreeSelection<XStatement>? = contextualCurrent):Pair<TreeItem<XStatement>?,Int> {
+	fun posForInsertion(cc: ContextualTreeSelection<StatementTreeItem>? = contextualCurrent):Pair<TreeItem<StatementTreeItem>?,Int> {
 		cc ?: return (null to 0)
 		val cci = cc.item
 		val ccp = cc.parent
@@ -115,8 +175,8 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		insertStmt(me,pos.first,pos.second,true)
 	}
 	var wasDragFromTop:Boolean = false
-	var dragContent:TreeItem<XStatement>? = null
-	private fun setupDrag(cell:TreeCell<XStatement>) {
+	var dragContent:TreeItem<StatementTreeItem>? = null
+	private fun setupDrag(cell:TreeCell<StatementTreeItem>) {
 		cell.setOnDragDetected { event ->
 			val db = cell.startDragAndDrop(TransferMode.MOVE)
 			dragContent = cell.treeItem
@@ -149,17 +209,55 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			event.consume()
 		}
 		cell.setOnDragDropped { event ->
-			val content = dragContent
-			if (event.gestureSource != cell && event.dragboard.hasStatement() && content != null) {
+			val content = dragContent ?: return@setOnDragDropped
+			val contentStmt = content.value.stmt ?: return@setOnDragDropped
+			if (event.gestureSource != cell && event.dragboard.hasStatement()) {
 				val reference = cell.treeItem
-				val target = reference.parent
-				if (target != null && generateSequence(reference){it.parent}.none { it == content }) {
+				val target = reference.parent ?: return@setOnDragDropped
+				val targetStmt = target.value.stmt
+				println("Dragging over $reference")
+				if (generateSequence(reference){it.parent}.none { it == content }) { // not dragging parent inside child
+					// Now here things go tricky
+					// 1. If target stmt is <if>
+					//      a) and content is <else>, <elseif>, <then>, drop into target
+					//      b) and content is neither <then>, <else>, <elseif>, drop into reference
+					// 2. If target stmt is not <if>
+					//      a) and content is neither <then>, <else>, <elseif>:
+					//         - if reference is empty complex content and was drag from bottom, drop into reference
+					//         - else drop into target
+					val dest:TreeItem<StatementTreeItem>
+					val destIndex:Int
 					val tgti = target.children.indexOf(reference)
-					if (reference.children.isEmpty() && reference.value is XComplexStatement && !wasDragFromTop) {
-						moveStmt(content, reference, 0)
+					val shift = if (wasDragFromTop) 0 else +1
+					// 1.
+					if (targetStmt is XlIf) {
+						// 1a
+						when (contentStmt) {
+							is PartOfIf,
+							is XlIf -> {
+								dest = target
+								destIndex = tgti + shift - 1
+							}
+							else -> {
+								dest = reference
+								destIndex = 0
+							}
+						}
 					} else {
-						moveStmt(content, target, if (wasDragFromTop) tgti else (tgti + 1))
+						if (contentStmt !is PartOfIf) {
+							if (reference.children.isEmpty() && reference.value is XComplexStatement && !wasDragFromTop) {
+								dest = reference
+								destIndex = 0
+							} else {
+								dest = target
+								destIndex = tgti + shift
+							}
+						} else {
+							return@setOnDragDropped
+						}
 					}
+					println("Dropping $content onto $dest . $destIndex")
+					moveStmt(content, dest, destIndex)
 				}
 				this.dragContent = null
 			}
@@ -199,32 +297,36 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				button("If") {
 					action {
 						insertStmtHere(XlIf("").apply {
-							content += XlElseIf("")
-							content += XlElse()
+							elseifGroups.add(XlElseIf())
+							elseGroup = XlElse()
 						})
 					}
 				}
 				button("ElseIf") {
-					disableWhen(posForInsertionProperty.booleanBinding { position ->
-						// Disable if not inside <if> or has <else> before the insert position
-						val target = (position?.first?.value as? XlIf)?.content
-						val index = position?.second
-						target == null
-								|| index == null
-								|| target.subList(0, index).any { it is XlElse }
-						
+					disableWhen(posForInsertionProperty.booleanBinding { pos ->
+						val stmt = XlElseIf("")
+						!canInsert(stmt, pos?.first) &&
+								!canInsert(stmt, contextualCurrent?.item)
+						// Disable if not inside <if>
+						//position?.first?.value?.stmt !is XlIf
 					})
-					action { insertStmtHere(XlElseIf("")) }
+					action {
+						val cc = contextualCurrent
+						val pos = posForInsertion()
+						val stmt = XlElseIf("")
+						if (cc != null && canInsert(stmt, cc.item)) {
+							insertStmt(stmt,cc.item,0,true)
+						} else if (canInsert(stmt, pos.first)) {
+							insertStmt(stmt,pos.first,pos.second-1,true)
+						}
+//						insertStmtHere(XlIf.XlElseIf(""))
+					}
 				}
 				button("Else") {
 					disableWhen(posForInsertionProperty.booleanBinding { position ->
-						// Disable if not inside <if>, has <else>, or has <elseif> after insert position
-						val target = (position?.first?.value as? XlIf)?.content
-						val index = position?.second
-						target == null
-								|| index == null
-								|| target.any { it is XlElse }
-								|| target.subList(index, target.size).any { it is XlElseIf }
+						// Disable if not inside <if> w/o <else>
+						val target = (position?.first?.value?.stmt as? XlIf)
+						target == null || target.elseGroup != null
 					})
 					action { insertStmtHere(XlElse()) }
 				}
@@ -251,7 +353,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				}
 				button("Button").action {
 					disableWhen(posForInsertionProperty.booleanBinding { pfi ->
-						generateSequence(pfi?.first) { it.parent }.none { it.value is XsMenu }
+						generateSequence(pfi?.first) { it.parent }.none { it.value.stmt is XsMenu }
 					})
 					insertStmtHere(XsButton("Click me"))
 				}
@@ -315,7 +417,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				expandedNodesProperty.bind(expandButton.selectedProperty())
 			}
 			contextualCurrentProperty.onChangeWeak { cts ->
-				val value = cts?.item?.value
+				val value = cts?.item?.value?.stmt
 				editor = value?.let { stmt ->
 					stmt.manager()?.editorBody(value)
 							?: defaultEditorBody { label("TODO ${stmt.javaClass}") }

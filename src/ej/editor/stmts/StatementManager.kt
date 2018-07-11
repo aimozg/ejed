@@ -52,21 +52,22 @@ inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={})
 
 @Suppress("UNCHECKED_CAST")
 fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) {
-//	XsBattle::class.java -> BattleMgr as StatementManager<T> TODO
-	XsDisplay::class.java -> DisplayMgr as StatementManager<T>
-	XsOutput::class.java -> OutputMgr as StatementManager<T>
-	XsSet::class.java -> SetMgr as StatementManager<T>
-	XsMenu::class.java -> MenuMgr as StatementManager<T>
-	XsNext::class.java -> NextMgr as StatementManager<T>
-	XsButton::class.java -> ButtonMgr as StatementManager<T>
-	XlIf::class.java -> IfMgr as StatementManager<T>
-	XlElseIf::class.java -> ElseIfMgr as StatementManager<T>
-	XlElse::class.java -> ElseMgr as StatementManager<T>
-	XlComment::class.java -> CommentMgr as StatementManager<T>
-//	XlSwitch::class.java -> SwitchMgr as StatementManager<T> TODO
-	XcText::class.java -> TextMgr as StatementManager<T>
+//	XsBattle::class.java -> BattleMgr TODO
+	XsDisplay::class.java -> DisplayMgr
+	XsOutput::class.java -> OutputMgr
+	XsSet::class.java -> SetMgr
+	XsMenu::class.java -> MenuMgr
+	XsNext::class.java -> NextMgr
+	XsButton::class.java -> ButtonMgr
+	XlIf::class.java -> IfMgr
+	XlThen::class.java -> ThenMgr
+	XlElseIf::class.java -> ElseIfMgr
+	XlElse::class.java -> ElseMgr
+	XlComment::class.java -> CommentMgr
+//	XlSwitch::class.java -> SwitchMgr TODO
+	XcText::class.java -> TextMgr
 	else -> null
-}
+} as StatementManager<T>?
 
 inline fun<reified T:XStatement> statementManager():StatementManager<T>? = T::class.java.statementManager()
 fun<T:XStatement> T.manager():StatementManager<T>? = javaClass.statementManager()
