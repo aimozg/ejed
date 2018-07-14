@@ -3,6 +3,9 @@ package ej.editor.expr
 import ej.utils.lessThan
 import ej.utils.lessThanOrEqualTo
 import ej.utils.toJsString
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import tornadofx.*
 
 /*
  * Created by aimozg on 11.07.2018.
@@ -10,19 +13,25 @@ import ej.utils.toJsString
  */
 
 sealed class Expression {
-
+	abstract val source:String
+	abstract val parts:List<Expression>
+	override fun toString() = source
 }
-data class Identifier(val value:String):Expression() {
-	override fun toString() = value
+class Identifier(val value:String):Expression() {
+	override val parts get() = emptyList<Expression>()
+	override val source get() = value
 }
-data class IntLiteral(val value:Int):Expression() {
-	override fun toString() = value.toString()
+class IntLiteral(val value:Int):Expression() {
+	override val parts get() = emptyList<Expression>()
+	override val source get() = value.toString()
 }
-data class FloatLiteral(val value:Double):Expression() {
-	override fun toString() = value.toString()
+class FloatLiteral(val value:Double):Expression() {
+	override val parts get() = emptyList<Expression>()
+	override val source get() = value.toString()
 }
-data class StringLiteral(val value:String):Expression() {
-	override fun toString() = value.toJsString()
+class StringLiteral(val value:String):Expression() {
+	override val parts get() = emptyList<Expression>()
+	override val source get() = value.toJsString()
 }
 enum class Operator(val repr:String,val priority:Int,vararg val aliases:String) {
 	OR("or",10,"||"),
@@ -45,30 +54,36 @@ enum class Operator(val repr:String,val priority:Int,vararg val aliases:String) 
 	}
 }
 
-data class ListExpression(val items:List<Expression>):Expression() {
-	override fun toString() = "["+items.joinToString(", ")+"]"
+class ListExpression(override val parts:List<Expression>):Expression() {
+	override val source get() = "["+parts.joinToString(", ")+"]"
 }
-data class ObjectExpression(val items:Map<String,Expression>):Expression() {
-	override fun toString() = "{ " + items.entries.joinToString(", ") {
+class ObjectExpression(val items:Map<String,Expression>):Expression() {
+	override val parts get() = items.values.toList()
+	override val source get() = "{ " + items.entries.joinToString(", ") {
 		(k,v) -> k.toJsString() +": "+v
 	}+" }"
 }
-data class CallExpression(val function:Expression,val arguments:List<Expression>):Expression() {
-	override fun toString() = ""+function + "(" + arguments.joinToString(",") + ")"
+class CallExpression(val function:Expression,val arguments:List<Expression>):Expression() {
+	override val parts get() = listOf(function)+arguments
+	override val source get() = ""+function + "(" + arguments.joinToString(",") + ")"
 }
-data class DotExpression(val obj:Expression,val key:String):Expression() {
-	override fun toString() = "$obj.$key"
+class DotExpression(val obj:Expression,val key:String):Expression() {
+	override val parts get() = listOf(obj)
+	override val source get() = "$obj.$key"
 }
-data class AccessExpression(val obj:Expression,val index:Expression):Expression() {
-	override fun toString() = "$obj[$index]"
+class AccessExpression(val obj: Expression,val index:Expression):Expression() {
+	override val parts get() = listOf(obj,index)
+	override val source get() = "$obj[$index]"
 }
-data class ConditionalExpression(val condition:Expression,
+class ConditionalExpression(val condition:Expression,
                             val ifTrue:Expression,
                             val ifFalse:Expression):Expression() {
-	override fun toString() = "$condition ? $ifTrue : $ifFalse"
+	override val parts get() = listOf(condition,ifTrue,ifFalse)
+	override val source get() = "$condition ? $ifTrue : $ifFalse"
 }
-data class BinaryExpression(val left:Expression,val op:Operator,val right:Expression):Expression() {
-	override fun toString(): String {
+class BinaryExpression(val left:Expression,val op:Operator,val right:Expression):Expression() {
+	override val parts get() = listOf(left,right)
+	override val source get(): String {
 		return (if (wrapLeft()) "($left)" else left.toString())+
 				op.repr+
 				(if (wrapRight()) "($right)" else right.toString())
@@ -77,3 +92,22 @@ data class BinaryExpression(val left:Expression,val op:Operator,val right:Expres
 	fun wrapLeft() = (left as? BinaryExpression)?.op?.priority?.lessThan(op.priority) == true
 	fun wrapRight() = (right as? BinaryExpression)?.op?.priority?.lessThanOrEqualTo(op.priority) == true
 }
+class InvalidExpression(override val source:String):Expression() {
+	override val parts get() = emptyList<Expression>()
+}
+
+open class ExpressionProperty(initialValue:Expression = InvalidExpression("")) : SimpleObjectProperty<Expression>(initialValue) {
+	val sourceProperty = object: SimpleStringProperty() {
+		override fun setValue(v: String) {
+			this@ExpressionProperty.set(parseExpressionSafe(v))
+		}
+		
+		init {
+			bind(this@ExpressionProperty.stringBinding{
+				it?.source?:""
+			})
+		}
+	}
+}
+
+

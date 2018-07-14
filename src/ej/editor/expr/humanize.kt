@@ -1,6 +1,9 @@
 package ej.editor.expr
 
+import ej.mod.StateVar
 import javafx.beans.value.ObservableValue
+import org.funktionale.either.Either
+import org.funktionale.utils.identity
 import tornadofx.*
 
 /*
@@ -8,6 +11,31 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
+sealed class Value {
+
+}
+class ExpressionValue(var expr:Expression):Value() {
+
+}
+class ModVariableValue(var ref:StateVar):Value() {
+
+}
+
+abstract class HumanizedExpression {
+	abstract fun toExpression(): Expression
+	abstract fun represent():List<Either<String, Value>>
+	fun toSource() = toExpression().source
+	override fun toString() = represent().joinToString {
+		it.fold(identity(), Value::toString)
+	}
+}
+class HexUnknown(val wrapped:Expression):HumanizedExpression() {
+	override fun toExpression() = wrapped
+	override fun represent(): List<Either<String, Value>> =
+			listOf(Either.right(ExpressionValue(wrapped)))
+}
+
+/*
 fun Iterable<Expression>.humanizeToString() = joinToString { it.humanize() }
 fun Expression.humanize():String {
 	return defaultHumanize()
@@ -35,14 +63,14 @@ fun Expression.defaultHumanize():String {
 			(if (wrapLeft()) "(${left.humanize()})" else left.humanize())+
 					" "+op.repr+" "+
 					(if (wrapRight()) "(${right.humanize()})" else right.humanize())
+		is HumanizedExpression -> toString()
+		is InvalidExpression -> toString()
+		else -> toString()
 	}
 }
+*/
 
-fun observableXExpression(prop: ObservableValue<String>, prefix:String="", suffix:String="") =
-		prop.stringBinding {
-			try {
-				prefix + parseExpression(it?:"").humanize() + suffix
-			} catch (e:Throwable) {
-				"<ERROR IN EXPRESSION: ${e.message}"
-			}
-		}
+fun observableXExpression(prop: ObservableValue<Expression>, prefix:String="", suffix:String="") =
+		prop.stringBinding { "$prefix$it$suffix" }
+fun simpleStringBinding(prop: ObservableValue<String>, prefix:String="", suffix:String="") =
+		prop.stringBinding { "$prefix$it$suffix" }

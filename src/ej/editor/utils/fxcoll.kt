@@ -1,6 +1,8 @@
 package ej.editor.utils
 
 import com.sun.javafx.collections.ObservableListWrapper
+import javafx.beans.Observable
+import javafx.beans.WeakInvalidationListener
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
@@ -73,6 +75,17 @@ fun <T> List<T>.observableUnique():ObservableList<T> = object: ObservableListWra
 	
 	override fun equals(other: Any?): Boolean {
 		return this === other
+	}
+}
+
+open class ObservableMutableProperty<T:Observable?>(initialValue:T): SimpleObjectProperty<T>(initialValue) {
+	private val listener = WeakInvalidationListener{
+		this@ObservableMutableProperty.fireValueChangedEvent()
+	}
+	override fun setValue(v: T) {
+		value?.removeListener(listener)
+		super.setValue(v)
+		v?.addListener(listener)
 	}
 }
 

@@ -322,7 +322,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				label("")
 				button("If") {
 					action {
-						insertStmtHere(XlIf("").apply {
+						insertStmtHere(XlIf().apply {
 							elseifGroups.add(XlElseIf())
 							elseGroup = XlElse()
 						})
@@ -330,7 +330,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				}
 				button("ElseIf") {
 					disableWhen(posForInsertionProperty.booleanBinding { pos ->
-						val stmt = XlElseIf("")
+						val stmt = XlElseIf()
 						!canInsert(stmt, pos?.first) &&
 								!canInsert(stmt, contextualCurrent?.item)
 						// Disable if not inside <if>
@@ -339,7 +339,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					action {
 						val cc = contextualCurrent
 						val pos = posForInsertion()
-						val stmt = XlElseIf("")
+						val stmt = XlElseIf()
 						if (cc != null && canInsert(stmt, cc.item)) {
 							insertStmt(stmt,cc.item,0,true)
 						} else if (canInsert(stmt, pos.first)) {

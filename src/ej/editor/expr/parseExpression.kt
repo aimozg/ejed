@@ -1,6 +1,7 @@
 package ej.editor.expr
 
 import ej.editor.utils.AbstractParser
+import ej.editor.utils.ParserException
 import ej.utils.affixNonEmpty
 import ej.utils.toJsString
 
@@ -26,7 +27,8 @@ class ExpressionParser : AbstractParser<Expression>() {
 	}
 	private fun Context.evalUntil(until:String):Expression {
 		val x = evalExpr()
-		if (str.startsWith(until)) return x
+		if (until.isNotEmpty() && str.startsWith(until) ||
+				until.isEmpty() && str.isEmpty()) return x
 		parserError("Operator"+until.affixNonEmpty(" or ")+" expected")
 	}
 	private fun Context.evalExpr(minPrio:Int=0):Expression {
@@ -146,4 +148,14 @@ class ExpressionParser : AbstractParser<Expression>() {
 
 fun parseExpression(src:String): Expression {
 	return ExpressionParser().parse(src)
+}
+inline fun parseExpressionSafe(src:String, exceptionHandler:(ParserException)->Unit={
+	if (src.isNotEmpty()) System.err.println(it.message)
+}): Expression {
+	return try {
+		ExpressionParser().parse(src)
+	} catch (e: ParserException) {
+		exceptionHandler(e)
+		InvalidExpression(src)
+	}
 }

@@ -67,6 +67,7 @@ task fatJar(type: Jar) {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "no.tornado:tornadofx:1.7.16"
+    compile "org.funktionale:funktionale-either:1.2"
     testCompile "junit:junit:4.12"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"

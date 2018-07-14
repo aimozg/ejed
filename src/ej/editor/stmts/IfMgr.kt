@@ -1,7 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
-import ej.editor.expr.observableXExpression
+import ej.editor.expr.simpleStringBinding
 import ej.editor.views.StatementTree
 import ej.mod.XlIf
 import javafx.scene.layout.Priority
@@ -21,7 +21,7 @@ object IfMgr : StatementManager<XlIf>() {
 	
 	override fun treeGraphic(stmt: XlIf, tree: StatementTree) =
 			simpleTreeLabel(
-					observableXExpression(stmt.testProperty, "If ")
+					simpleStringBinding(stmt.testProperty, "If ")
 				).addClass(Styles.xlogic)
 	
 }
