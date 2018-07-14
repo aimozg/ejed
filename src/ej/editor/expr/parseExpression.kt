@@ -108,7 +108,7 @@ class ExpressionParser : AbstractParser<Expression>() {
 				val z = evalExpr()
 				return ConditionalExpression(x,y,z)
 			} else if (eat(LA_OPERATOR)) {
-				val op = Operator.parse(eaten) ?: parserError("Unknown operator '$eaten'")
+				val op = BinaryOperator.parse(eaten) ?: parserError("Unknown operator '$eaten'")
 				if (op.priority > minPrio) {
 					val y = evalExpr(op.priority)
 					x = BinaryExpression(x,op,y)
