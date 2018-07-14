@@ -1,6 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.BoolExprChooser
 import ej.editor.expr.simpleStringBinding
 import ej.editor.views.StatementTree
 import ej.mod.XlIf
@@ -16,6 +17,13 @@ object IfMgr : StatementManager<XlIf>() {
 		label("If condition ")
 		textfield(stmt.testProperty) { hgrow = Priority.SOMETIMES }
 		label(" is true")
+		button("...") {
+			action {
+				BoolExprChooser.pickValue()?.let { v ->
+					stmt.test = v.build().source
+				}
+			}
+		}
 		// TODO else, elseif
 	}
 	

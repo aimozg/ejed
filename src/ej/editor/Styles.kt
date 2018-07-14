@@ -1,6 +1,7 @@
 package ej.editor
 
 import javafx.geometry.Pos
+import javafx.scene.Cursor
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -22,6 +23,10 @@ class Styles : Stylesheet() {
 		val treeGraphic by cssclass()
 
 		val editorView by cssclass()
+		
+		val xexpr by cssclass()
+		val xexprLink by cssclass()
+		val xexprBadLink by cssclass()
 		
 		val xstmt by cssclass()
 		val xstmtEditor by cssclass()
@@ -174,6 +179,17 @@ class Styles : Stylesheet() {
 				fontFamily = FONT_FACE_SCRIPT
 				fill = c("#252")
 			}
+		}
+		xexpr {
+		
+		}
+		xexprLink {
+			cursor = Cursor.HAND
+			underline = true
+			fill = c("#22f")
+		}
+		xexprBadLink {
+			fill = c("#f22")
 		}
 		treeCell {
 			and(dragover) {
