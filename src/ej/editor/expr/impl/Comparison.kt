@@ -13,8 +13,8 @@ class Comparison : ExpressionBuilder() {
 		text(" ")
 		valueLink(op,
 		          EnumChooser(Operator.values(),
-		                      Operator::readableName)) {
-			it?.readableName ?: "<Operation>"
+		                      Operator::longName)) {
+			it?.shortName ?: "<Operation>"
 		}
 		text(" ")
 		valueLink(right, AnyExprChooser, "<Value2>")
@@ -37,15 +37,15 @@ class Comparison : ExpressionBuilder() {
 		}
 	}
 	
-	enum class Operator(val readableName:String, val bop: BinaryOperator) : WithReadableText {
-		EQ("is equal to", BinaryOperator.EQ),
-		NEQ("is not equal to", BinaryOperator.NEQ),
-		GT("is greater than", BinaryOperator.GT),
-		GTE("is greater than or equal to", BinaryOperator.GTE),
-		LT("is less than", BinaryOperator.LT),
-		LTE("is less than or equal to", BinaryOperator.LTE);
+	enum class Operator(val shortName:String,val longName:String, val bop: BinaryOperator) : WithReadableText {
+		EQ("=","is equal to", BinaryOperator.EQ),
+		NEQ("≠","is not equal to", BinaryOperator.NEQ),
+		GT(">","is greater than", BinaryOperator.GT),
+		GTE("≥","is greater than or equal to", BinaryOperator.GTE),
+		LT("<","is less than", BinaryOperator.LT),
+		LTE("≤","is less than or equal to", BinaryOperator.LTE);
 		
-		override fun text() = readableName
+		override fun text() = shortName
 		companion object {
 			fun byOperator(bop: BinaryOperator) = values().firstOrNull { it.bop == bop }
 		}
