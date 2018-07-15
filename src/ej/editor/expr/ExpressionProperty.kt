@@ -17,7 +17,9 @@ open class ExpressionProperty(initialValue:String = "") : SimpleStringProperty(i
 	}
 	fun fromBuilder(v: ExpressionBuilder) {
 		mutating.callAtZero {
-			expressionProperty.value = v.build()
+			val expr = v.build()
+			expressionProperty.value = expr
+			this@ExpressionProperty.value = expr.source
 		}
 	}
 	fun toBuilder() = DefaultBuilderConverter.convert(expressionProperty.value)
