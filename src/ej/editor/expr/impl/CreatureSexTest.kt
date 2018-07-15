@@ -13,9 +13,9 @@ class CreatureSexTest : ExpressionBuilder() {
 	override fun name() = "Creature: Check sex"
 	
 	override fun editorBody() = defaultBuilderBody {
-		valueLink(creature, CreatureChooser, "<Creature>")
+		valueLink("Creature",creature, CreatureChooser)
 		text(" is ")
-		valueLink(sex, EnumChooser(SexTest::longName)) {
+		valueLink("Sex Test",sex, EnumChooser(SexTest::longName)) {
 			it?.shortName?:"<SexTest>"
 		}
 	}

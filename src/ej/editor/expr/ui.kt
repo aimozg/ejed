@@ -25,7 +25,8 @@ inline fun defaultBuilderBody(init: TextFlow.()->Unit): TextFlow {
 		init()
 	}
 }
-fun<T:Any> TextFlow.valueLink(property: Property<T?>,
+fun<T:Any> TextFlow.valueLink(title:String,
+                              property: Property<T?>,
                               chooser:ValueChooser<T>,
                               textMaker:(T?)->String) {
 	text(property.stringBinding {
@@ -38,18 +39,20 @@ fun<T:Any> TextFlow.valueLink(property: Property<T?>,
 		)
 		addClass(Styles.xexprLink)
 		setOnMouseClicked {
-			chooser.pickValueFor(property)
+			chooser.pickValueFor(title, property)
 		}
 	}
 }
-fun<T:Any> TextFlow.valueLink(property: Property<T?>,
+fun<T:Any> TextFlow.valueLink(title:String,
+                              property: Property<T?>,
                               chooser:ListValueChooser<T>) {
-	valueLink(property, chooser, chooser.formatter)
+	valueLink(title, property, chooser, chooser.formatter)
 }
-fun TextFlow.valueLink(property: Property<ExpressionBuilder?>,
+fun TextFlow.valueLink(title:String,
+                       property: Property<ExpressionBuilder?>,
                        chooser:ExpressionChooser,
-                       defaultText:String) {
-	valueLink(property,chooser) {
+                       defaultText:String="<$title>") {
+	valueLink(title, property,chooser) {
 		it?.text()?:defaultText
 	}
 }
@@ -73,7 +76,8 @@ abstract class ChooserDialog<T:Any> : Fragment() {
 			}
 		}
 	}
-	protected fun showModal(initial:T?):T? {
+	protected fun showModal(title:String, initial:T?):T? {
+		this.title = title
 		this.result = initial
 		this.ok = false
 		openModal(block = true)
@@ -100,13 +104,14 @@ class ListChooserDialog<T:Any> : ChooserDialog<T>() {
 			}
 		}
 	}
-	fun showModal(initial: T?,
+	fun showModal(title:String,
+	              initial: T?,
 	              items: List<T?>,
 	              formatter: ListCell<T>.(T) -> Unit):T? {
 		this.items.setAll(items)
 		list.cellFormat(formatter)
 		list.selectionModel.select(initial)
-		return showModal(initial)
+		return showModal(title,initial)
 	}
 }
 class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
@@ -135,7 +140,9 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 		}
 	}
 	
-	fun showModal(initial:ExpressionBuilder?, items:List<ExpressionBuilder>):ExpressionBuilder? {
+	fun showModal(title:String,
+	              initial:ExpressionBuilder?,
+	              items:List<ExpressionBuilder>):ExpressionBuilder? {
 		if (initial == null) {
 			this.items.setAll(items)
 		} else {
@@ -143,6 +150,6 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 				if (it.javaClass == initial.javaClass) initial else it
 			})
 		}
-		return showModal(initial)
+		return showModal(title,initial)
 	}
 }

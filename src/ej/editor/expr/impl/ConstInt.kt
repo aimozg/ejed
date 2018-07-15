@@ -13,9 +13,9 @@ class ConstInt : ExpressionBuilder() {
 		textfield(constant,NullableIntStringConverter)
 	}
 	override fun text() = mktext(constant)
-	override fun build() = IntLiteral(constant.value)
+	override fun build() = constant.value?.let { IntLiteral(it) }?: nop()
 	
-	val constant = SimpleObjectProperty<Int>()
+	val constant = SimpleObjectProperty<Int?>()
 	
 	companion object : PartialBuilderConverter<IntLiteral> {
 		override fun tryConvert(converter: BuilderConverter, expr: IntLiteral) =

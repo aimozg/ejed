@@ -1,6 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.utils.bindingN
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
@@ -26,6 +27,13 @@ object SetMgr : StatementManager<XsSet>() {
 			}
 		})
 		textfield(stmt.valueProperty)
+		button("...") {
+			action {
+				AnyExprChooser.pickValue("Value",stmt.valueProperty.toBuilder())?.let { v ->
+					stmt.valueProperty.fromBuilder(v)
+				}
+			}
+		}
 		label(stmt.opProperty.stringBinding {
 			when (it) {
 				null, "=", "assign",
@@ -43,7 +51,6 @@ object SetMgr : StatementManager<XsSet>() {
 			disableWhen { stmt.inobjProperty.isNullOrEmpty() }
 			prefColumnCount = 6
 		}
-		
 	}
 	
 	override fun treeGraphic(stmt: XsSet, tree: StatementTree) =
@@ -57,11 +64,12 @@ object SetMgr : StatementManager<XsSet>() {
 				} else {
 					"variable '$varname'"
 				}
-				when (op) {
-					"add", "+", "+=" -> "Add $value to $s"
-					null, "set", "=" -> "Set $value to $s"
-					else -> "Apply $op$value to $s"
+				val (prefix,suffix) = when (op) {
+					"add", "+", "+=" -> "Add " to " to $s"
+					null, "set", "=" -> "Set $s to " to ""
+					else -> "Apply $op" to " to $s"
 				}
+				"$prefix${stmt.valueProperty.toBuilder().text()}$suffix"
 			}).addClass(Styles.xcommand)
 	
 }

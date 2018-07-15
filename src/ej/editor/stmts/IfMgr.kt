@@ -19,7 +19,7 @@ object IfMgr : StatementManager<XlIf>() {
 		label(" is true")
 		button("...") {
 			action {
-				BoolExprChooser.pickValue(stmt.testProperty.toBuilder())?.let { v ->
+				BoolExprChooser.pickValue("Condition",stmt.testProperty.toBuilder())?.let { v ->
 					stmt.testProperty.fromBuilder(v)
 				}
 			}

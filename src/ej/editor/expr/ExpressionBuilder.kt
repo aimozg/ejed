@@ -41,24 +41,24 @@ abstract class ExpressionBuilder : WithReadableText {
 }
 
 abstract class ValueChooser<T:Any> {
-	abstract fun pickValue(initial:T?=null):T?
-	fun pickValueFor(prop:Property<T?>) {
-		val v = pickValue(prop.value)
+	abstract fun pickValue(title:String,initial:T?=null):T?
+	fun pickValueFor(title:String,prop:Property<T?>) {
+		val v = pickValue(title,prop.value)
 		if (v != null) prop.value = v
 	}
 }
 open class ListValueChooser<T:Any>(val items: List<T>,
-                              val formatter: (T?) -> String) : ValueChooser<T>() {
-	override fun pickValue(initial: T?): T? {
-		return find<ListChooserDialog<T>>().showModal(initial,items) {
+                                   val formatter: (T?) -> String) : ValueChooser<T>() {
+	override fun pickValue(title:String,initial: T?): T? {
+		return find<ListChooserDialog<T>>().showModal(title,initial,items) {
 			text = formatter(item)
 		}
 	}
 	
 }
 abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){
-	fun pickFromList(initial:ExpressionBuilder?,items:List<ExpressionBuilder>):ExpressionBuilder? {
-		return find<ExpressionChooserDialog>().showModal(initial,items)
+	fun pickFromList(title:String,initial:ExpressionBuilder?,items:List<ExpressionBuilder>):ExpressionBuilder? {
+		return find<ExpressionChooserDialog>().showModal(title,initial,items)
 	}
 }
 
@@ -66,5 +66,5 @@ open class EnumChooser<E:Enum<E>>(val enumConsts:Array<E>,val nameProperty: KPro
 	it?.let{ e -> nameProperty.get(e) } ?: "<Choose value>"
 })
 inline fun<reified E:Enum<E>> EnumChooser(nameProperty:KProperty1<E, String>) =
-		EnumChooser(enumValues<E>(),nameProperty)
+		EnumChooser(enumValues(),nameProperty)
 

@@ -1,6 +1,7 @@
 package ej.mod
 
 import com.sun.xml.internal.txw2.annotation.XmlElement
+import ej.editor.expr.ExpressionProperty
 import ej.utils.affix
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -41,7 +42,7 @@ class XsSet : XStatement {
 	var op: String? by opProperty
 	
 	@XmlTransient
-	val valueProperty = SimpleObjectProperty("")
+	val valueProperty = ExpressionProperty("")
 	@get:XmlAttribute(name = "value")
 	var value: String by valueProperty
 	

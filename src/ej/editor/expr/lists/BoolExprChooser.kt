@@ -5,8 +5,8 @@ import ej.editor.expr.ExpressionChooser
 import ej.editor.expr.impl.*
 
 object BoolExprChooser : ExpressionChooser() {
-	override fun pickValue(initial: ExpressionBuilder?): ExpressionBuilder? {
-		return pickFromList(initial,listOf(
+	override fun pickValue(title:String,initial: ExpressionBuilder?): ExpressionBuilder? {
+		return pickFromList(title,initial,listOf(
 				// specifics
 				CreatureSexTest(),
 				// generics

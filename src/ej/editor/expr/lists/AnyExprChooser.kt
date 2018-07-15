@@ -5,7 +5,7 @@ import ej.editor.expr.ExpressionChooser
 import ej.editor.expr.impl.*
 
 object AnyExprChooser : ExpressionChooser() {
-	override fun pickValue(initial: ExpressionBuilder?) = pickFromList(initial, listOf(
+	override fun pickValue(title:String, initial: ExpressionBuilder?) = pickFromList(title, initial, listOf(
 			// constants
 			ConstInt(),
 			ConstPlayer(),
