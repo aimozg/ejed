@@ -17,13 +17,16 @@ interface PartialBuilderConverter<E : Expression> {
 
 object DefaultBuilderConverter : BuilderConverter {
 	override fun convert(expr: Expression) = when (expr) {
-		is Identifier -> null
-		is IntLiteral -> ConstInt.tryConvert(this, expr)
+		is Identifier ->
+			ConstPlayer.tryConvert(this, expr)
+		is IntLiteral ->
+			ConstInt.tryConvert(this, expr)
 		is FloatLiteral -> null
 		is StringLiteral -> null
 		is ListExpression -> null
 		is ObjectExpression -> null
-		is CallExpression -> null
+		is CallExpression ->
+			CreatureSexTest.tryConvert(this,expr)
 		is DotExpression ->
 			ModVariableBuilder.tryConvert(this, expr)
 		is AccessExpression -> null
@@ -31,6 +34,7 @@ object DefaultBuilderConverter : BuilderConverter {
 		is BinaryExpression ->
 			Comparison.tryConvert(this, expr)
 					?: BooleanAnd.tryConvert(this, expr)
+					?: BooleanOr.tryConvert(this, expr)
 		is InvalidExpression -> null
 	} ?: RawExpressionBuilder(expr)
 	

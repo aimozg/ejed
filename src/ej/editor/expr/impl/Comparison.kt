@@ -1,6 +1,7 @@
 package ej.editor.expr.impl
 
 import ej.editor.expr.*
+import ej.editor.expr.lists.AnyExprChooser
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.Pane
 import tornadofx.*
@@ -12,8 +13,7 @@ class Comparison : ExpressionBuilder() {
 		valueLink(left, AnyExprChooser, "<Value1>")
 		text(" ")
 		valueLink(op,
-		          EnumChooser(Operator.values(),
-		                      Operator::longName)) {
+		          EnumChooser(Operator::longName)) {
 			it?.shortName ?: "<Operation>"
 		}
 		text(" ")
@@ -31,8 +31,8 @@ class Comparison : ExpressionBuilder() {
 	
 	companion object : PartialBuilderConverter<BinaryExpression> {
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression): Comparison? = Comparison().apply {
-			left.value = converter.convert(expr.left)
 			op.value = (Operator.byOperator(expr.op) ?: return null)
+			left.value = converter.convert(expr.left)
 			right.value = converter.convert(expr.right)
 		}
 	}

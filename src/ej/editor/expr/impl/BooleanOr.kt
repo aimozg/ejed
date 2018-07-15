@@ -6,19 +6,19 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.Pane
 import tornadofx.*
 
-class BooleanAnd : ExpressionBuilder() {
-	override fun name() = "AND (both conditions are true)"
+class BooleanOr : ExpressionBuilder() {
+	override fun name() = "OR (either of conditions is true)"
 	
 	override fun editorBody(): Pane = defaultBuilderBody {
 		valueLink(expr1, BoolExprChooser, "<Condition1>")
-		text(" and ")
+		text(" or ")
 		valueLink(expr2, BoolExprChooser, "<Condition2>")
 	}
-	override fun text() = mktext("(",expr1," and ",expr2,")")
+	override fun text() = mktext("(",expr1," or ",expr2,")")
 	
 	override fun build(): Expression {
 		return BinaryExpression(expr1.value.build(),
-		                        BinaryOperator.AND,
+		                        BinaryOperator.OR,
 		                        expr2.value.build())
 	}
 	
@@ -27,8 +27,8 @@ class BooleanAnd : ExpressionBuilder() {
 	
 	companion object : PartialBuilderConverter<BinaryExpression> {
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression) =
-				if (expr.op != BinaryOperator.AND) null
-				else BooleanAnd().apply {
+				if (expr.op != BinaryOperator.OR) null
+				else BooleanOr().apply {
 					expr1.value = converter.convert(expr.left)
 					expr2.value = converter.convert(expr.right)
 				}

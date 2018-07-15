@@ -1,8 +1,8 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
-import ej.editor.expr.BoolExprChooser
 import ej.editor.expr.expressionBuilderStringBinding
+import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.views.StatementTree
 import ej.mod.XlIf
 import javafx.scene.layout.Priority
