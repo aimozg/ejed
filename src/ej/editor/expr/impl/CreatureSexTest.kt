@@ -15,7 +15,9 @@ class CreatureSexTest : ExpressionBuilder() {
 	override fun editorBody() = defaultBuilderBody {
 		valueLink(creature, CreatureChooser, "<Creature>")
 		text(" is ")
-		valueLink(sex, EnumChooser(SexTest::shortName))
+		valueLink(sex, EnumChooser(SexTest::longName)) {
+			it?.shortName?:"<SexTest>"
+		}
 	}
 	
 	override fun text() = mktext(creature, " is ", sex)
@@ -40,14 +42,17 @@ class CreatureSexTest : ExpressionBuilder() {
 		
 	}
 	
-	enum class SexTest(val shortName: String, val function: String) : WithReadableText {
+	enum class SexTest(val shortName: String, hint: String, val function: String) : WithReadableText {
 		NONE("genderless", "isGenderless"),
 		MALE("male", "isMale"),
 		FEMALE("female", "isFemale"),
 		HERM("herm", "isHerm"),
-		MALE_OR_HERM("male or herm", "isMaleOrHerm"),
-		FEMALE_OR_HERM("female or herm", "isMaleOrHerm");
+		MALE_OR_HERM("male or herm","has penis", "isMaleOrHerm"),
+		FEMALE_OR_HERM("female or herm","has vagina", "isMaleOrHerm");
 		
+		constructor(shortName:String,function:String):this(shortName,"",function)
+		
+		val longName = if (hint.isEmpty()) shortName else "$shortName ($hint)"
 		override fun text() = shortName
 		
 		companion object {
