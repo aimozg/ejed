@@ -14,3 +14,7 @@ val Expression.asDot get() = (this as? DotExpression)
 
 fun simpleStringBinding(prop: ObservableValue<String>, prefix:String="", suffix:String="") =
 		prop.stringBinding { "$prefix$it$suffix" }
+fun expressionBuilderStringBinding(prop: ExpressionProperty, prefix:String="", suffix:String="") =
+		prop.stringBinding { "$prefix${prop.toBuilder().text()}$suffix" }
+
+fun nop() = InvalidExpression("")

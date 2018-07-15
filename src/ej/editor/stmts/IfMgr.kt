@@ -2,7 +2,7 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.expr.BoolExprChooser
-import ej.editor.expr.simpleStringBinding
+import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.views.StatementTree
 import ej.mod.XlIf
 import javafx.scene.layout.Priority
@@ -19,17 +19,17 @@ object IfMgr : StatementManager<XlIf>() {
 		label(" is true")
 		button("...") {
 			action {
-				BoolExprChooser.pickValue()?.let { v ->
-					stmt.test = v.build().source
+				BoolExprChooser.pickValue(stmt.testProperty.toBuilder())?.let { v ->
+					stmt.testProperty.fromBuilder(v)
 				}
 			}
 		}
-		// TODO else, elseif
+		// TODO goto else, elseif
 	}
 	
 	override fun treeGraphic(stmt: XlIf, tree: StatementTree) =
 			simpleTreeLabel(
-					simpleStringBinding(stmt.testProperty, "If ")
+					expressionBuilderStringBinding(stmt.testProperty, "If ")
 				).addClass(Styles.xlogic)
 	
 }

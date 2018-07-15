@@ -14,9 +14,11 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.collections.WeakListChangeListener
 import javafx.collections.transformation.FilteredList
+import javafx.util.StringConverter
 import tornadofx.*
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.atomic.AtomicInteger
 
 /*
  * Created by aimozg on 05.07.2018.
@@ -82,9 +84,9 @@ open class ObservableMutableProperty<T:Observable?>(initialValue:T): SimpleObjec
 	private val listener = WeakInvalidationListener{
 		this@ObservableMutableProperty.fireValueChangedEvent()
 	}
-	override fun setValue(v: T) {
+	override fun set(v: T) {
 		value?.removeListener(listener)
-		super.setValue(v)
+		super.set(v)
 		v?.addListener(listener)
 	}
 }
@@ -166,7 +168,7 @@ fun<E> observableConcatenation(vararg lists:ObservableList<out E>):ObservableLis
 		AggregatedObservableArrayList(*lists).aggregatedList
 
 fun stringValueToggler(source: Property<out String?>,defaultTrueValue:String) = object:SimpleObjectProperty<Boolean>() {
-	override fun setValue(v: Boolean?) {
+	override fun set(v: Boolean?) {
 		if (v == true) {
 			val srcVal = source.value
 			if (srcVal.isNullOrEmpty()) {
@@ -179,4 +181,33 @@ fun stringValueToggler(source: Property<out String?>,defaultTrueValue:String) = 
 	init {
 		bind(source.isNullOrEmpty().not())
 	}
+}
+inline fun AtomicInteger.callDepthTracking(code:()->Unit):Int {
+	incrementAndGet()
+	try {
+		code()
+	} finally {
+		return decrementAndGet()
+	}
+}
+inline fun AtomicInteger.callAtZero(code:()->Unit):Boolean {
+	if (compareAndSet(0, 1)) {
+		try {
+			code()
+		} finally {
+			decrementAndGet()
+		}
+		return true
+	}
+	return false
+}
+object NullableIntStringConverter : StringConverter<Int?>() {
+	override fun toString(`object`: Int?): String {
+		return `object`?.toString()?:""
+	}
+	
+	override fun fromString(string: String?): Int? {
+		return string?.toIntOrNull()
+	}
+	
 }

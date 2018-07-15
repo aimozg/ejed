@@ -3,9 +3,6 @@ package ej.editor.expr
 import ej.utils.lessThan
 import ej.utils.lessThanOrEqualTo
 import ej.utils.toJsString
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
-import tornadofx.*
 
 /*
  * Created by aimozg on 11.07.2018.
@@ -96,7 +93,7 @@ class BinaryExpression(val left:Expression, val op:BinaryOperator, val right:Exp
 	override val parts get() = listOf(left,right)
 	override val source get(): String {
 		return (if (wrapLeft()) "($left)" else left.toString())+
-				op.repr+
+				" "+op.repr+" "+
 				(if (wrapRight()) "($right)" else right.toString())
 	}
 	override fun copy() = BinaryExpression(left.copy(), op, right.copy())
@@ -107,20 +104,6 @@ class BinaryExpression(val left:Expression, val op:BinaryOperator, val right:Exp
 class InvalidExpression(override val source:String):Expression() {
 	override val parts get() = emptyList<Expression>()
 	override fun copy() = InvalidExpression(source)
-}
-
-open class ExpressionProperty(initialValue:Expression = InvalidExpression("")) : SimpleObjectProperty<Expression>(initialValue) {
-	val sourceProperty = object: SimpleStringProperty() {
-		override fun setValue(v: String) {
-			this@ExpressionProperty.set(parseExpressionSafe(v))
-		}
-		
-		init {
-			bind(this@ExpressionProperty.stringBinding{
-				it?.source?:""
-			})
-		}
-	}
 }
 
 

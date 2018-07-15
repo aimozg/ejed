@@ -26,20 +26,12 @@ abstract class ComplexObservable : Observable {
 		return this
 	}
 	protected fun invalidate() {
-		beginChange()
-		try {
+		val n = nChanges.callDepthTracking {
 			dirty.set(true)
-		} finally {
-			endChange()
 		}
-	}
-	protected fun beginChange() {
-		nChanges.incrementAndGet()
-	}
-	protected fun endChange() {
-		val n = nChanges.decrementAndGet()
-		if (n < 0) kotlin.error("Inconsistent change counter")
-		if (n == 0 && dirty.get()) fireEvent()
+		if (n == 0 && dirty.get()) {
+			fireEvent()
+		}
 	}
 	protected fun fireEvent() {
 		if (dirty.compareAndSet(true,false)) {

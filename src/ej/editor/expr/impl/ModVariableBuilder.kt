@@ -1,5 +1,6 @@
-package ej.editor.expr
+package ej.editor.expr.impl
 
+import ej.editor.expr.*
 import ej.mod.StateVar
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.Pane
@@ -11,8 +12,8 @@ class ModVariableBuilder : ExpressionBuilder() {
 	override fun editorBody(): Pane = defaultBuilderBody {
 		text("Mod variable ")
 		valueLink(variable,
-		          ListValueChooser(controller.mod?.stateVars?: emptyList()) {
-			          it?.name?:"<???>"
+		          ListValueChooser(controller.mod?.stateVars ?: emptyList()) {
+			          it?.name ?: "<???>"
 		          })
 	}
 	
@@ -20,4 +21,14 @@ class ModVariableBuilder : ExpressionBuilder() {
 	override fun build() = DotExpression(Identifier("state"), variable.value.name)
 	
 	val variable = SimpleObjectProperty<StateVar>()
+	
+	companion object: PartialBuilderConverter<DotExpression> {
+		override fun tryConvert(converter: BuilderConverter, expr: DotExpression): ModVariableBuilder? {
+			if (expr.obj.asId?.value != "state") return null
+			return ModVariableBuilder().apply {
+				variable.value = controller.mod?.stateVars?.firstOrNull { it.name == expr.key } ?: return null
+			}
+		}
+		
+	}
 }

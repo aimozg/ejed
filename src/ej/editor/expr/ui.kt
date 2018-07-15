@@ -25,7 +25,7 @@ inline fun defaultBuilderBody(init: TextFlow.()->Unit): TextFlow {
 		init()
 	}
 }
-fun<T:Any> TextFlow.valueLink(property: Property<T>,
+fun<T:Any> TextFlow.valueLink(property: Property<T?>,
                               chooser:ValueChooser<T>,
                               textMaker:(T?)->String) {
 	text(property.stringBinding {
@@ -42,11 +42,11 @@ fun<T:Any> TextFlow.valueLink(property: Property<T>,
 		}
 	}
 }
-fun<T:Any> TextFlow.valueLink(property: Property<T>,
+fun<T:Any> TextFlow.valueLink(property: Property<T?>,
                               chooser:ListValueChooser<T>) {
 	valueLink(property, chooser, chooser.formatter)
 }
-fun TextFlow.valueLink(property: Property<ExpressionBuilder>,
+fun TextFlow.valueLink(property: Property<ExpressionBuilder?>,
                        chooser:ExpressionChooser,
                        defaultText:String) {
 	valueLink(property,chooser) {
@@ -146,64 +146,3 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 		return showModal(initial)
 	}
 }
-/*
-class TextInputDialog : View() {
-	var result:String? = null
-	
-	val labelProperty = SimpleObjectProperty("")
-	var label by labelProperty
-	
-	val initialValueProperty = SimpleObjectProperty("")
-	var initialValue by initialValueProperty
-	
-	val cancelableProperty = SimpleObjectProperty(false)
-	var cancelable by cancelableProperty
-	
-	fun showModal(title:String,label:String,initialValue:String="",cancelable:Boolean=true):String? {
-		this.title = title
-		this.label = label
-		this.initialValue = initialValue
-		this.cancelable = cancelable
-		this.result = null
-		openModal(block = true)
-		return result
-	}
-	override val root = form {
-		fieldset {
-			lateinit var input: TextField
-			field("Label") {
-				label.textProperty().bind(labelProperty)
-				input = textfield(initialValueProperty)
-			}
-			hbox(20) {
-				alignment = Pos.BASELINE_CENTER
-				button("Ok") {
-					shortcut("Return")
-					action {
-						result = input.text
-						close()
-					}
-				}
-				button("Cancel") {
-					shortcut("Escape")
-					visibleWhen(cancelableProperty)
-					action {
-						result = null
-						close()
-					}
-				}
-			}
-		}
-	}
-}
-inline fun<T> UIComponent.textInputDialog(title:String,
-                                          label:String,
-                                          initialValue:String="",
-                                          cancelable:Boolean=true,
-                                          handler:(String)->T):T? {
-	return textInputDialog(title, label, initialValue, cancelable)?.let(handler)
-}
-fun textInputDialog(title:String,label:String,initialValue:String="",cancelable:Boolean=true):String? {
-	return find<TextInputDialog>().showModal(title, label, initialValue, cancelable)
-}
- */

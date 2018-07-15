@@ -26,22 +26,23 @@ abstract class ExpressionBuilder : WithReadableText {
 				val v = it.value
 				when(v) {
 					null -> "<???>"
-					is ExpressionBuilder -> "("+v.text()+")"
+//					is ExpressionBuilder -> "("+v.text()+")"
 					is WithReadableText -> v.text()
 					is String -> v
 					else -> v.toString()
 				}
 			}
-			is ExpressionBuilder -> "("+it.text()+")"
+//			is ExpressionBuilder -> "("+it.text()+")"
 			is WithReadableText -> it.text()
 			is String -> it
 			else -> it.toString()
 		}
 	}
 }
+
 abstract class ValueChooser<T:Any> {
 	abstract fun pickValue(initial:T?=null):T?
-	fun pickValueFor(prop:Property<T>) {
+	fun pickValueFor(prop:Property<T?>) {
 		val v = pickValue(prop.value)
 		if (v != null) prop.value = v
 	}

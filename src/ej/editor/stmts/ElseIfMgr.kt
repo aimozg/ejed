@@ -1,7 +1,8 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
-import ej.editor.expr.simpleStringBinding
+import ej.editor.expr.BoolExprChooser
+import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.views.StatementTree
 import ej.mod.XlElseIf
 import javafx.scene.layout.Priority
@@ -12,12 +13,19 @@ object ElseIfMgr : StatementManager<XlElseIf>() {
 		label("Else if condition ")
 		textfield(stmt.testProperty) { hgrow = Priority.SOMETIMES }
 		label(" is true")
-		// TODO else, elseif
+		button("...") {
+			action {
+				BoolExprChooser.pickValue(stmt.testProperty.toBuilder())?.let { v ->
+					stmt.testProperty.fromBuilder(v)
+				}
+			}
+		}
+		// TODO goto else, elseif
 	}
 	
 	override fun treeGraphic(stmt: XlElseIf, tree: StatementTree) =
 			simpleTreeLabel(
-					simpleStringBinding(stmt.testProperty, "Else If ")
+					expressionBuilderStringBinding(stmt.testProperty, "Else If ")
 			).addClass(Styles.xlogic)
 	
 }

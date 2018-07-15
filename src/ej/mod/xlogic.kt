@@ -1,5 +1,6 @@
 package ej.mod
 
+import ej.editor.expr.ExpressionProperty
 import ej.editor.utils.observableUnique
 import ej.utils.affix
 import javafx.beans.property.SimpleObjectProperty
@@ -49,7 +50,7 @@ class XlIf(): XStatement {
 		this.test = test
 	}
 	
-	val testProperty = SimpleStringProperty("")
+	val testProperty = ExpressionProperty("")
 	var test:String by testProperty
 	
 	val thenGroup = XlThen()
@@ -73,7 +74,7 @@ class XlElseIf(): PartOfIf() {
 	constructor(test:String):this() {
 		this.test = test
 	}
-	val testProperty = SimpleStringProperty("")
+	val testProperty = ExpressionProperty("")
 	var test: String by testProperty
 	override fun toString() = defaultToString("elseif","test=$test")
 }
