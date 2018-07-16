@@ -5,8 +5,8 @@ import ej.editor.expr.valueLink
 import ej.editor.views.StatementTree
 import ej.mod.Builtins
 import ej.mod.XComplexStatement
-import ej.mod.XcScene
 import ej.mod.XsForward
+import ej.mod.acceptsMenu
 import javafx.scene.text.TextFlow
 import tornadofx.*
 
@@ -20,10 +20,11 @@ object ForwardMgr : StatementManager<XsForward>() {
 	
 	override fun editorBody(stmt: XsForward, rootStmt: XComplexStatement) = defaultEditorBody(TextFlow()) {
 		text("Forward to scene: ")
-		val mod = controller.mod ?: return@defaultEditorBody
 		valueLink("Scene",
 		          stmt.refProperty,
-		          SceneChooser(rootStmt, mod, Builtins.scenes) { it is XcScene })
+		          SceneChooser(rootStmt,
+		                       controller.mod ?: return@defaultEditorBody,
+		                       Builtins.scenes) { it.acceptsMenu })
 	}
 	
 }

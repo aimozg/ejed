@@ -20,4 +20,6 @@ class SceneChooser(
 		mod.allStories().filter(filter).map {
 			if (current is StoryStmt) it.pathRelativeTo(current)
 			else "/${mod.name}/${it.path}"
-		}.toList().sorted() + extra)
+		}.toList().sortedBy { path ->
+			"" + path.count { it=='/' } + path
+		} + extra)

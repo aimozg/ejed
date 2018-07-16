@@ -12,9 +12,9 @@ import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
 
 
-val XComplexStatement.acceptsMenu: Boolean
+val XStatement.acceptsMenu: Boolean
 	get() = this is XcScene || this is Encounter.EncounterScene
-val XComplexStatement.acceptsActions: Boolean
+val XStatement.acceptsActions: Boolean
 	get() = acceptsMenu || this is XcNamedText
 
 @Suppress("unused")
@@ -49,6 +49,7 @@ fun StoryStmt.pathRelativeTo(other:StoryStmt):String {
 			break
 		}
 	}
+	if (myOwners.lastOrNull() == other) myOwners.removeLast()
 	return ("../".repeat(otherOwners.size)) + myOwners.fold(name) { s, story ->
 		"${story.name}/$s"
 	}

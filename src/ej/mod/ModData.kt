@@ -66,6 +66,7 @@ class ModData : ModDataNode {
 	
 	fun allStories() = buildSequence {
 		val run = ArrayList(content)
+		run.addAll(encounters.map { it.scene })
 		while(run.isNotEmpty()) {
 			val e = run.removeAt(0)
 			yield(e)
