@@ -162,7 +162,10 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	
 	fun focusOnStatement(me: XStatement, expand: Boolean = false) {
 		tree.findItem { it == me }?.let { item2 ->
-			if (expand) item2.expandAll()
+			if (expand) {
+				item2.parent?.isExpanded = true
+				item2.expandAll()
+			}
 			tree.selectionModel.select(item2)
 		}
 	}
@@ -175,7 +178,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		cc ?: return (null to 0)
 		val cci = cc.item
 		val ccp = cc.parent
-		val ccv = cc.value
+		val ccv = cc.value?.stmt
 		if (cci.isLeaf && ccv is XComplexStatement) {
 			return cci to 0
 		}
@@ -329,16 +332,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					}
 				}
 				button("ElseIf") {
-					disableWhen(posForInsertionProperty.booleanBinding { pos ->
-						val stmt = XlElseIf()
-						!canInsert(stmt, pos?.first) &&
-								!canInsert(stmt, contextualCurrent?.item)
+					disableWhen(contextualCurrentProperty.booleanBinding { cc ->
 						// Disable if not inside <if>
-						//position?.first?.value?.stmt !is XlIf
+						val stmt = XlElseIf()
+						!canInsert(stmt, cc?.parent) && !canInsert(stmt, cc?.item)
 					})
 					action {
 						val cc = contextualCurrent
-						val pos = posForInsertion()
+						val pos = posForInsertion(cc)
 						val stmt = XlElseIf()
 						if (cc != null && canInsert(stmt, cc.item)) {
 							insertStmt(stmt,cc.item,0,true)
@@ -349,12 +350,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					}
 				}
 				button("Else") {
-					disableWhen(posForInsertionProperty.booleanBinding { position ->
+					disableWhen(contextualCurrentProperty.booleanBinding { cc ->
 						// Disable if not inside <if> w/o <else>
-						val target = (position?.first?.value?.stmt as? XlIf)
-						target == null || target.elseGroup != null
+						val stmt = XlElse()
+						!canInsert(stmt, cc?.parent) && !canInsert(stmt, cc?.item)
 					})
-					action { insertStmtHere(XlElse()) }
+					action {
+						insertStmtHere(XlElse())
+					}
 				}
 				hbox()
 				button("Choose") {
