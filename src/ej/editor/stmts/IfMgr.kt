@@ -4,6 +4,7 @@ import ej.editor.Styles
 import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.views.StatementTree
+import ej.mod.XComplexStatement
 import ej.mod.XlIf
 import javafx.scene.layout.Priority
 import tornadofx.*
@@ -13,7 +14,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 object IfMgr : StatementManager<XlIf>() {
-	override fun editorBody(stmt: XlIf) = defaultEditorBody{
+	override fun editorBody(stmt: XlIf, rootStmt: XComplexStatement) = defaultEditorBody{
 		label("If condition ")
 		textfield(stmt.testProperty) { hgrow = Priority.SOMETIMES }
 		label(" is true")

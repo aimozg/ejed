@@ -4,12 +4,13 @@ import ej.editor.Styles
 import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.views.StatementTree
+import ej.mod.XComplexStatement
 import ej.mod.XlElseIf
 import javafx.scene.layout.Priority
 import tornadofx.*
 
 object ElseIfMgr : StatementManager<XlElseIf>() {
-	override fun editorBody(stmt: XlElseIf) = defaultEditorBody{
+	override fun editorBody(stmt: XlElseIf, rootStmt: XComplexStatement) = defaultEditorBody{
 		label("Else if condition ")
 		textfield(stmt.testProperty) { hgrow = Priority.SOMETIMES }
 		label(" is true")

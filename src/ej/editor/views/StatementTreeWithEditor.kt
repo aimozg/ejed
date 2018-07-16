@@ -505,7 +505,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			}
 			contextualCurrentProperty.onChangeWeak { cts ->
 				editor = cts?.item?.value?.let { stmt ->
-					stmt.manager()?.editorBody(stmt)
+					stmt.manager()?.editorBody(stmt, rootStatement)
 							?: defaultEditorBody { label("TODO ${stmt.javaClass}") }
 				} ?: defaultEditorBody { label("<nothing selected>") }
 				editor.apply {

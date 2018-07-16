@@ -47,13 +47,17 @@ abstract class ValueChooser<T:Any> {
 		if (v != null) prop.value = v
 	}
 }
-open class ListValueChooser<T:Any>(val items: List<T>,
-                                   val formatter: (T?) -> String) : ValueChooser<T>() {
+abstract class AbstractListValueChooser<T:Any>(val items: List<T>): ValueChooser<T>() {
+	open fun formatter(item:T?):String = item?.toString()?:"<???>"
 	override fun pickValue(title:String,initial: T?): T? {
 		return find<ListChooserDialog<T>>().showModal(title,initial,items) {
 			text = formatter(item)
 		}
 	}
+}
+open class ListValueChooser<T:Any>(items: List<T>,
+                                   val formatterFn: (T?) -> String) : AbstractListValueChooser<T>(items) {
+	override fun formatter(item: T?): String = formatterFn(item)
 	
 }
 abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){

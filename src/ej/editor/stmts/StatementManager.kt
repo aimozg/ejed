@@ -1,5 +1,6 @@
 package ej.editor.stmts
 
+import ej.editor.EditorController
 import ej.editor.Styles
 import ej.editor.views.StatementTree
 import ej.mod.*
@@ -17,7 +18,8 @@ import tornadofx.*
  */
 
 abstract class StatementManager<T:XStatement> {
-	abstract fun editorBody(stmt:T):Pane
+	protected val controller: EditorController by lazy { find<EditorController>() }
+	abstract fun editorBody(stmt: T, rootStmt: XComplexStatement):Pane
 	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
 }
 
@@ -52,7 +54,7 @@ inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={})
 
 @Suppress("UNCHECKED_CAST")
 fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) {
-//	XsBattle::class.java -> BattleMgr TODO
+	XsBattle::class.java -> BattleMgr
 	XsDisplay::class.java -> DisplayMgr
 	XsForward::class.java -> ForwardMgr
 	XsOutput::class.java -> OutputMgr

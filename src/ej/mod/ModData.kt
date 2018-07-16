@@ -5,6 +5,7 @@ import ej.utils.ValidateNonBlank
 import ej.utils.classValidatorFor
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.ObservableList
 import tornadofx.*
 import java.io.File
 import java.io.InputStream
@@ -12,6 +13,7 @@ import java.io.Reader
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
+import kotlin.coroutines.experimental.buildSequence
 
 /*
  * Created by aimozg on 25.06.2018.
@@ -19,6 +21,10 @@ import javax.xml.bind.annotation.*
  */
 
 interface ModDataNode
+interface XStatement : ModDataNode
+interface XComplexStatement: XStatement {
+	val content: ObservableList<XStatement>
+}
 
 @XmlRootElement(name="mod")
 class ModData : ModDataNode {
@@ -57,6 +63,15 @@ class ModData : ModDataNode {
 			XmlElement(name="text",type=XcNamedText::class)
 	)
 	val content = ArrayList<StoryStmt>().observable()
+	
+	fun allStories() = buildSequence {
+		val run = ArrayList(content)
+		while(run.isNotEmpty()) {
+			val e = run.removeAt(0)
+			yield(e)
+			run.addAll(e.lib)
+		}
+	}
 	
 	@get:XmlElement(name="encounter")
 	@ValidateElements

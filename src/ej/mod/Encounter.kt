@@ -1,9 +1,11 @@
 package ej.mod
 
 import ej.utils.ValidateNonBlank
+import javafx.beans.property.ReadOnlyProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
+import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlElement
 import javax.xml.bind.annotation.XmlRootElement
@@ -61,7 +63,19 @@ class Encounter : ModDataNode {
 	var scene by sceneProperty
 	
 	@XmlRootElement(name="scene")
-	class EncounterScene : XContentContainer() {
+	class EncounterScene : XContentContainer(), StoryStmt {
+		override var owner: Encounter? = null
+		override val name: String get() = owner?.name?:""
+		
+		override fun nameProperty(): ReadOnlyProperty<String> {
+			return owner?.nameProperty?:"".toProperty()
+		}
+		
+		@Suppress("unused", "UNUSED_PARAMETER")
+		override fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any?){
+			super.afterUnmarshal(unmarshaller,parent)
+			owner = parent as Encounter?
+		}
 		override fun toString(): String {
 			return defaultToString("scene")
 		}

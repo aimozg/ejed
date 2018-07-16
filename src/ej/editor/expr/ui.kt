@@ -30,7 +30,8 @@ fun<T:Any> TextFlow.valueLink(title:String,
                               chooser:ValueChooser<T>,
                               textMaker:(T?)->String) {
 	text(property.stringBinding {
-		textMaker(it)
+		val s = textMaker(it)
+		if (s.isEmpty()) "<$title>" else s
 	}) {
 		bindClass(
 				nonNullObjectBinding(property) {
@@ -45,8 +46,8 @@ fun<T:Any> TextFlow.valueLink(title:String,
 }
 fun<T:Any> TextFlow.valueLink(title:String,
                               property: Property<T?>,
-                              chooser:ListValueChooser<T>) {
-	valueLink(title, property, chooser, chooser.formatter)
+                              chooser:AbstractListValueChooser<T>) {
+	valueLink(title, property, chooser, chooser::formatter)
 }
 fun TextFlow.valueLink(title:String,
                        property: Property<ExpressionBuilder?>,
@@ -92,7 +93,7 @@ abstract class ChooserDialog<T:Any> : Fragment() {
 		}
 	}
 }
-class ListChooserDialog<T:Any> : ChooserDialog<T>() {
+open class ListChooserDialog<T:Any> : ChooserDialog<T>() {
 	val items = ArrayList<T>().observable()
 	var list: ListView<T> by singleAssign()
 	override val root = defaultRoot {

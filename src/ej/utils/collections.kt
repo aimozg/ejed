@@ -22,6 +22,9 @@ fun<T> MutableList<T>.peek():T {
 fun<T> MutableList<T>.push(e:T) {
 	add(e)
 }
+fun<T> MutableList<T>.removeLast():T {
+	return removeAt(lastIndex)
+}
 fun<T> MutableList<T>.longSwap(i:Int, j:Int):Boolean {
 	if (i == j || i !in indices || j !in indices) return false
 	if (this is ObservableList<T>) {

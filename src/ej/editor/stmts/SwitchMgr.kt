@@ -4,6 +4,7 @@ import ej.editor.Styles
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
 import ej.editor.views.StatementTree
+import ej.mod.XComplexStatement
 import ej.mod.XlSwitch
 import tornadofx.*
 
@@ -13,7 +14,7 @@ import tornadofx.*
  */
 
 object SwitchMgr: StatementManager<XlSwitch>() {
-	override fun editorBody(stmt: XlSwitch) = defaultEditorBody {
+	override fun editorBody(stmt: XlSwitch, rootStmt: XComplexStatement) = defaultEditorBody {
 		label("Choose one of options")
 		checkbox("using selector",stringValueToggler(stmt.valueProperty,"rand(100)"))
 		textfield(stmt.valueProperty) {

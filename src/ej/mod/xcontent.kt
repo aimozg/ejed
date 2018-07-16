@@ -3,18 +3,14 @@ package ej.mod
 import ej.editor.utils.escapeXmlAttr
 import ej.utils.affixNonEmpty
 import ej.utils.crop
-import javafx.beans.property.ObjectProperty
+import ej.utils.removeLast
+import javafx.beans.property.ReadOnlyProperty
 import javafx.collections.ObservableList
 import tornadofx.*
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
 
-
-interface XStatement : ModDataNode
-interface XComplexStatement: XStatement {
-	val content: ObservableList<XStatement>
-}
 
 val XComplexStatement.acceptsMenu: Boolean
 	get() = this is XcScene || this is Encounter.EncounterScene
@@ -29,8 +25,33 @@ interface StoryContainer {
 	val lib: ObservableList<StoryStmt>
 }
 interface StoryStmt : XStatement, StoryContainer {
+	@get:XmlTransient
+	val owner: ModDataNode?
+	@get:XmlTransient
 	val name: String
-	fun nameProperty(): ObjectProperty<String>
+	fun nameProperty(): ReadOnlyProperty<String>
+	@get:XmlTransient
+	val path:String get() = ownersToRoot().fold(name) { s, story ->
+			"${story.name}/$s"
+		}
+}
+fun StoryStmt.ownersToRoot() = generateSequence(owner as? StoryStmt) {
+	it.owner as? StoryStmt
+}
+fun StoryStmt.pathRelativeTo(other:StoryStmt):String {
+	val myOwners = ownersToRoot().toMutableList()
+	val otherOwners = other.ownersToRoot().toMutableList()
+	while (myOwners.isNotEmpty() && otherOwners.isNotEmpty()) {
+		if (myOwners.last() == otherOwners.last()) {
+			myOwners.removeLast()
+			otherOwners.removeLast()
+		} else {
+			break
+		}
+	}
+	return ("../".repeat(otherOwners.size)) + myOwners.fold(name) { s, story ->
+		"${story.name}/$s"
+	}
 }
 
 val REX_INDENT = Regex("""\n[ \t]++""")
@@ -87,7 +108,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	override val lib = ArrayList<StoryStmt>().observable()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
-	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
+	protected open fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any?){
 		val stmts = contentRaw.map {
 			(it as? XmlFlatIf)?.grouped()
 					?: it as? XStatement
@@ -104,7 +125,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	}
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
-	private fun beforeMarshal(marshaller: Marshaller) {
+	protected open fun beforeMarshal(marshaller: Marshaller) {
 		trimMode = null
 		contentRaw.clear()
 		contentRaw.addAll(lib)
@@ -155,6 +176,9 @@ class XcLib : StoryStmt {
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcLib::name)
 	
+	@get:XmlTransient
+	override var owner:ModDataNode? = null
+	
 	@get:XmlElements(
 			XmlElement(name = "lib", type = XcLib::class),
 			XmlElement(name = "scene", type = XcScene::class),
@@ -163,7 +187,7 @@ class XcLib : StoryStmt {
 	override val lib = ArrayList<StoryStmt>().observable()
 
 	@XmlAttribute(name="trim")
-	internal var trimMode: TrimMode? = null // inherit
+	internal var trimMode: TrimMode? = null // inherit TODO remove trimMode
 	
 	override fun toString() = defaultToString("lib","name='$name'",lib.joinToString(" ",limit=5))
 	
@@ -172,6 +196,7 @@ class XcLib : StoryStmt {
 		trimMode?.let { trimMode ->
 			TrimmingVisitor(trimMode).visitAllStatements(lib)
 		}
+		owner = parent as ModDataNode?
 	}
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
@@ -186,6 +211,15 @@ class XcScene : XContentContainer(), StoryStmt {
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcScene::name)
 	
+	@get:XmlTransient
+	override var owner:ModDataNode? = null
+
+	@Suppress("unused", "UNUSED_PARAMETER")
+	override fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any?){
+		super.afterUnmarshal(unmarshaller,parent)
+		owner = parent as ModDataNode?
+	}
+	
 	override fun toString() = defaultToString("scene","name='$name'",lib.joinToString(" "))
 }
 
@@ -194,6 +228,15 @@ class XcNamedText : XContentContainer(), StoryStmt {
 	@get:XmlAttribute
 	override var name by property("")
 	override fun nameProperty() = getProperty(XcNamedText::name)
+	
+	@get:XmlTransient
+	override var owner:ModDataNode? = null
+	
+	@Suppress("unused", "UNUSED_PARAMETER")
+	override fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any?){
+		super.afterUnmarshal(unmarshaller,parent)
+		owner = parent as ModDataNode?
+	}
 	
 	override fun toString() = defaultToString("text","name='$name'",lib.joinToString(" "))
 }

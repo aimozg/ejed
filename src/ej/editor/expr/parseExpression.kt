@@ -124,8 +124,8 @@ class ExpressionParser : AbstractParser<Expression>() {
 	private fun Context.evalStringLiteral(delim:String):String {
 		val s = StringBuilder()
 		val rex = if (delim == "'")
-			LA_DOUBLE_QUOTED_STRING_CONTENT else
-			LA_SINGLE_QUOTED_STRING_CONTENT
+			LA_SINGLE_QUOTED_STRING_CONTENT else
+			LA_DOUBLE_QUOTED_STRING_CONTENT
 		while (true) {
 			if (eat("\\")) {
 				s.append(when(eaten(1)){
@@ -140,7 +140,7 @@ class ExpressionParser : AbstractParser<Expression>() {
 				break
 			} else if (eat(rex)) {
 				s.append(eaten)
-			} else parserError("This should never happen")
+			} else parserError("Unterminated string")
 		}
 		return s.toString()
 	}

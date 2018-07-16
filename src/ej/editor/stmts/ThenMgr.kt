@@ -2,11 +2,12 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.views.StatementTree
+import ej.mod.XComplexStatement
 import ej.mod.XlThen
 import tornadofx.*
 
 object ThenMgr : StatementManager<XlThen>() {
-	override fun editorBody(stmt: XlThen) = defaultEditorBody {
+	override fun editorBody(stmt: XlThen, rootStmt: XComplexStatement) = defaultEditorBody {
 		label("Then")
 		// TODO else, elseif
 	}

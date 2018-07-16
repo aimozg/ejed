@@ -6,6 +6,7 @@ import ej.editor.utils.bindingN
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
 import ej.editor.views.StatementTree
+import ej.mod.XComplexStatement
 import ej.mod.XsSet
 import tornadofx.*
 
@@ -15,7 +16,7 @@ import tornadofx.*
  */
 
 object SetMgr : StatementManager<XsSet>() {
-	override fun editorBody(stmt: XsSet) = defaultEditorBody {
+	override fun editorBody(stmt: XsSet, rootStmt: XComplexStatement) = defaultEditorBody {
 		label(stmt.opProperty.stringBinding {
 			when (it) {
 				null, "=", "assign" -> "Set to "

@@ -3,11 +3,12 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.utils.bindingN
 import ej.editor.views.StatementTree
+import ej.mod.XComplexStatement
 import ej.mod.XsButton
 import tornadofx.*
 
 object ButtonMgr : StatementManager<XsButton>() {
-	override fun editorBody(stmt: XsButton) = defaultEditorBody {
+	override fun editorBody(stmt: XsButton, rootStmt: XComplexStatement) = defaultEditorBody {
 		label("Offer choice")
 		textfield(stmt.textProperty)
 		label("leading to scene")
