@@ -3,6 +3,7 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.views.StatementTree
 import ej.mod.XlComment
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -15,8 +16,12 @@ object CommentMgr : StatementManager<XlComment>() {
 			}
 	
 	override fun editorBody(stmt: XlComment) = defaultEditorBody(VBox()) {
-		label("Comments do nothing in game.")
-		textarea(stmt.textProperty)
+		label("Comments do nothing in game.") {
+			vgrow = Priority.NEVER
+		}
+		textarea(stmt.textProperty) {
+			vgrow = Priority.ALWAYS
+		}
 	}
 	
 }

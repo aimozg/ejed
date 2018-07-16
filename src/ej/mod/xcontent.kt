@@ -1,7 +1,6 @@
 package ej.mod
 
 import ej.editor.utils.escapeXmlAttr
-import ej.editor.utils.observableUnique
 import ej.utils.affixNonEmpty
 import ej.utils.crop
 import javafx.beans.property.ObjectProperty
@@ -83,9 +82,9 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	@get:XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit
 	
-	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observableUnique()
+	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observable()
 	
-	override val lib = ArrayList<StoryStmt>().observableUnique()
+	override val lib = ArrayList<StoryStmt>().observable()
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
@@ -161,7 +160,7 @@ class XcLib : StoryStmt {
 			XmlElement(name = "scene", type = XcScene::class),
 			XmlElement(name = "text", type = XcNamedText::class)
 	)
-	override val lib = ArrayList<StoryStmt>().observableUnique()
+	override val lib = ArrayList<StoryStmt>().observable()
 
 	@XmlAttribute(name="trim")
 	internal var trimMode: TrimMode? = null // inherit

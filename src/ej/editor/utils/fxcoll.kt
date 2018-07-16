@@ -16,7 +16,6 @@ import javafx.collections.WeakListChangeListener
 import javafx.collections.transformation.FilteredList
 import javafx.util.StringConverter
 import tornadofx.*
-import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -64,12 +63,7 @@ fun <I : ObservableList<*>, O: Any> I.listBinding(calculator:(I)->O): Property<O
 	}
 }
 
-fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> {
-	val source = this
-	return ArrayList<O>().observable().apply {
-		bind(source,transform)
-	}
-}
+fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> = TransformingList(this,transform)
 fun <T> List<T>.observableUnique():ObservableList<T> = object: ObservableListWrapper<T>(this.observable()) {
 	override fun hashCode(): Int {
 		return System.identityHashCode(this)

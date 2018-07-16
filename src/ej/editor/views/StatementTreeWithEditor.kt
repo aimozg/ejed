@@ -9,7 +9,6 @@ import ej.utils.addToList
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
-import javafx.collections.ObservableList
 import javafx.geometry.Orientation
 import javafx.scene.control.SplitPane
 import javafx.scene.control.ToggleButton
@@ -35,20 +34,21 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	}
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
-	val contentsProperty = tree.contentsProperty
-	var contents: ObservableList<XStatement> by contentsProperty
-	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>().apply {
+//	val contentsProperty = tree.contentsProperty
+//	var contents: ObservableList<XStatement> by contentsProperty
+	val rootStatementProperty = tree.rootStatementProperty
+		/*SimpleObjectProperty<XComplexStatement>().apply {
 		onChange {
 			contents = it?.content?: ArrayList<XStatement>().observable()
 		}
-	}
+	}*/
 	var rootStatement: XComplexStatement by rootStatementProperty
 	val rootAcceptsMenu = rootStatementProperty.booleanBinding { it?.acceptsMenu == true }
 	val rootAcceptsActions = rootStatementProperty.booleanBinding { it?.acceptsActions == true }
 	private var expandButton by singleAssign<ToggleButton>()
 	private val weakListeners = ArrayList<Any>()
 
-	val contextualCurrentProperty = SimpleObjectProperty<ContextualTreeSelection<StatementTreeItem>>().apply {
+	val contextualCurrentProperty = SimpleObjectProperty<ContextualTreeSelection<XStatement>>().apply {
 		bind(tree.selectionModel.selectedItemProperty().select { item ->
 					item.parentProperty().select { parent ->
 						parent.children.listBinding { ContextualTreeSelection(item) }
@@ -56,16 +56,16 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				}
 		)
 	}
-	val contextualCurrent: ContextualTreeSelection<StatementTreeItem>? by contextualCurrentProperty
+	val contextualCurrent: ContextualTreeSelection<XStatement>? by contextualCurrentProperty
 
-	fun indexOfStmt(item: TreeItem<StatementTreeItem>):Int {
-		return item.parent?.children?.indexOf(item)?:contents.indexOf(item.value.stmt)
+	fun indexOfStmt(item: TreeItem<XStatement>):Int {
+		return item.parent?.children?.indexOf(item)?:rootStatement.content.indexOf(item.value)
 	}
-	fun removeStmt(item: TreeItem<StatementTreeItem>) {
-		val me = item.value.stmt
-		val target = item.parent?.value?.stmt
+	fun removeStmt(item: TreeItem<XStatement>) {
+		val me = item.value
+		val target = item.parent?.value
 		if (target == null) {
-			contents.remove(me)
+			rootStatement.content.remove(me)
 		} else {
 			when (target) {
 				is XlIf -> when (me) {
@@ -85,11 +85,11 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		println("[INFO] Removed $me")
 		posForInsertionInvalidator.value++
 	}
-	fun insertStmt(me: XStatement, dest: TreeItem<StatementTreeItem>?, destIndex:Int, focus:Boolean) {
+	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int, focus:Boolean) {
 		if (dest == null || dest.parent == null) {
-			contents.add(destIndex, me)
+			rootStatement.content.add(destIndex, me)
 		} else {
-			val target = dest.value.stmt
+			val target = dest.value
 			when (target) {
 				is XlIf -> when (me) {
 					is XlElseIf -> target.elseifGroups.add(destIndex, me)
@@ -111,8 +111,8 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		posForInsertionInvalidator.value++
 		if (focus) focusOnStatement(me, true)
 	}
-	fun canInsert(me: XStatement, dest: TreeItem<StatementTreeItem>?):Boolean {
-		val target = dest?.value?.stmt
+	fun canInsert(me: XStatement, dest: TreeItem<XStatement>?):Boolean {
+		val target = dest?.value
 		return when (target) {
 			is XlIf -> me is XlIf
 					|| me is PartOfIf
@@ -123,14 +123,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			else -> false
 		}
 	}
-	fun moveStmt(item: TreeItem<StatementTreeItem>, dest: TreeItem<StatementTreeItem>?, destIndex: Int,focus:Boolean=true) {
+	fun moveStmt(item: TreeItem<XStatement>, dest: TreeItem<XStatement>?, destIndex: Int,focus:Boolean=true) {
 		val wasExpanded = item.isExpanded
-		val me = item.value.stmt ?: return
+		val me = item.value ?: return
 		if (!canInsert(me,dest)) {
 			println("[WARN] Cannot insert $me into $dest")
 			return
 		}
-		val target = dest?.value?.stmt
+		val target = dest?.value
 		if (target is XlIf) {
 			val targetElse = target.elseGroup
 			if (me is XlThen) {
@@ -176,14 +176,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	}
 	
 	private val posForInsertionInvalidator = SimpleIntegerProperty(0)
-	val posForInsertionProperty: ObservableValue<Pair<TreeItem<StatementTreeItem>?, Int>?> = contextualCurrentProperty.objectBinding(posForInsertionInvalidator) { cc ->
+	val posForInsertionProperty: ObservableValue<Pair<TreeItem<XStatement>?, Int>?> = contextualCurrentProperty.objectBinding(posForInsertionInvalidator) { cc ->
 		posForInsertion(cc)
 	}
-	fun posForInsertion(cc: ContextualTreeSelection<StatementTreeItem>? = contextualCurrent):Pair<TreeItem<StatementTreeItem>?,Int> {
+	fun posForInsertion(cc: ContextualTreeSelection<XStatement>? = contextualCurrent):Pair<TreeItem<XStatement>?,Int> {
 		cc ?: return (null to 0)
 		val cci = cc.item
 		val ccp = cc.parent
-		val ccv = cc.value?.stmt
+		val ccv = cc.value
 		if (cci.isLeaf && ccv is XComplexStatement) {
 			return cci to 0
 		}
@@ -197,8 +197,8 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		insertStmt(me,pos.first,pos.second,true)
 	}
 	var wasDragFromTop:Boolean = false
-	var dragContent:TreeItem<StatementTreeItem>? = null
-	private fun setupDrag(cell:TreeCell<StatementTreeItem>) {
+	var dragContent:TreeItem<XStatement>? = null
+	private fun setupDrag(cell:TreeCell<XStatement>) {
 		cell.setOnDragDetected { event ->
 			val db = cell.startDragAndDrop(TransferMode.MOVE)
 			dragContent = cell.treeItem
@@ -232,11 +232,11 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		}
 		cell.setOnDragDropped { event ->
 			val content = dragContent ?: return@setOnDragDropped
-			val contentStmt = content.value.stmt ?: return@setOnDragDropped
+			val contentStmt = content.value ?: return@setOnDragDropped
 			if (event.gestureSource != cell && event.dragboard.hasStatement()) {
 				val reference = cell.treeItem
 				val target = reference.parent ?: return@setOnDragDropped
-				val targetStmt = target.value.stmt
+				val targetStmt = target.value
 				println("Dragging over $reference")
 				if (generateSequence(reference){it.parent}.none { it == content }) { // not dragging parent inside child
 					// Now here things go tricky
@@ -247,7 +247,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					//      a) and content is neither <then>, <else>, <elseif>:
 					//         - if reference is empty complex content and was drag from bottom, drop into reference
 					//         - else drop into target
-					val dest:TreeItem<StatementTreeItem>
+					val dest:TreeItem<XStatement>
 					val destIndex:Int
 					val tgti = target.children.indexOf(reference)
 					val shift = if (wasDragFromTop) 0 else +1
@@ -393,9 +393,9 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					action {
 						val cc = contextualCurrent ?: return@action
 						val stmt = XlSwitchCase().apply { test = "true" }
-						if (cc.value?.stmt is XlSwitch) {
+						if (cc.value is XlSwitch) {
 							insertStmt(stmt,cc.item,0,true)
-						} else if (cc.parent?.value?.stmt is XlSwitch) {
+						} else if (cc.parent?.value is XlSwitch) {
 							insertStmt(stmt, cc.parent, indexOfStmt(cc.item), true)
 						}
 					}
@@ -404,9 +404,9 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					action {
 						val cc = contextualCurrent ?: return@action
 						val stmt = XlSwitchDefault()
-						if (cc.value?.stmt is XlSwitch) {
+						if (cc.value is XlSwitch) {
 							insertStmt(stmt,cc.item,0,true)
-						} else if (cc.parent?.value?.stmt is XlSwitch) {
+						} else if (cc.parent?.value is XlSwitch) {
 							insertStmt(stmt, cc.parent, indexOfStmt(cc.item), true)
 						}
 					}
@@ -433,7 +433,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				button("Button") {
 					presentWhen(rootAcceptsMenu)
 					disableWhen(posForInsertionProperty.booleanBinding { pfi ->
-						generateSequence(pfi?.first) { it.parent }.none { it.value.stmt is XsMenu }
+						generateSequence(pfi?.first) { it.parent }.none { it.value is XsMenu }
 					})
 					action {
 						insertStmtHere(XsButton("Click me"))
@@ -504,9 +504,8 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				expandedNodesProperty.bind(expandButton.selectedProperty())
 			}
 			contextualCurrentProperty.onChangeWeak { cts ->
-				val value = cts?.item?.value?.stmt
-				editor = value?.let { stmt ->
-					stmt.manager()?.editorBody(value)
+				editor = cts?.item?.value?.let { stmt ->
+					stmt.manager()?.editorBody(stmt)
 							?: defaultEditorBody { label("TODO ${stmt.javaClass}") }
 				} ?: defaultEditorBody { label("<nothing selected>") }
 				editor.apply {

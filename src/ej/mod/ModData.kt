@@ -1,6 +1,5 @@
 package ej.mod
 
-import ej.editor.utils.observableUnique
 import ej.utils.ValidateElements
 import ej.utils.ValidateNonBlank
 import ej.utils.classValidatorFor
@@ -38,30 +37,30 @@ class ModData : ModDataNode {
 	@ValidateElements(locator="name")
 	@get:XmlElementWrapper(name="state")
 	@get:XmlElement(name="var")
-	val stateVars = ArrayList<StateVar>().observableUnique()
+	val stateVars = ArrayList<StateVar>().observable()
 	
 	@get:XmlElement(name="hook")
 	@ValidateElements()
-	val hooks = ArrayList<ModHookData>().observableUnique()
+	val hooks = ArrayList<ModHookData>().observable()
 	
 	@get:XmlElement(name="script")
 	@ValidateElements()
-	val scripts = ArrayList<ModScript>().observableUnique()
+	val scripts = ArrayList<ModScript>().observable()
 	
 	@get:XmlElement(name="monster")
 	@ValidateElements(locator="id")
-	val monsters = ArrayList<MonsterData>().observableUnique()
+	val monsters = ArrayList<MonsterData>().observable()
 	
 	@get:XmlElements(
 			XmlElement(name="lib",type=XcLib::class),
 			XmlElement(name="scene",type=XcScene::class),
 			XmlElement(name="text",type=XcNamedText::class)
 	)
-	val content = ArrayList<StoryStmt>().observableUnique()
+	val content = ArrayList<StoryStmt>().observable()
 	
 	@get:XmlElement(name="encounter")
 	@ValidateElements
-	val encounters = ArrayList<Encounter>().observableUnique()
+	val encounters = ArrayList<Encounter>().observable()
 	
 	override fun toString(): String {
 		return "<mod name='$name' version='$version'>" +

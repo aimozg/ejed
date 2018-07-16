@@ -1,7 +1,6 @@
 package ej.mod
 
 import ej.editor.expr.ExpressionProperty
-import ej.editor.utils.observableUnique
 import ej.utils.affix
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -156,7 +155,7 @@ class XlSwitch : XStatement {
 	var value:String? by valueProperty
 	
 	@XmlElement(name="switch")
-	val branches = ArrayList<XlSwitchCase>().observableUnique()
+	val branches = ArrayList<XlSwitchCase>().observable()
 	
 	@XmlTransient
 	val defaultBranchProperty = SimpleObjectProperty<XlSwitchDefault?>(null)

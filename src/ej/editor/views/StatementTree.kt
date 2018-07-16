@@ -5,8 +5,6 @@ import ej.editor.stmts.manager
 import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.ObservableSingletonList
 import ej.editor.utils.observableConcatenation
-import ej.editor.utils.observableUnique
-import ej.editor.utils.transformed
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
@@ -24,96 +22,39 @@ import tornadofx.*
 fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
 	return stmt.manager()?.treeGraphic(stmt,tree) ?:
 	simpleTreeLabel("TODO $stmt").addClass(Styles.xcommand)
-//	return when (stmt) {
-
-//		is XsBattle -> simpleTreeLabel(
-//				bindingN(stmt.monsterProperty,stmt.optionsProperty) { monster, options ->
-//					"Battle $monster" + (options.affixNonEmpty(" with options: "))
-//				}
-//		).addClass(Styles.xcommand)
-//
-//		is XcLib -> simpleTreeLabel(
-//				bindingN(stmt.nameProperty()){ "<lib $it>" }
-//		).addClass(Styles.xcomment)
-//		is XcNamedText -> simpleTreeLabel(
-//				bindingN(stmt.nameProperty()){ "<text $it>" }
-//		).addClass(Styles.xcomment)
-//
-//		else ->
-//	}
 }
 
-sealed class StatementTreeItem(open val stmt:XStatement?) {
-	override fun toString(): String {
-		return stmt?.toString()?:javaClass.simpleName
-	}
-	
-	open fun statementTreeGraphic(tree:StatementTree):Region =
-			stmt?.let { stmt -> statementTreeGraphic(tree,stmt)} ?:
-			simpleTreeLabel("<nothing>")
-	class Statement(override val stmt:XStatement): StatementTreeItem(stmt)
-	class RootItem: StatementTreeItem(null) {
-		override fun statementTreeGraphic(tree: StatementTree) = simpleTreeLabel("<root>")
-	}
-	abstract class ContentGroupNode(override val stmt:XContentContainer):StatementTreeItem(stmt)
-	class ThenNode(val parent:XlIf, override val stmt: XlThen):ContentGroupNode(stmt)
-	class ElseIfNode(val parent:XlIf, override val stmt: XlElseIf):ContentGroupNode(stmt)
-	class ElseNode(val parent:XlIf, override val stmt: XlElse):ContentGroupNode(stmt)
-}
-
-open class StatementTree : TreeView<StatementTreeItem>() {
-	val contentsProperty = SimpleObjectProperty(ArrayList<XStatement>().observableUnique())
-	var contents by contentsProperty
+open class StatementTree : TreeView<XStatement>() {
+	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>(XcScene())
+	var rootStatement:XComplexStatement by rootStatementProperty
 	
 	val expandedNodesProperty = SimpleObjectProperty<Boolean>(false)
 	var expandedNodes by expandedNodesProperty
 	
-	var cellDecorator: ((TreeCell<StatementTreeItem>)->Unit)? = null
+	var cellDecorator: ((TreeCell<XStatement>)->Unit)? = null
 	fun repopulate() {
 		populate { treeItem ->
 			val sti = treeItem.value
 			when (sti) {
-				null -> emptyList()
-				is StatementTreeItem.RootItem -> contents.transformed {
-					StatementTreeItem.Statement(it)
-				}
-				is StatementTreeItem.Statement -> when (sti.stmt) {
-					is XlIf ->
-						observableConcatenation(
-								listOf(
-										StatementTreeItem.ThenNode(sti.stmt, sti.stmt.thenGroup)
-								).observable(),
-								sti.stmt.elseifGroups.transformed { e ->
-									StatementTreeItem.ElseIfNode(sti.stmt, e)
-								},
-								ObservableSingletonList(sti.stmt.elseGroupProperty).transformed { e ->
-									StatementTreeItem.ElseNode(sti.stmt, e)
-								}
-						)
-					is XlSwitch ->
-						observableConcatenation(
-								sti.stmt.branches.transformed { e ->
-									StatementTreeItem.Statement(e)
-								},
-								ObservableSingletonList(sti.stmt.defaultBranchProperty).transformed { e ->
-									StatementTreeItem.Statement(e)
-								}
-						)
-					is XContentContainer -> sti.stmt.content.transformed {
-						StatementTreeItem.Statement(it)
-					}
-					else -> emptyList()
-				}
-				is StatementTreeItem.ContentGroupNode -> sti.stmt.content.transformed {
-					StatementTreeItem.Statement(it)
-				}
+				is XlIf ->
+					observableConcatenation(
+							listOf(sti.thenGroup).observable(),
+							sti.elseifGroups,
+							ObservableSingletonList(sti.elseGroupProperty)
+					)
+				is XlSwitch ->
+					observableConcatenation(
+							sti.branches,
+							ObservableSingletonList(sti.defaultBranchProperty)
+					)
+				is XComplexStatement -> sti.content
+				else -> emptyList()
 			}
 		}
 	}
 	
 	init {
 		isShowRoot = false
-		root = TreeItem(StatementTreeItem.RootItem())
 		val tree = this
 		cellFormat {
 			val cell = this
@@ -121,7 +62,7 @@ open class StatementTree : TreeView<StatementTreeItem>() {
 			cell.prefWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			cell.maxWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			alignment = Pos.TOP_LEFT
-			graphic = it.statementTreeGraphic(tree).also { g ->
+			graphic = statementTreeGraphic(tree,it).also { g ->
 				g.addClass(Styles.treeGraphic)
 				g.maxWidthProperty().bind(
 					cell.maxWidthProperty()
@@ -135,7 +76,8 @@ open class StatementTree : TreeView<StatementTreeItem>() {
 			cellDecorator?.invoke(cell)
 		}
 		
-		contentsProperty.onChange {
+		rootStatementProperty.onChange {
+			root = TreeItem(it)
 			repopulate()
 		}
 	}
