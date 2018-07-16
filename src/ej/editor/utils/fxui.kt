@@ -1,6 +1,7 @@
 package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
+import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.GridPane
@@ -145,4 +146,20 @@ fun textInputDialog(
 		dialog.dialogPane.buttonTypes.remove(ButtonType.CANCEL)
 	}
 	return dialog.showAndWait().orElse(null)
+}
+
+
+/**
+ * This extension function will make sure that the given node will only be visible in the scene graph,
+ * if the given [expr] returning an observable boolean value equals true.
+ */
+fun <T : Node> T.presentWhen(expr: () -> ObservableValue<Boolean>): T = presentWhen(expr())
+
+/**
+ * This extension function will make sure that the given node will only be visible in the scene graph,
+ * if the given [predicate] observable boolean value equals true.
+ */
+fun <T : Node> T.presentWhen(predicate: ObservableValue<Boolean>) = apply {
+	visibleProperty().cleanBind(predicate)
+	managedProperty().cleanBind(predicate)
 }

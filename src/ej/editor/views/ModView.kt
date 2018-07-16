@@ -81,7 +81,7 @@ class ModView: AModView() {
 				when(story) {
 					is XcLib -> VBox().apply { text("TODO") } // TODO
 					is XContentContainer -> treeWithEditor.also {
-						it.contents = story.content
+						it.rootStatement = story
 						it.tree.root.expandAll()
 					}
 					else -> VBox().apply { text("Unknown $story") }

@@ -58,7 +58,7 @@ object SetMgr : StatementManager<XsSet>() {
 					bindingN(stmt.inobjProperty,
 					         stmt.varnameProperty,
 					         stmt.opProperty,
-					         stmt.valueProperty){inobj,varname,op,value ->
+					         stmt.valueProperty){inobj,varname,op,_ ->
 				val s: String = if (inobj != null) {
 					"property '$varname' of $inobj"
 				} else {

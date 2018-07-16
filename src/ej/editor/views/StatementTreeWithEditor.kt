@@ -3,10 +3,7 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.defaultEditorBody
 import ej.editor.stmts.manager
-import ej.editor.utils.ContextualTreeSelection
-import ej.editor.utils.findItem
-import ej.editor.utils.listBinding
-import ej.editor.utils.onChangeWeak
+import ej.editor.utils.*
 import ej.mod.*
 import ej.utils.addToList
 import javafx.beans.property.SimpleIntegerProperty
@@ -40,6 +37,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	val splitPane = SplitPane()
 	val contentsProperty = tree.contentsProperty
 	var contents: ObservableList<XStatement> by contentsProperty
+	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>().apply {
+		onChange {
+			contents = it?.content?: ArrayList<XStatement>().observable()
+		}
+	}
+	var rootStatement: XComplexStatement by rootStatementProperty
+	val rootAcceptsMenu = rootStatementProperty.booleanBinding { it?.acceptsMenu == true }
+	val rootAcceptsActions = rootStatementProperty.booleanBinding { it?.acceptsActions == true }
 	private var expandButton by singleAssign<ToggleButton>()
 	private val weakListeners = ArrayList<Any>()
 
@@ -310,15 +315,27 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				 * - <forward>/<next>/<button> only to <scene>
 				 * - No actions allowed in <monster> desc and <button> hint
 				 */
-				button("Text").action { insertStmtHere(XcText("Input text here")) }
-				button("Set var").action { insertStmtHere(XsSet().apply {
-					inobj = "state"
-					varname = mod.stateVars.firstOrNull()?.name?:"flag1"
-					value = "1"
-				}) }
-				button("Display").action { insertStmtHere(XsDisplay()) }
-				button("Output").action { insertStmtHere(XsOutput()) }
-				button("Comment").action { insertStmtHere(XlComment("")) }
+				button("Text") {
+					action { insertStmtHere(XcText("Input text here")) }
+				}
+				button("Set var") {
+					action {
+						insertStmtHere(XsSet().apply {
+							inobj = "state"
+							varname = mod.stateVars.firstOrNull()?.name ?: "flag1"
+							value = "1"
+						})
+					}
+				}
+				button("Display") {
+					action { insertStmtHere(XsDisplay()) }
+				}
+				button("Output") {
+					action { insertStmtHere(XsOutput()) }
+				}
+				button("Comment") {
+					action { insertStmtHere(XlComment("")) }
+				}
 			}
 			// Flow control
 			row {
@@ -346,7 +363,6 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 						} else if (canInsert(stmt, pos.first)) {
 							insertStmt(stmt,pos.first,pos.second-1,true)
 						}
-//						insertStmtHere(XlIf.XlElseIf(""))
 					}
 				}
 				button("Else") {
@@ -398,37 +414,51 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			}
 			// Scene-enders
 			row {
-				label("")
-				button("Next").action {
-					insertStmtHere(XsNext())
+				label("").presentWhen(rootAcceptsMenu)
+				button("Next") {
+					presentWhen(rootAcceptsMenu)
+					action {
+						insertStmtHere(XsNext())
+					}
 				}
-				button("Menu").action {
-					insertStmtHere(XsMenu().also {
-						it.content.add(XsButton("Yes"))
-						it.content.add(XsButton("No"))
-					})
+				button("Menu") {
+					presentWhen(rootAcceptsMenu)
+					action {
+						insertStmtHere(XsMenu().also {
+							it.content.add(XsButton("Yes"))
+							it.content.add(XsButton("No"))
+						})
+					}
 				}
-				button("Button").action {
+				button("Button") {
+					presentWhen(rootAcceptsMenu)
 					disableWhen(posForInsertionProperty.booleanBinding { pfi ->
 						generateSequence(pfi?.first) { it.parent }.none { it.value.stmt is XsMenu }
 					})
-					insertStmtHere(XsButton("Click me"))
+					action {
+						insertStmtHere(XsButton("Click me"))
+					}
 				}
 				button("Forward") {
-					isDisable = true
-					action {}
+					presentWhen(rootAcceptsMenu)
+					action { insertStmtHere(XsForward()) }
 				}
-				button("Battle").action { insertStmtHere(XsBattle()) }
+				button("Battle") {
+					presentWhen(rootAcceptsMenu)
+					action { insertStmtHere(XsBattle()) }
+				}
 			}
 			// Other actions
 			row {
-				label("")
+				label("").presentWhen(rootAcceptsActions)
 				button("DynStats") {
 					isDisable = true
+					presentWhen(rootAcceptsActions)
 					action {}
 				}
 				button("...") {
 					isDisable = true
+					presentWhen(rootAcceptsActions)
 					action {}
 				}
 			}

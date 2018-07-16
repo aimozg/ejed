@@ -11,15 +11,14 @@ import javafx.scene.layout.Priority
 import javafx.util.converter.IntegerStringConverter
 import tornadofx.*
 
-class MonsterScope(val mod: ModData, val monster: MonsterData):Scope() {
-}
+class MonsterScope(val mod: ModData, val monster: MonsterData):Scope()
 
 abstract class AMonsterView(title:String?=null) : AModView(title) {
 	override val scope = super.scope as MonsterScope
 	val monster get() = scope.monster
 }
 
-class MonsterPage(): AMonsterView() {
+class MonsterPage: AMonsterView() {
 	
 	override val root = tabpane {
 		tab<MonsterBasicView>()
@@ -136,12 +135,12 @@ class MonsterBodyView():AMonsterView("Body") {
 	}
 }
 
-class MonsterDescView():AMonsterView("Description") {
+class MonsterDescView: AMonsterView("Description") {
 	val editor = StatementTreeWithEditor(mod)
 	
 	override val root = vbox {
 		editor.attachTo(this) {
-			contents = monster.desc.content
+			rootStatement = monster.desc
 			vgrow = Priority.SOMETIMES
 		}
 	}

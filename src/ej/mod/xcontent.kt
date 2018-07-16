@@ -12,12 +12,15 @@ import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
 
 
-interface XStatement : ModDataNode {
-}
+interface XStatement : ModDataNode
 interface XComplexStatement: XStatement {
 	val content: ObservableList<XStatement>
 }
 
+val XComplexStatement.acceptsMenu: Boolean
+	get() = this is XcScene || this is Encounter.EncounterScene
+val XComplexStatement.acceptsActions: Boolean
+	get() = acceptsMenu || this is XcNamedText
 
 @Suppress("unused")
 internal fun XStatement.defaultToString(tagname:String, attrs:String, content:String) =
@@ -58,6 +61,7 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	@XmlElementRefs(
 			XmlElementRef(name = "t", type = XcText::class),
 			XmlElementRef(name = "display", type = XsDisplay::class),
+			XmlElementRef(name = "forward", type = XsForward::class),
 			XmlElementRef(name = "set", type = XsSet::class),
 			XmlElementRef(name = "output", type = XsOutput::class),
 			XmlElementRef(name = "lib", type = XcLib::class),

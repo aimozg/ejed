@@ -23,6 +23,16 @@ class XsDisplay : XStatement {
 	override fun toString() = defaultToString("display","",ref)
 }
 
+@XmlRootElement(name = "forward")
+class XsForward : XStatement {
+	@XmlTransient
+	val refProperty = SimpleStringProperty("")
+	@get:XmlAttribute
+	var ref: String by refProperty
+	
+	override fun toString() = defaultToString("forward","",ref)
+}
+
 @XmlRootElement(name = "set")
 class XsSet : XStatement {
 	@XmlTransient

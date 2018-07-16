@@ -33,7 +33,7 @@ class EncounterPage : AModView("Encounter"){
 			}
 		}
 		StatementTreeWithEditor(mod).attachTo(this) {
-			contents = encounter.scene.content
+			rootStatement = encounter.scene
 			vgrow = Priority.SOMETIMES
 		}
 	}

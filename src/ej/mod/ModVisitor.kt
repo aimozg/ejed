@@ -39,6 +39,9 @@ abstract class ModVisitor {
 	open fun visitDisplay(x:XsDisplay) {
 		visitAnyStmt(x)
 	}
+	open fun visitForward(x:XsForward) {
+		visitAnyStmt(x)
+	}
 	open fun visitBattle(x:XsBattle) {
 		visitAnyStmt(x)
 	}
@@ -113,6 +116,7 @@ fun ModDataNode.visit(visitor:ModVisitor) {
 		is XsSet -> visitor.visitSet(this)
 		is XsOutput -> visitor.visitOutput(this)
 		is XsDisplay -> visitor.visitDisplay(this)
+		is XsForward -> visitor.visitForward(this)
 		is XsBattle -> visitor.visitBattle(this)
 		is XsNext -> visitor.visitNext(this)
 		is XsMenu -> visitor.visitMenu(this)

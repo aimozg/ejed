@@ -54,6 +54,7 @@ inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={})
 fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) {
 //	XsBattle::class.java -> BattleMgr TODO
 	XsDisplay::class.java -> DisplayMgr
+	XsForward::class.java -> ForwardMgr
 	XsOutput::class.java -> OutputMgr
 	XsSet::class.java -> SetMgr
 	XsMenu::class.java -> MenuMgr
