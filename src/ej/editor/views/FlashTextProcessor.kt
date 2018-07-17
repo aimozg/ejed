@@ -4,7 +4,7 @@ import ej.editor.utils.XmlTextProcessor
 
 class FlashTextProcessor : XmlTextProcessor() {
 	override fun testBegin(tag: String) = when(tag) {
-//		"div" -> renameTag("br")
+		"div" -> renameTag("br")
 		"p" -> renameTag("br")
 		in FlashPermittedElements -> take()
 		else -> skip()
