@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.AModView
+import ej.mod.Builtins
 import ej.mod.Encounter
 import javafx.scene.layout.Priority
 import tornadofx.*
@@ -18,7 +19,10 @@ class EncounterPage : AModView("Encounter"){
 	override val root = vbox {
 		form {
 			fieldset {
-				field("Pool") { textfield(encounter.poolProperty) }
+				field("Pool") {
+					combobox(encounter.poolProperty,
+					         Builtins.encounterPools)
+				}
 				field("Name") { textfield(encounter.nameProperty) }
 				field("Chance") {
 					textfield(encounter.chanceProperty) {
