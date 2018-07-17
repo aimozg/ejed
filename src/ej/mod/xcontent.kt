@@ -4,7 +4,7 @@ import ej.editor.utils.escapeXmlAttr
 import ej.utils.affixNonEmpty
 import ej.utils.crop
 import ej.utils.removeLast
-import javafx.beans.property.ReadOnlyProperty
+import javafx.beans.property.Property
 import javafx.collections.ObservableList
 import tornadofx.*
 import javax.xml.bind.Marshaller
@@ -29,7 +29,7 @@ interface StoryStmt : XStatement, StoryContainer {
 	val owner: ModDataNode?
 	@get:XmlTransient
 	val name: String
-	fun nameProperty(): ReadOnlyProperty<String>
+	fun nameProperty(): Property<String>
 	@get:XmlTransient
 	val path:String get() = ownersToRoot().fold(name) { s, story ->
 			"${story.name}/$s"

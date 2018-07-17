@@ -1,7 +1,7 @@
 package ej.mod
 
 import ej.utils.ValidateNonBlank
-import javafx.beans.property.ReadOnlyProperty
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
@@ -69,7 +69,7 @@ class Encounter : ModDataNode {
 		
 		override val name: String get() = owner?.name?:""
 		
-		override fun nameProperty(): ReadOnlyProperty<String> {
+		override fun nameProperty(): Property<String> {
 			return owner?.nameProperty?:"".toProperty()
 		}
 		

@@ -14,20 +14,35 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
 
-sealed class ModTreeNode {
+sealed class ModTreeNode(
+		val acceptsMonsters: Boolean = false,
+		val acceptsScenes: Boolean = false,
+		val hasName: Boolean = false,
+		val removable: Boolean = false
+) {
 	open val population:ObservableList<out ModTreeNode> = emptyList<ModTreeNode>().observable()
 	abstract val textProperty: ObservableValue<String>
-	class MonsterListNode(val mod:ModData): ModTreeNode() {
+	class MonsterListNode(val mod:ModData): ModTreeNode(
+			acceptsMonsters = true
+	) {
 		override val population = mod.monsters.transformed { MonsterNode(mod,it) }
 		override val textProperty = StringConstant.valueOf("Monsters")
 	}
-	class MonsterNode(val mod:ModData, val monster:MonsterData): ModTreeNode() {
+	class MonsterNode(val mod:ModData, val monster:MonsterData): ModTreeNode(
+			acceptsMonsters = true,
+			hasName = true,
+			removable = true
+	) {
 		override val textProperty = monster.idProperty.stringBinding(monster.nameProperty) {
 			if (monster.id == monster.name || monster.name.isNullOrBlank()) monster.id
 			else "${monster.id} (${monster.name})"
 		}
 	}
-	class StoryNode(val story:StoryStmt): ModTreeNode() {
+	class StoryNode(val story:StoryStmt): ModTreeNode(
+			acceptsScenes = true,
+			hasName = true,
+			removable = true
+	) {
 		override val textProperty = bindingN(story.nameProperty()) {
 			when(story) {
 				is XcScene -> "(Scene) $it"
@@ -38,13 +53,19 @@ sealed class ModTreeNode {
 		}
 		override val population = story.lib.transformed { StoryNode(it) }
 	}
-	class EncounterNode(val encounter: Encounter): ModTreeNode() {
+	class EncounterNode(val encounter: Encounter): ModTreeNode(
+			acceptsScenes = true,
+			hasName = true,
+			removable = true
+	) {
 		override val textProperty = encounter.nameProperty.stringBinding(encounter.poolProperty) {
 			"$it (in ${encounter.pool})"
 		}
 		override val population = encounter.scene.lib.transformed { StoryNode(it) }
 	}
-	class StoryListNode(val stories:ObservableList<StoryStmt>): ModTreeNode() {
+	class StoryListNode(val stories:ObservableList<StoryStmt>): ModTreeNode(
+			acceptsScenes = true
+	) {
 		override val textProperty = StringConstant.valueOf("Scenes")
 		override val population = stories.transformed { StoryNode(it) }
 	}
@@ -52,7 +73,11 @@ sealed class ModTreeNode {
 		override val textProperty = StringConstant.valueOf("Encounters")
 		override val population = encounters.transformed { EncounterNode(it) }
 	}
-	class RootNode(val mod:ModData): ModTreeNode() {
+	class RootNode(val mod:ModData): ModTreeNode(
+			acceptsScenes = true,
+			acceptsMonsters = true,
+			hasName = true
+	) {
 		override val population = listOf(MonsterListNode(mod),
 		                                 EncounterListNode(mod.encounters),
 		                                 StoryListNode(mod.content)).observable()
@@ -99,12 +124,7 @@ class ModView: AModView() {
 					vgrow = Priority.NEVER
 					alignment = Pos.BASELINE_LEFT
 					button("Monster").action{
-						textInputDialog("New Monster","Name of new monster","Unnamed") { dialogResult ->
-							addMonster(MonsterData().apply {
-								id = dialogResult
-								name = dialogResult
-							})
-						}
+						createMonster()
 					}
 					button("Encounter").action {
 						textInputDialog(
@@ -116,34 +136,13 @@ class ModView: AModView() {
 						}
 					}
 					button("Scene").action {
-						val parent:StoryStmt? = (tree.selectedValue as? ModTreeNode.StoryNode)?.story
-						textInputDialog(
-								"New Scene",
-								"ID of new scene",
-								"Unnamed"
-						) { dialogResult ->
-							addScene(parent, XcScene().apply {name = dialogResult})
-						}
+						createScene()
 					}
-					button("Lib").action {
-						val parent:StoryStmt? = (tree.selectedValue as? ModTreeNode.StoryNode)?.story
-						textInputDialog(
-								"New Scene Lib",
-								"ID of new scene lib",
-								"Unnamed"
-						) { dialogResult ->
-							addScene(parent, XcLib().apply { name = dialogResult })
-						}
+					button("Library").action {
+						createLibrary()
 					}
 					button("Subscene").action {
-						val parent:StoryStmt? = (tree.selectedValue as? ModTreeNode.StoryNode)?.story
-						textInputDialog(
-								"New Subscene",
-								"ID of new subscene",
-								"Unnamed"
-						) { dialogResult ->
-							addScene(parent, XcNamedText().apply {name = dialogResult })
-						}
+						createSubscene()
 					}
 				}
 				tree.attachTo(this) {
@@ -154,8 +153,77 @@ class ModView: AModView() {
 						textProperty().bind(it.textProperty)
 					}
 					vgrow = Priority.ALWAYS
+					contextmenu {
+						menu("Add") {
+							item("Monster") {
+								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
+									it?.value?.acceptsMonsters == true
+								})
+								action { createMonster() }
+							}
+							item("Scene") {
+								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
+									it?.value?.acceptsScenes == true
+								})
+								action { createScene() }
+							}
+							item("Subscene") {
+								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
+									it?.value?.acceptsScenes == true
+								})
+								action { createSubscene() }
+							}
+							item("Sceme Library") {
+								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
+									it?.value?.acceptsScenes == true
+								})
+								action { createLibrary() }
+							}
+						}
+						item("Rename") {
+							enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
+								it?.value?.hasName == true
+							})
+							action { renameSelected() }
+						}
+						item("Delete") {
+							enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
+								it?.value?.removable == true
+							})
+							action { removeSelected() }
+						}
+					}
 				}
 			}
+		}
+	}
+	
+	fun removeSelected() {
+		val parent = tree.selectionModel.selectedItem.parent?.value
+		val value = tree.selectedValue
+		when(value) {
+			is ModTreeNode.MonsterNode -> mod.monsters.remove(value.monster)
+			is ModTreeNode.StoryNode -> when (parent) {
+				is ModTreeNode.StoryListNode -> mod.content.remove(value.story)
+				is ModTreeNode.StoryNode -> parent.story.lib.remove(value.story)
+				is ModTreeNode.EncounterNode -> parent.encounter.scene.lib.remove(value.story)
+				else -> kotlin.error("Cannot remove")
+			}
+			is ModTreeNode.EncounterNode -> mod.encounters.remove(value.encounter)
+			else -> kotlin.error("Cannot remove")
+		}
+	}
+	fun renameSelected() {
+		val value = tree.selectedValue
+		val nameProp = when (value) {
+			is ModTreeNode.RootNode -> mod.nameProperty
+			is ModTreeNode.MonsterNode -> value.monster.idProperty
+			is ModTreeNode.StoryNode -> value.story.nameProperty()
+			is ModTreeNode.EncounterNode -> value.encounter.nameProperty
+			else -> kotlin.error("Cannot rename")
+		}
+		textInputDialog("Rename","Change ID to",nameProp.value) {
+			nameProp.value = it
 		}
 	}
 	
@@ -168,12 +236,57 @@ class ModView: AModView() {
 		mod.monsters.add(m)
 		tree.select { (it as? ModTreeNode.MonsterNode)?.monster == m }
 	}
+	fun createMonster() {
+		textInputDialog("New Monster", "Name of new monster", "Unnamed") { dialogResult ->
+			addMonster(MonsterData().apply {
+				id = dialogResult
+				name = dialogResult
+			})
+		}
+	}
 	
 	fun addScene(parent: StoryStmt?, s: StoryStmt) {
 		(parent?.lib?:mod.content).add(s)
 		tree.select { (it as? ModTreeNode.StoryNode)?.story == s }
 	}
 	
+	fun createScene() {
+		val parent: StoryStmt? =
+				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
+						?: (tree.selectedValue as? ModTreeNode.EncounterNode)?.encounter?.scene
+		textInputDialog(
+				"New Scene",
+				"ID of new scene",
+				"Unnamed"
+		) { dialogResult ->
+			addScene(parent, XcScene().apply { name = dialogResult })
+		}
+	}
+	
+	fun createSubscene() {
+		val parent: StoryStmt? =
+				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
+						?: (tree.selectedValue as? ModTreeNode.EncounterNode)?.encounter?.scene
+		textInputDialog(
+				"New Subscene",
+				"ID of new subscene",
+				"Unnamed"
+		) { dialogResult ->
+			addScene(parent, XcNamedText().apply { name = dialogResult })
+		}
+	}
+	fun createLibrary() {
+		val parent:StoryStmt? =
+				(tree.selectedValue as? ModTreeNode.StoryNode)?.story ?:
+				(tree.selectedValue as? ModTreeNode.EncounterNode)?.encounter?.scene
+		textInputDialog(
+				"New Scene Library",
+				"ID of new scene library",
+				"Unnamed"
+		) { dialogResult ->
+			addScene(parent, XcLib().apply { name = dialogResult })
+		}
+	}
 	private fun TreeView<ModTreeNode>.repopulate() {
 		root = TreeItem(ModTreeNode.RootNode(mod))
 		populate { it.value.population }
