@@ -173,7 +173,7 @@ class ModView: AModView() {
 								})
 								action { createSubscene() }
 							}
-							item("Sceme Library") {
+							item("Scene Library") {
 								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
 									it?.value?.acceptsScenes == true
 								})
