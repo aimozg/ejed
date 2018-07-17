@@ -20,17 +20,18 @@ class Identifier(val value:String):Expression() {
 	override val source get() = value
 	override fun copy() = Identifier(value)
 }
-class IntLiteral(val value:Int):Expression() {
+sealed class ConstLiteral<T:Any?>(val value:T):Expression()
+class IntLiteral(value:Int):ConstLiteral<Int>(value) {
 	override val parts get() = emptyList<Expression>()
 	override val source get() = value.toString()
 	override fun copy() = IntLiteral(value)
 }
-class FloatLiteral(val value:Double):Expression() {
+class FloatLiteral(value:Double):ConstLiteral<Double>(value) {
 	override val parts get() = emptyList<Expression>()
 	override val source get() = value.toString()
 	override fun copy() = FloatLiteral(value)
 }
-class StringLiteral(val value:String):Expression() {
+class StringLiteral(value:String):ConstLiteral<String>(value) {
 	override val parts get() = emptyList<Expression>()
 	override val source get() = value.toJsString()
 	override fun copy() = StringLiteral(value)
