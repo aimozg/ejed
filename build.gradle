@@ -32,6 +32,11 @@ sourceSets {
             srcDirs = ['resources']
         }
     }
+    test {
+        kotlin {
+            srcDirs = ['test']
+        }
+    }
 }
 
 jar {

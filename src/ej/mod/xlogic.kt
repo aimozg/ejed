@@ -1,6 +1,8 @@
 package ej.mod
 
 import ej.editor.expr.ExpressionProperty
+import ej.editor.utils.ObservableSingletonList
+import ej.editor.utils.observableConcatenation
 import ej.utils.affix
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -58,6 +60,12 @@ class XlIf(): XStatement {
 	
 	val elseGroupProperty = SimpleObjectProperty<XlElse?>()
 	var elseGroup: XlElse? by elseGroupProperty
+	
+	val allGroups = observableConcatenation(
+			listOf(thenGroup).observable(),
+			elseifGroups,
+			ObservableSingletonList(elseGroupProperty)
+	)
 	
 	override fun toString() = defaultToString("if","test=$test",
 	                                          thenGroup.toString()+" "+
@@ -161,6 +169,11 @@ class XlSwitch : XStatement {
 	val defaultBranchProperty = SimpleObjectProperty<XlSwitchDefault?>(null)
 	@get:XmlElement(name="default")
 	var defaultBranch: XlSwitchDefault? by defaultBranchProperty
+	
+	@XmlTransient
+	val allGroups = observableConcatenation(
+			branches,
+			ObservableSingletonList(defaultBranchProperty))
 	
 	override fun toString() = defaultToString("switch",value.affix("value="),branches.joinToString()+defaultBranch?.toString()?.affix(" "))
 	

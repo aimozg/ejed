@@ -38,14 +38,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	}
 	val tree: StatementTree = StatementTree()
 	val splitPane = SplitPane()
-//	val contentsProperty = tree.contentsProperty
-//	var contents: ObservableList<XStatement> by contentsProperty
 	val rootStatementProperty = tree.rootStatementProperty
-		/*SimpleObjectProperty<XComplexStatement>().apply {
-		onChange {
-			contents = it?.content?: ArrayList<XStatement>().observable()
-		}
-	}*/
 	var rootStatement: XComplexStatement by rootStatementProperty
 	val rootAcceptsMenu = rootStatementProperty.booleanBinding { it?.acceptsMenu == true }
 	val rootAcceptsActions = rootStatementProperty.booleanBinding { it?.acceptsActions == true }
@@ -72,6 +65,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				&& me !is MonsterData.MonsterDesc
 	}
 	fun removeStmt(item: TreeItem<XStatement>) {
+		System.gc()
 		val me = item.value
 		val target = item.parent?.value
 		if (target == null) {

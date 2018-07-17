@@ -15,8 +15,9 @@ import java.util.*
  * - https://github.com/lestard/advanced-bindings/blob/master/src/main/java/eu/lestard/advanced_bindings/api/CollectionBindings.java
  * Posted result on: http://stackoverflow.com/questions/37524662/how-to-concatenate-observable-lists-in-javafx
  */
-open class AggregatedObservableArrayList<T>(vararg lists:ObservableList<out T>) {
-	
+open class AggregatedObservableArrayList<T>(vararg lists:ObservableList<out T>)
+	//: ObservableListWrapper<T>(FXCollections.observableArrayList<T>())
+{
 	protected val lists: MutableList<ObservableList<out T>> = ArrayList()
 	private val sizes = ArrayList<Int>()
 	private val listeners = ArrayList<InternalListModificationListener>()

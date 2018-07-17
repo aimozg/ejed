@@ -3,9 +3,7 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.manager
 import ej.editor.stmts.simpleTreeLabel
-import ej.editor.utils.ObservableSingletonList
 import ej.editor.utils.findItem
-import ej.editor.utils.observableConcatenation
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
@@ -49,17 +47,8 @@ open class StatementTree : TreeView<XStatement>() {
 		populate { treeItem ->
 			val sti = treeItem.value
 			when (sti) {
-				is XlIf ->
-					observableConcatenation(
-							listOf(sti.thenGroup).observable(),
-							sti.elseifGroups,
-							ObservableSingletonList(sti.elseGroupProperty)
-					)
-				is XlSwitch ->
-					observableConcatenation(
-							sti.branches,
-							ObservableSingletonList(sti.defaultBranchProperty)
-					)
+				is XlIf -> sti.allGroups
+				is XlSwitch -> sti.allGroups
 				is XComplexStatement -> sti.content
 				else -> emptyList()
 			}
