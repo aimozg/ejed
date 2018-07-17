@@ -62,11 +62,6 @@ sealed class ModTreeNode {
 
 class ModView: AModView() {
 	
-	val treeWithEditor by lazy {
-		StatementTreeWithEditor(mod).apply {
-			vgrow = Priority.ALWAYS
-		}
-	}
 	val tree = TreeView<ModTreeNode>()
 	
 	fun selectModEntry(e:ModTreeNode?) {
@@ -80,9 +75,10 @@ class ModView: AModView() {
 			is ModTreeNode.StoryNode -> e.story.let { story ->
 				when(story) {
 					is XcLib -> VBox().apply { text("TODO") } // TODO
-					is XContentContainer -> treeWithEditor.also {
-						it.rootStatement = story
-						it.tree.root.expandAll()
+					is XContentContainer -> StatementTreeWithEditor(mod).apply {
+						rootStatement = story
+						tree.root.expandAll()
+						vgrow = Priority.ALWAYS
 					}
 					else -> VBox().apply { text("Unknown $story") }
 				}
