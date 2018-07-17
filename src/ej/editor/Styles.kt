@@ -149,7 +149,9 @@ class Styles : Stylesheet() {
 			}
 		}
 		xstmtEditor {
-			alignment = Pos.BASELINE_LEFT
+			and("HBox") {
+				alignment = Pos.BASELINE_LEFT
+			}
 			spacing = 5.px
 			padding = box(5.px)
 		}

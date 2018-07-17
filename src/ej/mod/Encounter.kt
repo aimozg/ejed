@@ -64,7 +64,9 @@ class Encounter : ModDataNode {
 	
 	@XmlRootElement(name="scene")
 	class EncounterScene : XContentContainer(), StoryStmt {
+		@get:XmlTransient
 		override var owner: Encounter? = null
+		
 		override val name: String get() = owner?.name?:""
 		
 		override fun nameProperty(): ReadOnlyProperty<String> {
