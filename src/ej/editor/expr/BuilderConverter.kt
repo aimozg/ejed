@@ -29,6 +29,7 @@ object DefaultBuilderConverter : BuilderConverter {
 			CreatureSexTest.tryConvert(this,expr)
 		is DotExpression ->
 			ModVariableBuilder.tryConvert(this, expr)
+					?: CreatureStat.tryConvert(this, expr)
 		is AccessExpression -> null
 		is ConditionalExpression -> null
 		is BinaryExpression ->

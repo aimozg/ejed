@@ -27,13 +27,11 @@ abstract class ExpressionBuilder : WithReadableText {
 				val v = it.value
 				when(v) {
 					null -> "<???>"
-//					is ExpressionBuilder -> "("+v.text()+")"
 					is WithReadableText -> v.text()
 					is String -> v
 					else -> v.toString()
 				}
 			}
-//			is ExpressionBuilder -> "("+it.text()+")"
 			is WithReadableText -> it.text()
 			is String -> it
 			else -> it.toString()

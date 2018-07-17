@@ -9,7 +9,7 @@ import tornadofx.*
 class Comparison : ExpressionBuilder() {
 	override fun name() = "Compare values"
 	
-	override fun editorBody(): Pane = defaultBuilderBody {
+	override fun editorBody(): Pane = defaultEditorTextFlow {
 		valueLink(left, "Value1", AnyExprChooser)
 		text(" ")
 		valueLink(op, "Comparison operator",

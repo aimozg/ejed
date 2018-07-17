@@ -9,7 +9,7 @@ import tornadofx.*
 class BooleanAnd : ExpressionBuilder() {
 	override fun name() = "AND (both conditions are true)"
 	
-	override fun editorBody(): Pane = defaultBuilderBody {
+	override fun editorBody(): Pane = defaultEditorTextFlow {
 		valueLink(expr1, "Condition1", BoolExprChooser)
 		text(" and ")
 		valueLink(expr2, "Condition2", BoolExprChooser)

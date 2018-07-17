@@ -1,12 +1,12 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
 import ej.editor.views.StatementTree
 import ej.mod.Builtins
 import ej.mod.XsForward
 import ej.mod.acceptsMenu
-import javafx.scene.text.TextFlow
 import tornadofx.*
 
 object ForwardMgr : StatementManager<XsForward>() {
@@ -19,12 +19,12 @@ object ForwardMgr : StatementManager<XsForward>() {
 	
 	override fun editorBody(stmt: XsForward,
 	                        tree: StatementTree
-	) = defaultEditorBody(TextFlow()) {
+	) = defaultEditorTextFlow {
 		text("Forward to scene: ")
 		valueLink(stmt.refProperty,
 		          "Scene",
 		          SceneChooser(tree.rootStatement,
-		                       controller.mod ?: return@defaultEditorBody,
+		                       controller.mod ?: return@defaultEditorTextFlow,
 		                       Builtins.scenes) { it.acceptsMenu })
 	}
 	

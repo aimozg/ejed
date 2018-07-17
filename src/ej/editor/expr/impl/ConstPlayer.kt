@@ -9,7 +9,7 @@ import tornadofx.*
  */
 class ConstPlayer : ExpressionBuilder() {
 	override fun name() = "Player character"
-	override fun editorBody() = defaultBuilderBody {
+	override fun editorBody() = defaultEditorTextFlow {
 		text("Player character")
 	}
 	override fun text() = mktext("Player character")

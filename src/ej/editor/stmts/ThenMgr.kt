@@ -10,7 +10,6 @@ object ThenMgr : StatementManager<XlThen>() {
 	                        tree: StatementTree
 	) = defaultEditorBody {
 		label("Then")
-		// TODO else, elseif
 	}
 	
 	override fun treeGraphic(stmt: XlThen, tree: StatementTree) =

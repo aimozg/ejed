@@ -12,7 +12,7 @@ import tornadofx.*
 class CreatureSexTest : ExpressionBuilder() {
 	override fun name() = "Creature: Check sex"
 	
-	override fun editorBody() = defaultBuilderBody {
+	override fun editorBody() = defaultEditorTextFlow {
 		valueLink(creature, "Creature", CreatureChooser)
 		text(" is ")
 		valueLink(sex, "Sex Test", EnumChooser(SexTest::longName)) {

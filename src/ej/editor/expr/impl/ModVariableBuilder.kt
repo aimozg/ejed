@@ -9,7 +9,7 @@ import tornadofx.*
 class ModVariableBuilder : ExpressionBuilder() {
 	override fun name() = "Mod state variable"
 	
-	override fun editorBody(): Pane = defaultBuilderBody {
+	override fun editorBody(): Pane = defaultEditorTextFlow {
 		text("Mod variable ")
 		valueLink(variable,
 		          "Mod variable",

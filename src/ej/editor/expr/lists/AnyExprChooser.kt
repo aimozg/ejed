@@ -12,6 +12,7 @@ object AnyExprChooser : ExpressionChooser() {
 			// specifics
 			ModVariableBuilder(),
 			CreatureSexTest(),
+			CreatureStat(),
 			// generics
 			BooleanAnd(),
 			BooleanOr(),

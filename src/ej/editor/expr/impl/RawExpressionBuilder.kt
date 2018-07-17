@@ -4,6 +4,7 @@ import ej.editor.expr.Expression
 import ej.editor.expr.ExpressionBuilder
 import ej.editor.expr.ExpressionProperty
 import ej.editor.stmts.defaultEditorBody
+import javafx.scene.layout.Priority
 import tornadofx.*
 
 class RawExpressionBuilder() : ExpressionBuilder() {
@@ -17,7 +18,10 @@ class RawExpressionBuilder() : ExpressionBuilder() {
 	override fun build(): Expression = source.expressionProperty.value
 	
 	override fun editorBody() = defaultEditorBody {
-		textfield(source)
+		textarea(source) {
+			vgrow = Priority.ALWAYS
+			hgrow = Priority.ALWAYS
+		}
 	}
 	
 	override fun text() = "`${source.value}`"

@@ -28,17 +28,7 @@ inline fun<T:Pane> defaultEditorBody(pane:T, init:T.()->Unit):T =
 		pane.apply {
 			addClass(Styles.xstmtEditor)
 			hgrow = Priority.ALWAYS
-			/*(when (this) {
-				is HBox -> alignmentProperty()
-				is VBox -> alignmentProperty()
-				is FlowPane -> alignmentProperty()
-				is TilePane -> alignmentProperty()
-				is GridPane -> alignmentProperty()
-				is StackPane -> alignmentProperty()
-				is Labeled -> alignmentProperty()
-				is TextField -> alignmentProperty()
-				else -> null
-			})?.set(Pos.BASELINE_LEFT)*/
+			vgrow = Priority.ALWAYS
 			init()
 		}
 

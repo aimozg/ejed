@@ -1,26 +1,26 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
 import ej.editor.utils.bindingN
 import ej.editor.views.StatementTree
 import ej.mod.Builtins
 import ej.mod.XsButton
 import ej.mod.acceptsMenu
-import javafx.scene.text.TextFlow
 import tornadofx.*
 
 object ButtonMgr : StatementManager<XsButton>() {
 	override fun editorBody(stmt: XsButton,
 	                        tree: StatementTree
-	) = defaultEditorBody(TextFlow()) {
+	) = defaultEditorTextFlow  {
 		text("Offer choice ")
 		textfield(stmt.textProperty)
 		text(" leading to scene ")
 		valueLink(stmt.refProperty,
 		          "Scene",
 		          SceneChooser(tree.rootStatement,
-		                       controller.mod ?: return@defaultEditorBody,
+		                       controller.mod ?: return@defaultEditorTextFlow,
 		                       Builtins.scenes) { it.acceptsMenu })
 		text(". ")
 		checkbox("Disabled", stmt.disabledProperty)

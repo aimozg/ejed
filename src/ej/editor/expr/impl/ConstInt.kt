@@ -9,7 +9,7 @@ import tornadofx.*
 class ConstInt : ExpressionBuilder() {
 	override fun name() = "Integer number"
 	
-	override fun editorBody(): Pane = defaultBuilderBody {
+	override fun editorBody(): Pane = defaultEditorTextFlow {
 		textfield(constant,NullableIntStringConverter)
 	}
 	override fun text() = mktext(constant)

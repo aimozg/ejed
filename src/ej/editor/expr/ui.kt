@@ -1,6 +1,8 @@
 package ej.editor.expr
 
+import com.sun.javafx.binding.DoubleConstant
 import ej.editor.Styles
+import ej.editor.expr.impl.RawExpressionBuilder
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.WritableValue
@@ -9,6 +11,7 @@ import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextFlow
 import tornadofx.*
@@ -19,10 +22,14 @@ import tornadofx.*
  */
 
 
-inline fun defaultBuilderBody(init: TextFlow.()->Unit): TextFlow {
+inline fun defaultEditorTextFlow(init: TextFlow.()->Unit): TextFlow {
 	return TextFlow().apply {
 		addClass(Styles.xexpr)
-		hgrow = Priority.ALWAYS
+		prefWidthProperty().bind(parentProperty().select {
+			if (it is Region) {
+				it.widthProperty().minus(it.paddingHorizontalProperty)
+			} else DoubleConstant.valueOf(-1.0)
+		})
 		init()
 	}
 }
@@ -154,8 +161,9 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 				editorContainer += exprEditor
 			}
 		}
-		pane {
+		hbox {
 			editorContainer = this
+			vgrow = Priority.ALWAYS
 			minWidth = 300.0
 			minHeight = 200.0
 			this += exprEditor
@@ -169,7 +177,9 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 			this.items.setAll(items)
 		} else {
 			this.items.setAll(items.map {
-				if (it.javaClass == initial.javaClass) initial else it
+				if (it.javaClass == initial.javaClass) initial
+				else if (it is RawExpressionBuilder) RawExpressionBuilder(initial.build())
+				else it
 			})
 		}
 		return showModal(title,initial)

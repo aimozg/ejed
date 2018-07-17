@@ -1,6 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.valueLink
@@ -17,17 +18,13 @@ import tornadofx.*
  */
 object IfMgr : StatementManager<XlIf>() {
 	override fun editorBody(stmt: XlIf, tree: StatementTree) = defaultEditorBody(VBox()) {
-		textflow {
+		defaultEditorTextFlow {
 			text("If condition ")
 			valueLink("Condition",stmt.testProperty.toBuilder(),BoolExprChooser,setter={
 				if (it != null) stmt.testProperty.fromBuilder(it)
 			})
 			text(" is true")
-			/*
-			TODO edit source
-			button("...")
-			*/
-		}
+		}.attachTo(this)
 		hbox(5.0) {
 			button("Add ElseIf") {
 				action {

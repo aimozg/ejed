@@ -1,10 +1,10 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
 import ej.editor.views.StatementTree
 import ej.mod.XsBattle
-import javafx.scene.text.TextFlow
 import tornadofx.*
 
 /*
@@ -15,10 +15,10 @@ import tornadofx.*
 object BattleMgr : StatementManager<XsBattle>() {
 	override fun editorBody(stmt: XsBattle,
 	                        tree: StatementTree
-	) = defaultEditorBody(TextFlow()){
+	) = defaultEditorTextFlow {
 		text("Battle with ")
 		valueLink(stmt.monsterProperty, "Monster",
-		          MonsterChooser(controller.mod ?: return@defaultEditorBody))
+		          MonsterChooser(controller.mod ?: return@defaultEditorTextFlow))
 	}
 	
 	override fun treeGraphic(stmt: XsBattle, tree: StatementTree) = simpleTreeLabel(
