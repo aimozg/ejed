@@ -96,16 +96,19 @@ abstract class XmlTextProcessor : AbstractParser<String>(){
 				// </element>
 				val tag = match.groupValues[1]
 				testEnd(tag).let { action ->
-					when(action) {
+					when (action) {
 						is XmlTextProcessor.Action.Take -> rslt.append(eaten)
 						is XmlTextProcessor.Action.Skip,
-						is XmlTextProcessor.Action.SkipTag -> {}
+						is XmlTextProcessor.Action.SkipTag -> {
+						}
 						is XmlTextProcessor.Action.RenameTag -> rslt.append('<', '/', action.newname, '>')
 						is XmlTextProcessor.Action.TakeAndAddAttrs -> kotlin.error("Cannot $action in testEnd")
 					}
 				}
+			} else if (str.indexOf('<') == -1) {
+				break
 			} else if (isNotEmpty()) {
-				eat(1)
+				rslt.append(eaten(1))
 			} else break
 		}
 		rslt.append(str)
