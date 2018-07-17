@@ -10,9 +10,9 @@ class BooleanAnd : ExpressionBuilder() {
 	override fun name() = "AND (both conditions are true)"
 	
 	override fun editorBody(): Pane = defaultBuilderBody {
-		valueLink("Condition1",expr1, BoolExprChooser)
+		valueLink(expr1, "Condition1", BoolExprChooser)
 		text(" and ")
-		valueLink("Condition2", expr2, BoolExprChooser)
+		valueLink(expr2, "Condition2", BoolExprChooser)
 	}
 	override fun text() = mktext("(",expr1," and ",expr2,")")
 	

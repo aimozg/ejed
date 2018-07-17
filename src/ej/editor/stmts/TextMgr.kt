@@ -4,7 +4,6 @@ import ej.editor.Styles
 import ej.editor.views.FlashTextProcessor
 import ej.editor.views.HtmlEditorLite
 import ej.editor.views.StatementTree
-import ej.mod.XComplexStatement
 import ej.mod.XcText
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -19,7 +18,9 @@ import java.util.concurrent.atomic.AtomicReference
 object TextMgr: StatementManager<XcText>() {
 	private val cachedEditor = AtomicReference<HtmlEditorLite?>(null)
 	
-	override fun editorBody(stmt: XcText, rootStmt: XComplexStatement) = defaultEditorBody(VBox()) {
+	override fun editorBody(stmt: XcText,
+	                        tree: StatementTree
+	) = defaultEditorBody(VBox()) {
 		(cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
 			hgrow = Priority.ALWAYS
 			processor = FlashTextProcessor()

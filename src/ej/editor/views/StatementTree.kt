@@ -4,6 +4,7 @@ import ej.editor.Styles
 import ej.editor.stmts.manager
 import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.ObservableSingletonList
+import ej.editor.utils.findItem
 import ej.editor.utils.observableConcatenation
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
@@ -32,6 +33,18 @@ open class StatementTree : TreeView<XStatement>() {
 	var expandedNodes by expandedNodesProperty
 	
 	var cellDecorator: ((TreeCell<XStatement>)->Unit)? = null
+	
+	
+	fun focusOnStatement(me: XStatement, expand: Boolean = false) {
+		findItem { it == me }?.let { item2 ->
+			if (expand) {
+				item2.parent?.isExpanded = true
+				item2.expandAll()
+			}
+			selectionModel.select(item2)
+		}
+	}
+	
 	fun repopulate() {
 		populate { treeItem ->
 			val sti = treeItem.value

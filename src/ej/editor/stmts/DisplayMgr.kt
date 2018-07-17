@@ -3,7 +3,6 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.expr.valueLink
 import ej.editor.views.StatementTree
-import ej.mod.XComplexStatement
 import ej.mod.XsDisplay
 import ej.mod.acceptsMenu
 import javafx.scene.text.TextFlow
@@ -17,11 +16,13 @@ object DisplayMgr : StatementManager<XsDisplay>() {
 				addClass(Styles.xcommand)
 			}
 	
-	override fun editorBody(stmt: XsDisplay, rootStmt: XComplexStatement) = defaultEditorBody(TextFlow()) {
+	override fun editorBody(stmt: XsDisplay,
+	                        tree: StatementTree
+	) = defaultEditorBody(TextFlow()) {
 		text("Display subscene: ")
-		valueLink("Subscene",
-		          stmt.refProperty,
-		          SceneChooser(rootStmt, controller.mod ?: return@defaultEditorBody) { !it.acceptsMenu })
+		valueLink(stmt.refProperty,
+		          "Subscene",
+		          SceneChooser(tree.rootStatement, controller.mod ?: return@defaultEditorBody) { !it.acceptsMenu })
 	}
 	
 }

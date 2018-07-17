@@ -2,7 +2,6 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.views.StatementTree
-import ej.mod.XComplexStatement
 import ej.mod.XlComment
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -16,7 +15,9 @@ object CommentMgr : StatementManager<XlComment>() {
 				addClass(Styles.xcomment)
 			}
 	
-	override fun editorBody(stmt: XlComment, rootStmt: XComplexStatement) = defaultEditorBody(VBox()) {
+	override fun editorBody(stmt: XlComment,
+	                        tree: StatementTree
+	) = defaultEditorBody(VBox()) {
 		label("Comments do nothing in game.") {
 			vgrow = Priority.NEVER
 		}

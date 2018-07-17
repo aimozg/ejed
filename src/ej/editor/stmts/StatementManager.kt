@@ -5,11 +5,11 @@ import ej.editor.Styles
 import ej.editor.views.StatementTree
 import ej.mod.*
 import javafx.beans.value.ObservableValue
-import javafx.geometry.Pos
 import javafx.scene.control.Label
-import javafx.scene.control.Labeled
-import javafx.scene.control.TextField
-import javafx.scene.layout.*
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import tornadofx.*
 
 /*
@@ -19,7 +19,7 @@ import tornadofx.*
 
 abstract class StatementManager<T:XStatement> {
 	protected val controller: EditorController by lazy { find<EditorController>() }
-	abstract fun editorBody(stmt: T, rootStmt: XComplexStatement):Pane
+	abstract fun editorBody(stmt: T, tree: StatementTree):Pane
 	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
 }
 
@@ -28,7 +28,7 @@ inline fun<T:Pane> defaultEditorBody(pane:T, init:T.()->Unit):T =
 		pane.apply {
 			addClass(Styles.xstmtEditor)
 			hgrow = Priority.ALWAYS
-			(when (this) {
+			/*(when (this) {
 				is HBox -> alignmentProperty()
 				is VBox -> alignmentProperty()
 				is FlowPane -> alignmentProperty()
@@ -38,7 +38,7 @@ inline fun<T:Pane> defaultEditorBody(pane:T, init:T.()->Unit):T =
 				is Labeled -> alignmentProperty()
 				is TextField -> alignmentProperty()
 				else -> null
-			})?.set(Pos.BASELINE_LEFT)
+			})?.set(Pos.BASELINE_LEFT)*/
 			init()
 		}
 

@@ -3,6 +3,7 @@ package ej.editor.expr
 import ej.editor.Styles
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.WritableValue
 import javafx.geometry.Pos
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
@@ -25,38 +26,58 @@ inline fun defaultBuilderBody(init: TextFlow.()->Unit): TextFlow {
 		init()
 	}
 }
-fun<T:Any> TextFlow.valueLink(title:String,
-                              property: Property<T?>,
-                              chooser:ValueChooser<T>,
-                              textMaker:(T?)->String) {
-	text(property.stringBinding {
-		val s = textMaker(it)
-		if (s.isEmpty()) "<$title>" else s
-	}) {
-		bindClass(
-				nonNullObjectBinding(property) {
-					if (value == null) Styles.xexprBadLink else null
-				}
-		)
-		addClass(Styles.xexprLink)
-		setOnMouseClicked {
-			chooser.pickValueFor(title, property)
+
+fun <T : Any> TextFlow.valueLink(property: WritableValue<T?>,
+                                 title: String,
+                                 chooser: ValueChooser<T>,
+                                 textMaker: (T?) -> String) =
+		ValueLink<T>().attachTo(this) {
+			this.title = title
+			if (property is Property<T?>) {
+				this.valueProperty.bindBidirectional(property)
+			} else {
+				this.value = property.value
+				this.valueProperty.onChange { property.value = it }
+			}
+			this.chooser = chooser
+			this.textMaker = textMaker
 		}
-	}
-}
-fun<T:Any> TextFlow.valueLink(title:String,
-                              property: Property<T?>,
-                              chooser:AbstractListValueChooser<T>) {
-	valueLink(title, property, chooser, chooser::formatter)
-}
-fun TextFlow.valueLink(title:String,
-                       property: Property<ExpressionBuilder?>,
-                       chooser:ExpressionChooser,
-                       defaultText:String="<$title>") {
-	valueLink(title, property,chooser) {
-		it?.text()?:defaultText
-	}
-}
+
+fun <T : Any> TextFlow.valueLink(title: String,
+                                 initialValue: T?,
+                                 chooser: ValueChooser<T>,
+                                 setter: (T?) -> Unit,
+                                 textMaker: (T?) -> String): ValueLink<T> =
+		ValueLink<T>().attachTo(this) {
+			this.title = title
+			this.value = initialValue
+			this.valueProperty.onChange(setter)
+			this.chooser = chooser
+			this.textMaker = textMaker
+		}
+
+fun <T : Any> TextFlow.valueLink(property: Property<T?>,
+                                 title: String,
+                                 chooser: AbstractListValueChooser<T>) =
+		valueLink(property, title, chooser, chooser::formatter)
+
+fun TextFlow.valueLink(property: Property<ExpressionBuilder?>,
+                       title: String,
+                       chooser: ExpressionChooser,
+                       defaultText: String = "<$title>") =
+		valueLink(property, title, chooser) {
+			it?.text() ?: defaultText
+		}
+
+fun TextFlow.valueLink(title: String,
+                       initialValue: ExpressionBuilder?,
+                       chooser: ExpressionChooser,
+                       setter: (ExpressionBuilder?) -> Unit,
+                       defaultText: String = "<$title>") =
+		valueLink(title, initialValue, chooser, setter) {
+			it?.text() ?: defaultText
+		}
+
 abstract class ChooserDialog<T:Any> : Fragment() {
 	val resultProperty = SimpleObjectProperty<T>()
 	var result:T? by resultProperty

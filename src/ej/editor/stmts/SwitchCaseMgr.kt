@@ -6,7 +6,6 @@ import ej.editor.utils.colspan
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
 import ej.editor.views.StatementTree
-import ej.mod.XComplexStatement
 import ej.mod.XlSwitchCase
 import ej.utils.affixNonEmpty
 import javafx.scene.layout.GridPane
@@ -17,7 +16,9 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 object SwitchCaseMgr : StatementManager<XlSwitchCase>() {
-	override fun editorBody(stmt: XlSwitchCase, rootStmt: XComplexStatement) = defaultEditorBody(GridPane()) {
+	override fun editorBody(stmt: XlSwitchCase,
+	                        tree: StatementTree
+	) = defaultEditorBody(GridPane()) {
 		row {
 			label("Branch when") {
 				gridpaneConstraints { colspan(2) }

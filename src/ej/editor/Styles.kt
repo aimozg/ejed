@@ -147,11 +147,11 @@ class Styles : Stylesheet() {
 					borderColor += box(c("#888"))
 				}
 			}
-			xstmtEditor {
-				alignment = Pos.BASELINE_LEFT // doesn't work =(
-				spacing = 2.px
-				padding = box(5.px)
-			}
+		}
+		xstmtEditor {
+			alignment = Pos.BASELINE_LEFT
+			spacing = 5.px
+			padding = box(5.px)
 		}
 		xtext {
 			fontFamily = FONT_FACE_TEXT

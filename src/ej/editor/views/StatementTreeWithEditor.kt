@@ -3,7 +3,10 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.defaultEditorBody
 import ej.editor.stmts.manager
-import ej.editor.utils.*
+import ej.editor.utils.ContextualTreeSelection
+import ej.editor.utils.listBinding
+import ej.editor.utils.onChangeWeak
+import ej.editor.utils.presentWhen
 import ej.mod.*
 import ej.utils.addToList
 import javafx.beans.property.SimpleIntegerProperty
@@ -16,6 +19,7 @@ import javafx.scene.control.TreeCell
 import javafx.scene.control.TreeItem
 import javafx.scene.input.DataFormat
 import javafx.scene.input.Dragboard
+import javafx.scene.input.KeyCode
 import javafx.scene.input.TransferMode
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
@@ -60,6 +64,12 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 
 	fun indexOfStmt(item: TreeItem<XStatement>):Int {
 		return item.parent?.children?.indexOf(item)?:rootStatement.content.indexOf(item.value)
+	}
+	fun canRemoveStmt(item: TreeItem<XStatement>):Boolean {
+		val me = item.value
+		return me !is XlThen
+				&& me !is Encounter.EncounterScene
+				&& me !is MonsterData.MonsterDesc
 	}
 	fun removeStmt(item: TreeItem<XStatement>) {
 		val me = item.value
@@ -109,7 +119,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		}
 		println("[INFO] Inserted $me")
 		posForInsertionInvalidator.value++
-		if (focus) focusOnStatement(me, true)
+		if (focus) tree.focusOnStatement(me, true)
 	}
 	fun canInsert(me: XStatement, dest: TreeItem<XStatement>?):Boolean {
 		val target = dest?.value
@@ -162,17 +172,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			removeStmt(item)
 			insertStmt(me, dest, destIndex, false)
 		}
-		if (focus) focusOnStatement(me, wasExpanded)
-	}
-	
-	fun focusOnStatement(me: XStatement, expand: Boolean = false) {
-		tree.findItem { it == me }?.let { item2 ->
-			if (expand) {
-				item2.parent?.isExpanded = true
-				item2.expandAll()
-			}
-			tree.selectionModel.select(item2)
-		}
+		if (focus) tree.focusOnStatement(me, wasExpanded)
 	}
 	
 	private val posForInsertionInvalidator = SimpleIntegerProperty(0)
@@ -292,13 +292,16 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 			hgap = 5.0
 			vgap = 5.0
 			addClass(Styles.toolbarGrid)
+			/*
 			row {
+				TODO 'Expanded' mode is broken
 				label("Options")
 				togglebutton {
 					expandButton = this
 					text = "Expand"
 				}
 			}
+			*/
 			// Basic
 			row {
 				label("Add")
@@ -336,10 +339,8 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				button("Comment") {
 					action { insertStmtHere(XlComment("")) }
 				}
-			}
-			// Flow control
-			row {
-				label("")
+				hbox()
+				// Flow control
 				button("If") {
 					action {
 						insertStmtHere(XlIf().apply {
@@ -348,34 +349,6 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 						})
 					}
 				}
-				button("ElseIf") {
-					disableWhen(contextualCurrentProperty.booleanBinding { cc ->
-						// Disable if not inside <if>
-						val stmt = XlElseIf()
-						!canInsert(stmt, cc?.parent) && !canInsert(stmt, cc?.item)
-					})
-					action {
-						val cc = contextualCurrent
-						val pos = posForInsertion(cc)
-						val stmt = XlElseIf()
-						if (cc != null && canInsert(stmt, cc.item)) {
-							insertStmt(stmt,cc.item,0,true)
-						} else if (canInsert(stmt, pos.first)) {
-							insertStmt(stmt,pos.first,pos.second-1,true)
-						}
-					}
-				}
-				button("Else") {
-					disableWhen(contextualCurrentProperty.booleanBinding { cc ->
-						// Disable if not inside <if> w/o <else>
-						val stmt = XlElse()
-						!canInsert(stmt, cc?.parent) && !canInsert(stmt, cc?.item)
-					})
-					action {
-						insertStmtHere(XlElse())
-					}
-				}
-				hbox()
 				button("Choose") {
 					action {
 						val stmt = XlSwitch().apply {
@@ -386,28 +359,6 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 						val pos = posForInsertion()
 						if (canInsert(stmt,pos.first)) {
 							insertStmtHere(stmt)
-						}
-					}
-				}
-				button("Branch") {
-					action {
-						val cc = contextualCurrent ?: return@action
-						val stmt = XlSwitchCase().apply { test = "true" }
-						if (cc.value is XlSwitch) {
-							insertStmt(stmt,cc.item,0,true)
-						} else if (cc.parent?.value is XlSwitch) {
-							insertStmt(stmt, cc.parent, indexOfStmt(cc.item), true)
-						}
-					}
-				}
-				button("Default") {
-					action {
-						val cc = contextualCurrent ?: return@action
-						val stmt = XlSwitchDefault()
-						if (cc.value is XlSwitch) {
-							insertStmt(stmt,cc.item,0,true)
-						} else if (cc.parent?.value is XlSwitch) {
-							insertStmt(stmt, cc.parent, indexOfStmt(cc.item), true)
 						}
 					}
 				}
@@ -462,6 +413,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 					action {}
 				}
 			}
+			// Edit
 			row {
 				label("Edit")
 				button("Up") {
@@ -486,7 +438,8 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				button("Remove") {
 					disableProperty().bind(contextualCurrentProperty.isNull)
 					action {
-						removeStmt(contextualCurrent?.item ?: return@action)
+						val item = contextualCurrent?.item ?: return@action
+						if (canRemoveStmt(item)) removeStmt(item)
 					}
 				}
 			}
@@ -500,12 +453,23 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				vgrow = Priority.SOMETIMES
 				hgrow = Priority.ALWAYS
 				cellDecorator = { cell -> setupDrag(cell) }
+				/*
+				TODO 'Expanded' mode is broken
 				expandButton.isSelected = expandedNodes
 				expandedNodesProperty.bind(expandButton.selectedProperty())
+				 */
+				setOnKeyPressed {
+					if (it.code == KeyCode.DELETE
+							&& !it.isAltDown && !it.isControlDown && !it.isMetaDown
+							&& !it.isShiftDown && !it.isShortcutDown) {
+						val item = contextualCurrent?.item
+						if (item != null && canRemoveStmt(item)) removeStmt(item)
+					}
+				}
 			}
 			contextualCurrentProperty.onChangeWeak { cts ->
 				editor = cts?.item?.value?.let { stmt ->
-					stmt.manager()?.editorBody(stmt, rootStatement)
+					stmt.manager()?.editorBody(stmt, tree)
 							?: defaultEditorBody { label("TODO ${stmt.javaClass}") }
 				} ?: defaultEditorBody { label("<nothing selected>") }
 				editor.apply {

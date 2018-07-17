@@ -3,7 +3,6 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.expr.valueLink
 import ej.editor.views.StatementTree
-import ej.mod.XComplexStatement
 import ej.mod.XsBattle
 import javafx.scene.text.TextFlow
 import tornadofx.*
@@ -14,9 +13,11 @@ import tornadofx.*
  */
 
 object BattleMgr : StatementManager<XsBattle>() {
-	override fun editorBody(stmt: XsBattle, rootStmt: XComplexStatement) = defaultEditorBody(TextFlow()){
+	override fun editorBody(stmt: XsBattle,
+	                        tree: StatementTree
+	) = defaultEditorBody(TextFlow()){
 		text("Battle with ")
-		valueLink("Monster", stmt.monsterProperty,
+		valueLink(stmt.monsterProperty, "Monster",
 		          MonsterChooser(controller.mod ?: return@defaultEditorBody))
 	}
 	

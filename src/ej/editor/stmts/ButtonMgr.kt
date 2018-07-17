@@ -5,20 +5,21 @@ import ej.editor.expr.valueLink
 import ej.editor.utils.bindingN
 import ej.editor.views.StatementTree
 import ej.mod.Builtins
-import ej.mod.XComplexStatement
 import ej.mod.XsButton
 import ej.mod.acceptsMenu
 import javafx.scene.text.TextFlow
 import tornadofx.*
 
 object ButtonMgr : StatementManager<XsButton>() {
-	override fun editorBody(stmt: XsButton, rootStmt: XComplexStatement) = defaultEditorBody(TextFlow()) {
+	override fun editorBody(stmt: XsButton,
+	                        tree: StatementTree
+	) = defaultEditorBody(TextFlow()) {
 		text("Offer choice ")
 		textfield(stmt.textProperty)
 		text(" leading to scene ")
-		valueLink("Scene",
-		          stmt.refProperty,
-		          SceneChooser(rootStmt,
+		valueLink(stmt.refProperty,
+		          "Scene",
+		          SceneChooser(tree.rootStatement,
 		                       controller.mod ?: return@defaultEditorBody,
 		                       Builtins.scenes) { it.acceptsMenu })
 		text(". ")

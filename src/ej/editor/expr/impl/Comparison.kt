@@ -10,14 +10,14 @@ class Comparison : ExpressionBuilder() {
 	override fun name() = "Compare values"
 	
 	override fun editorBody(): Pane = defaultBuilderBody {
-		valueLink("Value1", left, AnyExprChooser)
+		valueLink(left, "Value1", AnyExprChooser)
 		text(" ")
-		valueLink("Comparison operator", op,
+		valueLink(op, "Comparison operator",
 		          EnumChooser(Operator::longName)) {
 			it?.shortName ?: "<Operator>"
 		}
 		text(" ")
-		valueLink("Value2", right, AnyExprChooser)
+		valueLink(right, "Value2", AnyExprChooser)
 	}
 	
 	override fun text() = mktext("(", left, " ", op, " ", right, ")")

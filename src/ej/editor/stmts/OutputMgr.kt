@@ -2,14 +2,15 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.views.StatementTree
-import ej.mod.XComplexStatement
 import ej.mod.XsOutput
 import ej.utils.squeezeWs
 import javafx.scene.layout.Priority
 import tornadofx.*
 
 object OutputMgr : StatementManager<XsOutput>() {
-	override fun editorBody(stmt: XsOutput, rootStmt: XComplexStatement) = defaultEditorBody() {
+	override fun editorBody(stmt: XsOutput,
+	                        tree: StatementTree
+	) = defaultEditorBody() {
 		label("Evaluate and display:")
 		textfield(stmt.expression) { hgrow = Priority.ALWAYS }
 	}

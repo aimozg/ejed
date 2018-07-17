@@ -11,8 +11,8 @@ class ModVariableBuilder : ExpressionBuilder() {
 	
 	override fun editorBody(): Pane = defaultBuilderBody {
 		text("Mod variable ")
-		valueLink("Mod variable",
-		          variable,
+		valueLink(variable,
+		          "Mod variable",
 		          ListValueChooser(controller.mod?.stateVars ?: emptyList()) {
 			          it?.name ?: "<???>"
 		          })

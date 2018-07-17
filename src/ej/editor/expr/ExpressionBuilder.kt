@@ -2,6 +2,7 @@ package ej.editor.expr
 
 import ej.editor.EditorController
 import javafx.beans.property.Property
+import javafx.beans.value.WritableValue
 import javafx.scene.layout.Pane
 import tornadofx.*
 import kotlin.reflect.KProperty1
@@ -42,7 +43,7 @@ abstract class ExpressionBuilder : WithReadableText {
 
 abstract class ValueChooser<T:Any> {
 	abstract fun pickValue(title:String,initial:T?=null):T?
-	fun pickValueFor(title:String,prop:Property<T?>) {
+	fun pickValueFor(title:String,prop:WritableValue<T?>) {
 		val v = pickValue(title,prop.value)
 		if (v != null) prop.value = v
 	}
