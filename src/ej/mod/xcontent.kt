@@ -55,28 +55,6 @@ fun StoryStmt.pathRelativeTo(other:StoryStmt):String {
 	}
 }
 
-val REX_INDENT = Regex("""\n[ \t]++""")
-val REX_CRONCE = Regex("""(?<!\n)\n(?!\n)""")
-enum class TrimMode {
-	@XmlEnumValue("none") NONE,
-	@XmlEnumValue("trim") TRIM,
-	@XmlEnumValue("unindent") UNINDENT;
-	
-	fun applyTo(s:String):String {
-		if (s.isEmpty()) return s
-		val s2 = when(this) {
-			TrimMode.NONE -> return s
-			TrimMode.TRIM -> s.trim()
-			TrimMode.UNINDENT -> {
-				// content = content;
-				s.replace(REX_INDENT,"\n").replace(REX_CRONCE," ")
-				// s.trimIndent()
-			}
-		}
-		return s2
-	}
-}
-
 abstract class XContentContainer : XComplexStatement, StoryContainer {
 	
 	@XmlElementRefs(
@@ -101,9 +79,6 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 	@XmlMixed
 	private val contentRaw:MutableList<Any> = ArrayList()
 	
-	@get:XmlAttribute(name="trim")
-	internal var trimMode: TrimMode? = null // inherit
-	
 	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observable()
 	
 	override val lib = ArrayList<StoryStmt>().observable()
@@ -120,14 +95,10 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 		lib.clear()
 		lib.addAll(stmts.filterIsInstance<StoryStmt>())
 		contentRaw.clear()
-		trimMode?.let { trimMode ->
-			TrimmingVisitor(trimMode).visitAllStatements(content)
-		}
 	}
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	protected open fun beforeMarshal(marshaller: Marshaller) {
-		trimMode = null
 		contentRaw.clear()
 		contentRaw.addAll(lib)
 		contentRaw.addAll(content.map {
@@ -139,29 +110,12 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 internal fun XContentContainer.defaultToString(tagname: String, attrs: String="") =
 		defaultToString(tagname,attrs,content.joinToString(" ",limit=5))
 
-class TrimmingVisitor(val trimMode: TrimMode) : ModVisitor() {
-	override fun visitLib(x: XcLib) {
-		if (x.trimMode == null) super.visitLib(x)
-	}
-	
-	override fun visitAnyContentContainer(x: XContentContainer) {
-		if (x.trimMode == null) super.visitAnyContentContainer(x)
-	}
-	
-	override fun visitText(x: XcText) {
-		x.text = (x.trimMode ?: trimMode).applyTo(x.text)
-	}
-}
-
 
 @XmlRootElement(name = "t")
 class XcText(text:String):XStatement {
 	@get:XmlValue
 	var text:String by property(text)
 	fun textProperty() = getProperty(XcText::text)
-	
-	@get:XmlAttribute(name="trim")
-	internal var trimMode: TrimMode? = null // inherit
 	
 	@Suppress("unused")
 	constructor():this("")
@@ -186,23 +140,12 @@ class XcLib : StoryStmt {
 			XmlElement(name = "text", type = XcNamedText::class)
 	)
 	override val lib = ArrayList<StoryStmt>().observable()
-
-	@XmlAttribute(name="trim")
-	internal var trimMode: TrimMode? = null // inherit TODO remove trimMode
 	
 	override fun toString() = defaultToString("lib","name='$name'",lib.joinToString(" ",limit=5))
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
-		trimMode?.let { trimMode ->
-			TrimmingVisitor(trimMode).visitAllStatements(lib)
-		}
 		owner = parent as ModDataNode?
-	}
-	
-	@Suppress("unused", "UNUSED_PARAMETER")
-	private fun beforeMarshal(marshaller: Marshaller) {
-		trimMode = null
 	}
 }
 
