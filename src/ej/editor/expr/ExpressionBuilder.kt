@@ -15,29 +15,30 @@ import kotlin.reflect.KProperty1
 interface WithReadableText {
 	fun text():String
 }
+fun WithReadableText.mktext(vararg parts:Any?):String = mktext(parts.asList())
+fun WithReadableText.mktext(parts:Iterable<Any?>):String = parts.joinToString("") {
+	when(it) {
+		null -> "<???>"
+		is Property<*> -> {
+			val v = it.value
+			when(v) {
+				null -> "<???>"
+				is WithReadableText -> v.text()
+				is String -> v
+				else -> v.toString()
+			}
+		}
+		is WithReadableText -> it.text()
+		is String -> it
+		else -> it.toString()
+	}
+}
 abstract class ExpressionBuilder : WithReadableText {
 	protected val controller:EditorController by lazy { find<EditorController>() }
 	abstract fun build():Expression
 	abstract fun editorBody():Pane
 	abstract fun name():String
 	abstract fun copyMe():ExpressionBuilder
-	protected fun mktext(vararg parts:Any?):String = parts.joinToString("") {
-		when(it) {
-			null -> "<???>"
-			is Property<*> -> {
-				val v = it.value
-				when(v) {
-					null -> "<???>"
-					is WithReadableText -> v.text()
-					is String -> v
-					else -> v.toString()
-				}
-			}
-			is WithReadableText -> it.text()
-			is String -> it
-			else -> it.toString()
-		}
-	}
 }
 
 abstract class ValueChooser<T:Any> {

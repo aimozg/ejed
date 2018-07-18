@@ -1,0 +1,55 @@
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+start = stdlib
+stdlib = element stdlib {
+	attribute xsi:noNamespaceSchemaLocation { text }?
+	& declaration*
+}
+
+typename = 'boolean' | 'int' | 'float' | 'string' |
+           'Creature' | 'Variable'
+identifier = string
+
+declaration = function | enum
+
+enum = element enum {
+	attribute name { identifier }
+	& enum-value-decl+
+}
+enum-value-decl = element value {
+	attribute name { string }
+	& attribute impl { string }
+	& element listname { string }?
+	& element description { text }?
+}
+
+function = element function {
+	attribute name { identifier }
+	& attribute return { typename }
+	& element listname { string }?
+	& element description { text }?
+	& param-decl*
+	& function-editor
+	& function-impl?
+}
+
+param-decl = element param {
+	attribute name { identifier }
+	& attribute type { typename }
+	& attribute \default { string }?
+}
+
+function-editor = element editor {
+	(text | param-editor)+
+}
+param-editor = element param {
+	attribute name { identifier }
+#	& attribute type { 'link' | 'input' | 'combobox' }
+}
+
+function-impl = element impl {
+	(text | param-ref)+
+}
+param-ref = element param {
+	attribute name { identifier }
+}

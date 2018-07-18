@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<stdlib xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:noNamespaceSchemaLocation="stdlib.rnc">
+    <!-- Tests -->
+    <enum name="SexTest">
+        <value name="sexless" impl="0"/>
+        <value name="male" impl="1"/>
+        <value name="female" impl="2"/>
+        <value name="herm" impl="3"/>
+        <value name="male or female" impl="[1,2]"/>
+        <value name="male or herm" impl="[1,3]"/>
+        <value name="female or herm" impl="[2,3]"/>
+        <value name="not sexless" impl="[1,2,3]"/>
+        <value name="not male" impl="[0,2,3]"/>
+        <value name="not female" impl="[0,1,3]"/>
+        <value name="not herm" impl="[0,1,2]"/>
+    </enum>
+    <function name="CreatureSexTest" return="boolean">
+        <listname>Creature: Test Sex</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="SexTest" type="SexTest"/>
+        <editor>
+            <param name="Creature"/> is <param name="SexText"/>.
+        </editor>
+    </function>
+</stdlib>
