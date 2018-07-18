@@ -20,6 +20,7 @@ abstract class ExpressionBuilder : WithReadableText {
 	abstract fun build():Expression
 	abstract fun editorBody():Pane
 	abstract fun name():String
+	abstract fun copyMe():ExpressionBuilder
 	protected fun mktext(vararg parts:Any?):String = parts.joinToString("") {
 		when(it) {
 			null -> "<???>"
@@ -41,9 +42,10 @@ abstract class ExpressionBuilder : WithReadableText {
 
 abstract class ValueChooser<T:Any> {
 	abstract fun pickValue(title:String,initial:T?=null):T?
-	fun pickValueFor(title:String,prop:WritableValue<T?>) {
+	fun pickValueFor(title:String,prop:WritableValue<T?>):T? {
 		val v = pickValue(title,prop.value)
 		if (v != null) prop.value = v
+		return v
 	}
 }
 abstract class AbstractListValueChooser<T:Any>(val items: List<T>): ValueChooser<T>() {
@@ -61,7 +63,7 @@ open class ListValueChooser<T:Any>(items: List<T>,
 }
 abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){
 	fun pickFromList(title:String,initial:ExpressionBuilder?,items:List<ExpressionBuilder>):ExpressionBuilder? {
-		return find<ExpressionChooserDialog>().showModal(title,initial,items)
+		return find<ExpressionChooserDialog>().showModal(title,initial?.copyMe(),items)
 	}
 }
 

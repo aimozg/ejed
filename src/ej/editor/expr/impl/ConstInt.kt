@@ -2,11 +2,14 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.utils.NullableIntStringConverter
+import ej.editor.utils.withPropertiesFrom
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.Pane
 import tornadofx.*
 
 class ConstInt : ExpressionBuilder() {
+	override fun copyMe() = ConstInt().withPropertiesFrom(this,ConstInt::constant)
+	
 	override fun name() = "Integer number"
 	
 	override fun editorBody(): Pane = defaultEditorTextFlow {

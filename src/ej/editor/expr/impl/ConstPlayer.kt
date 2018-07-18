@@ -8,6 +8,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 class ConstPlayer : ExpressionBuilder() {
+	override fun copyMe() = ConstPlayer()
 	override fun name() = "Player character"
 	override fun editorBody() = defaultEditorTextFlow {
 		text("Player character")

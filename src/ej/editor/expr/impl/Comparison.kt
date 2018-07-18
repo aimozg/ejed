@@ -2,38 +2,38 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.expr.lists.AnyExprChooser
-import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.Pane
 import tornadofx.*
 
-class Comparison : ExpressionBuilder() {
+data class Comparison(
+		var left: ExpressionBuilder?=null,
+		var op: Operator = Operator.EQ,
+		var right: ExpressionBuilder?=null
+) : ExpressionBuilder() {
 	override fun name() = "Compare values"
+	override fun copyMe() = copy()
 	
 	override fun editorBody(): Pane = defaultEditorTextFlow {
-		valueLink(left, "Value1", AnyExprChooser)
+		valueLink(::left, "Value1", AnyExprChooser)
 		text(" ")
-		valueLink(op, "Comparison operator",
+		valueLink(::op, "Comparison operator",
 		          EnumChooser(Operator::longName)) {
 			it?.shortName ?: "<Operator>"
 		}
 		text(" ")
-		valueLink(right, "Value2", AnyExprChooser)
+		valueLink(::right, "Value2", AnyExprChooser)
 	}
 	
 	override fun text() = mktext("(", left, " ", op, " ", right, ")")
-	override fun build() = BinaryExpression(left.value?.build() ?: nop(),
-	                                        op.value.bop,
-	                                        right.value?.build() ?: nop())
-	
-	val left = SimpleObjectProperty<ExpressionBuilder?>()
-	val op = SimpleObjectProperty<Operator>(Operator.EQ)
-	val right = SimpleObjectProperty<ExpressionBuilder?>()
+	override fun build() = BinaryExpression(left?.build() ?: nop(),
+	                                        op.bop,
+	                                        right?.build() ?: nop())
 	
 	companion object : PartialBuilderConverter<BinaryExpression> {
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression): Comparison? = Comparison().apply {
-			op.value = (Operator.byOperator(expr.op) ?: return null)
-			left.value = converter.convert(expr.left)
-			right.value = converter.convert(expr.right)
+			op = (Operator.byOperator(expr.op) ?: return null)
+			left = converter.convert(expr.left)
+			right = converter.convert(expr.right)
 		}
 	}
 	

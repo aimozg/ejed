@@ -20,7 +20,7 @@ open class ValueLink<T:Any> : Text() {
 	
 	var chooser:ValueChooser<T>? = null
 	
-	
+	var onPick :((T?)->Unit)? = null
 	val textMakerProperty = SimpleObjectProperty<(T?)->String>({ it.toString() })
 	var textMaker: (T?) -> String by textMakerProperty
 	
@@ -36,7 +36,8 @@ open class ValueLink<T:Any> : Text() {
 		)
 		addClass(Styles.xexprLink)
 		setOnMouseClicked {
-			chooser?.pickValueFor(title, valueProperty)
+			val v = chooser?.pickValueFor(title, valueProperty)
+			if (v != null) onPick?.invoke(v)
 		}
 	}
 }

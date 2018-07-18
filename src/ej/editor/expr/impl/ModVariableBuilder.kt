@@ -1,12 +1,15 @@
 package ej.editor.expr.impl
 
 import ej.editor.expr.*
+import ej.editor.utils.withPropertiesFrom
 import ej.mod.StateVar
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.layout.Pane
 import tornadofx.*
 
 class ModVariableBuilder : ExpressionBuilder() {
+	override fun copyMe() = ModVariableBuilder().withPropertiesFrom(this,
+	                                                                ModVariableBuilder::variable)
 	override fun name() = "Mod state variable"
 	
 	override fun editorBody(): Pane = defaultEditorTextFlow {

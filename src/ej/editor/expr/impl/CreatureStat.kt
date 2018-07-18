@@ -2,6 +2,7 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.expr.lists.CreatureChooser
+import ej.editor.utils.withPropertiesFrom
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 
@@ -12,6 +13,9 @@ import tornadofx.*
 
 class CreatureStat : ExpressionBuilder() {
 	override fun name() = "Creature: Stat"
+	override fun copyMe() = CreatureStat().withPropertiesFrom(this,
+	                                                          CreatureStat::creature,
+	                                                          CreatureStat::stat)
 	
 	override fun editorBody() = defaultEditorTextFlow {
 		valueLink(creature, "Creature", CreatureChooser)

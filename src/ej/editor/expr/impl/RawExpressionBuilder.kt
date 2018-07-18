@@ -14,6 +14,8 @@ class RawExpressionBuilder() : ExpressionBuilder() {
 	constructor(source:String): this() {
 		this.source.value = source
 	}
+	
+	override fun copyMe() = RawExpressionBuilder(source.value)
 	val source = ExpressionProperty("")
 	override fun build(): Expression = source.expressionProperty.value
 	

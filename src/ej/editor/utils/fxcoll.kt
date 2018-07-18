@@ -18,6 +18,7 @@ import javafx.util.StringConverter
 import tornadofx.*
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.reflect.KProperty1
 
 /*
  * Created by aimozg on 05.07.2018.
@@ -204,4 +205,18 @@ object NullableIntStringConverter : StringConverter<Int?>() {
 		return string?.toIntOrNull()
 	}
 	
+}
+
+fun <THIS : Any> THIS.withPropertiesFrom(from: THIS,
+                                         vararg properties: KProperty1<THIS, Property<*>>): THIS {
+	for (property in properties) {
+		copyProperty(property, from)
+	}
+	return this
+}
+
+fun <THIS : Any> THIS.copyProperty(
+		prop: KProperty1<THIS, Property<*>>,
+		from: THIS) {
+	prop.get(this).value = prop.get(from).value
 }

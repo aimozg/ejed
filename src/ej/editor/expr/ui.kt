@@ -15,6 +15,7 @@ import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextFlow
 import tornadofx.*
+import kotlin.reflect.KMutableProperty0
 
 /*
  * Created by aimozg on 15.07.2018.
@@ -58,10 +59,30 @@ fun <T : Any> TextFlow.valueLink(title: String,
 		ValueLink<T>().attachTo(this) {
 			this.title = title
 			this.value = initialValue
-			this.valueProperty.onChange(setter)
+			this.onPick = setter
 			this.chooser = chooser
 			this.textMaker = textMaker
 		}
+
+fun <T : Any> TextFlow.valueLink(property: KMutableProperty0<T>,
+                                 title: String,
+                                 chooser: ValueChooser<T>,
+                                 textMaker: (T?) -> String) =
+		valueLink(title,
+		          property.get(),
+		          chooser,
+		          { if (it != null) property.set(it) },
+		          textMaker)
+
+fun TextFlow.valueLink(property: KMutableProperty0<ExpressionBuilder?>,
+                       title: String,
+                       chooser: ExpressionChooser,
+                       defaultText: String = "<$title>") =
+		valueLink(title,
+		          property.get(),
+		          chooser,
+		          setter = { property.set(it) },
+		          textMaker = { it?.text() ?: defaultText })
 
 fun <T : Any> TextFlow.valueLink(property: Property<T?>,
                                  title: String,
