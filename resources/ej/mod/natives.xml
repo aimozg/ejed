@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gamedata>
+    <!-- This file is loaded as './natives.xml' from FS, or from resource inside JAR -->
+    <encounter-pools>
+        <pool id="explore"/>
+        <pool id="common"/>
+        <pool id="forest"/>
+        <pool id="deepwoods"/>
+        <pool id="lake"/>
+        <pool id="boat"/>
+        <pool id="desert"/>
+        <pool id="mountains"/>
+        <pool id="highMountains"/>
+        <pool id="plains"/>
+        <pool id="swamp"/>
+        <pool id="bog"/>
+        <pool id="glacialRift"/>
+        <pool id="volcanicCrag"/>
+    </encounter-pools>
+    <monsters>
+        <monster id="goblin"/>
+        <monster id="imp"/>
+    </monsters>
+    <items>
+
+    </items>
+    <scenes>
+        <scene ref="/camp/return">
+            <desc>Return to camp, advance 1 hours</desc>
+        </scene>
+        <scene ref="/camp/return8">
+            <desc>Return to camp, advance 8 hours</desc>
+        </scene>
+    </scenes>
+</gamedata>

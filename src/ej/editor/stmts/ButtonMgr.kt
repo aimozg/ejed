@@ -5,7 +5,7 @@ import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
 import ej.editor.utils.bindingN
 import ej.editor.views.StatementTree
-import ej.mod.Builtins
+import ej.mod.Natives
 import ej.mod.XsButton
 import ej.mod.acceptsMenu
 import tornadofx.*
@@ -21,7 +21,7 @@ object ButtonMgr : StatementManager<XsButton>() {
 		          "Scene",
 		          SceneChooser(tree.rootStatement,
 		                       controller.mod ?: return@defaultEditorTextFlow,
-		                       Builtins.scenes) { it.acceptsMenu })
+		                       Natives.scenes.map { it.ref }) { it.acceptsMenu })
 		text(". ")
 		checkbox("Disabled", stmt.disabledProperty)
 	}

@@ -1,8 +1,8 @@
 package ej.editor.views
 
 import ej.editor.AModView
-import ej.mod.Builtins
 import ej.mod.Encounter
+import ej.mod.Natives
 import javafx.scene.layout.Priority
 import tornadofx.*
 
@@ -21,7 +21,7 @@ class EncounterPage : AModView("Encounter"){
 			fieldset {
 				field("Pool") {
 					combobox(encounter.poolProperty,
-					         Builtins.encounterPools)
+					         Natives.encounterPools.map { it.id })
 				}
 				field("Name") { textfield(encounter.nameProperty) }
 				field("Chance") {
