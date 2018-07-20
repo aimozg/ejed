@@ -10,6 +10,7 @@ import tornadofx.*
 import java.io.File
 import java.io.InputStream
 import java.io.Reader
+import java.io.Writer
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
@@ -104,6 +105,9 @@ class ModData : ModDataNode {
 		}
 		fun loadMod(src: Reader):ModData {
 			return unmarshaller().unmarshal(src) as ModData
+		}
+		fun saveMod(mod:ModData,dst: Writer) {
+			jaxbContext.createMarshaller().marshal(mod,dst)
 		}
 		
 		fun unmarshaller() = jaxbContext.createUnmarshaller()

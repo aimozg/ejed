@@ -61,7 +61,6 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	fun canRemoveStmt(item: TreeItem<XStatement>):Boolean {
 		val me = item.value
 		return me !is XlThen
-				&& me !is Encounter.EncounterScene
 				&& me !is MonsterData.MonsterDesc
 	}
 	fun removeStmt(item: TreeItem<XStatement>) {

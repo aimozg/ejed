@@ -220,3 +220,10 @@ fun <THIS : Any> THIS.copyProperty(
 		from: THIS) {
 	prop.get(this).value = prop.get(from).value
 }
+
+object NullableStringConverter : StringConverter<String?>() {
+	override fun toString(`object`: String?) = `object` ?: ""
+	
+	override fun fromString(string: String?): String? = string
+	
+}

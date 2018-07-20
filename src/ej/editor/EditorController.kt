@@ -40,18 +40,17 @@ class EditorController : Controller() {
 	}
 	fun loadMod(src: File) {
 		println("Loading from $src")
-		val mod = ModData.jaxbContext.createUnmarshaller().apply {
-			setEventHandler { false }
-		}.unmarshal(src) as ModData
+		val mod = ModData.loadMod(src.reader())
 		mod.sourceFile = src
 		this.mod = mod
 	}
 	
 	fun saveMod() {
-		val file = mod?.sourceFile?.takeIf { it.exists() && it.isFile && it.canWrite() } ?: return saveModAs()
+		val mod = mod ?: return
+		val file = mod.sourceFile?.takeIf { it.exists() && it.isFile && it.canWrite() } ?: return saveModAs()
 		file.renameTo(File(file.parent,file.nameWithoutExtension+".bak"))
 		println("Saving to $file")
-		ModData.jaxbContext.createMarshaller().marshal(mod, file)
+		ModData.saveMod(mod, file.writer())
 	}
 	
 	fun saveModAs() {

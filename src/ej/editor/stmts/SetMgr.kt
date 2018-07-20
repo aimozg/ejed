@@ -2,6 +2,7 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.expr.lists.AnyExprChooser
+import ej.editor.utils.NullableStringConverter
 import ej.editor.utils.bindingN
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
@@ -47,7 +48,7 @@ object SetMgr : StatementManager<XsSet>() {
 			prefColumnCount = 6
 		}
 		checkbox("of object", stringValueToggler(stmt.inobjProperty,"mod"))
-		textfield(stmt.inobjProperty) {
+		textfield(stmt.inobjProperty, NullableStringConverter) {
 			disableWhen { stmt.inobjProperty.isNullOrEmpty() }
 			prefColumnCount = 6
 		}

@@ -53,25 +53,11 @@ sealed class ModTreeNode(
 		}
 		override val population = story.lib.transformed { StoryNode(it) }
 	}
-	class EncounterNode(val encounter: Encounter): ModTreeNode(
-			acceptsScenes = true,
-			hasName = true,
-			removable = true
-	) {
-		override val textProperty = encounter.nameProperty.stringBinding(encounter.poolProperty) {
-			"$it (in ${encounter.pool})"
-		}
-		override val population = encounter.scene.lib.transformed { StoryNode(it) }
-	}
 	class StoryListNode(val stories:ObservableList<StoryStmt>): ModTreeNode(
 			acceptsScenes = true
 	) {
 		override val textProperty = StringConstant.valueOf("Scenes")
 		override val population = stories.transformed { StoryNode(it) }
-	}
-	class EncounterListNode(val encounters: ObservableList<Encounter>): ModTreeNode() {
-		override val textProperty = StringConstant.valueOf("Encounters")
-		override val population = encounters.transformed { EncounterNode(it) }
 	}
 	class RootNode(val mod:ModData): ModTreeNode(
 			acceptsScenes = true,
@@ -79,7 +65,6 @@ sealed class ModTreeNode(
 			hasName = true
 	) {
 		override val population = listOf(MonsterListNode(mod),
-		                                 EncounterListNode(mod.encounters),
 		                                 StoryListNode(mod.content)).observable()
 		override val textProperty = mod.nameProperty
 	}
@@ -108,9 +93,7 @@ class ModView: AModView() {
 					else -> VBox().apply { text("Unknown $story") }
 				}
 			}
-			is ModTreeNode.StoryListNode -> VBox().apply { text("NYI")} // TODO
-			is ModTreeNode.EncounterNode -> find<EncounterPage>(EncounterScope(e.encounter)).root
-			is ModTreeNode.EncounterListNode -> VBox().apply { text("NYI")} // TODO
+			is ModTreeNode.StoryListNode -> VBox().apply { text("TODO")} // TODO
 		}
 	
 	override val root = borderpane {
@@ -125,15 +108,6 @@ class ModView: AModView() {
 					alignment = Pos.BASELINE_LEFT
 					button("Monster").action{
 						createMonster()
-					}
-					button("Encounter").action {
-						textInputDialog(
-								"New Encounter",
-								"ID of new encounter",
-								"Unnamed"
-						) { dialogResult ->
-							addEncounter(Encounter().apply {name = dialogResult})
-						}
 					}
 					button("Scene").action {
 						createScene()
@@ -206,10 +180,8 @@ class ModView: AModView() {
 			is ModTreeNode.StoryNode -> when (parent) {
 				is ModTreeNode.StoryListNode -> mod.content.remove(value.story)
 				is ModTreeNode.StoryNode -> parent.story.lib.remove(value.story)
-				is ModTreeNode.EncounterNode -> parent.encounter.scene.lib.remove(value.story)
 				else -> kotlin.error("Cannot remove")
 			}
-			is ModTreeNode.EncounterNode -> mod.encounters.remove(value.encounter)
 			else -> kotlin.error("Cannot remove")
 		}
 	}
@@ -219,17 +191,11 @@ class ModView: AModView() {
 			is ModTreeNode.RootNode -> mod.nameProperty
 			is ModTreeNode.MonsterNode -> value.monster.idProperty
 			is ModTreeNode.StoryNode -> value.story.nameProperty()
-			is ModTreeNode.EncounterNode -> value.encounter.nameProperty
 			else -> kotlin.error("Cannot rename")
 		}
 		textInputDialog("Rename","Change ID to",nameProp.value) {
 			nameProp.value = it
 		}
-	}
-	
-	fun addEncounter(e: Encounter) {
-		mod.encounters.add(e)
-		tree.select { (it as? ModTreeNode.EncounterNode)?.encounter == e }
 	}
 	
 	fun addMonster(m: MonsterData) {
@@ -253,7 +219,6 @@ class ModView: AModView() {
 	fun createScene() {
 		val parent: StoryStmt? =
 				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
-						?: (tree.selectedValue as? ModTreeNode.EncounterNode)?.encounter?.scene
 		textInputDialog(
 				"New Scene",
 				"ID of new scene",
@@ -266,7 +231,6 @@ class ModView: AModView() {
 	fun createSubscene() {
 		val parent: StoryStmt? =
 				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
-						?: (tree.selectedValue as? ModTreeNode.EncounterNode)?.encounter?.scene
 		textInputDialog(
 				"New Subscene",
 				"ID of new subscene",
@@ -277,8 +241,7 @@ class ModView: AModView() {
 	}
 	fun createLibrary() {
 		val parent:StoryStmt? =
-				(tree.selectedValue as? ModTreeNode.StoryNode)?.story ?:
-				(tree.selectedValue as? ModTreeNode.EncounterNode)?.encounter?.scene
+				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
 		textInputDialog(
 				"New Scene Library",
 				"ID of new scene library",

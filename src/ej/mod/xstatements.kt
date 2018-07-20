@@ -41,9 +41,9 @@ class XsSet : XStatement {
 	var varname: String by varnameProperty
 	
 	@XmlTransient
-	val inobjProperty = SimpleObjectProperty<String>( "")
+	val inobjProperty = SimpleObjectProperty<String?>()
 	@get:XmlAttribute(name = "in")
-	var inobj: String by inobjProperty
+	var inobj: String? by inobjProperty
 	
 	// TODO enum
 	@XmlTransient

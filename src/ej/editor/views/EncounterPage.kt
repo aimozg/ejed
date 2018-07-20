@@ -1,9 +1,8 @@
 package ej.editor.views
 
 import ej.editor.AModView
-import ej.mod.Encounter
+import ej.mod.EncounterTrigger
 import ej.mod.Natives
-import javafx.scene.layout.Priority
 import tornadofx.*
 
 /*
@@ -11,11 +10,8 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-class EncounterScope(val encounter: Encounter): Scope()
-
 class EncounterPage : AModView("Encounter"){
-	override val scope = super.scope as EncounterScope
-	val encounter get() = scope.encounter
+	lateinit var encounter:EncounterTrigger
 	override val root = vbox {
 		form {
 			fieldset {
@@ -23,7 +19,6 @@ class EncounterPage : AModView("Encounter"){
 					combobox(encounter.poolProperty,
 					         Natives.encounterPools.map { it.id })
 				}
-				field("Name") { textfield(encounter.nameProperty) }
 				field("Chance") {
 					textfield(encounter.chanceProperty) {
 						promptText = "(default '1' - as often as other encounters)"
@@ -35,10 +30,6 @@ class EncounterPage : AModView("Encounter"){
 					}
 				}
 			}
-		}
-		StatementTreeWithEditor(mod).attachTo(this) {
-			rootStatement = encounter.scene
-			vgrow = Priority.SOMETIMES
 		}
 	}
 }

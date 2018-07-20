@@ -1,6 +1,6 @@
 package ej.mod
 
-import ej.xml.XMLExplorer
+import ej.xml.XmlExplorer
 import java.io.File
 import java.io.InputStream
 
@@ -34,7 +34,7 @@ val Natives:NativesClass by lazy {
 fun loadNatives(input: InputStream):NativesClass {
 	val n = NativesClass()
 	
-	XMLExplorer(input).exploreDocument("gamedata") { tag, _ ->
+	XmlExplorer(input).exploreDocumentElements("gamedata") { tag, _ ->
 		when (tag) {
 			"encounter-pools" -> forEachElement("pool") { attrs ->
 				n.encounterPools.add(NativePool(
