@@ -163,27 +163,40 @@ class XmlSzInfoBuilder<T : Any>(name:String?,
 		info.producers += eio
 	}
 	
-	fun<R:Any> elements(prop: KProperty1<T, MutableList<R>>, szinfo:()->XmlSerializationInfo<R>,name:String) {
+	fun<R:Any> elements(name: String,
+	                    prop: KProperty1<T, MutableList<R>>,
+	                    szinfo: () -> XmlSerializationInfo<R>) {
 		saveElements(prop,XmlElementConverter(name, szinfo),name)
 	}
-	fun<R:XmlSerializable> elements(prop: KProperty1<T, MutableList<R>>, klass:KClass<R>,name:String) {
-		elements(prop,{ getSerializationInfo(klass)},name)
+	fun<R:XmlSerializable> elements(name: String,
+	                                prop: KProperty1<T, MutableList<R>>,
+	                                klass: KClass<R>) {
+		elements(name, prop, { getSerializationInfo(klass)})
 	}
-	inline fun<reified R:XmlSerializable> elements(prop: KProperty1<T, MutableList<R>>, name:String) {
-		elements(prop,R::class,name)
+	inline fun<reified R:XmlSerializable> elements(name: String,
+	                                               prop: KProperty1<T, MutableList<R>>) {
+		elements(name, prop, R::class)
 	}
-	fun<R:Any> wrappedElements(prop: KProperty1<T, MutableList<R>>, szinfo:()->XmlSerializationInfo<R>, wrapper:String, name:String) {
+	fun<R:Any> wrappedElements(wrapper: String,
+	                           name: String,
+	                           prop: KProperty1<T, MutableList<R>>,
+	                           szinfo: () -> XmlSerializationInfo<R>) {
 		checkElement()
 		val eio = WrappedListPropertyEio(wrapper, XmlElementConverter(name, szinfo), prop)
 		info.elements[wrapper] = eio
 		info.producers += eio
 	}
-	fun<R:XmlSerializable> wrappedElements(prop: KProperty1<T, MutableList<R>>, klass:KClass<R>, wrapper:String, name:String) {
+	fun<R:XmlSerializable> wrappedElements(wrapper: String,
+	                                       name: String,
+	                                       prop: KProperty1<T, MutableList<R>>,
+	                                       klass: KClass<R>) {
 		checkElement()
-		wrappedElements(prop,{ getSerializationInfo(klass)},wrapper,name)
+		wrappedElements(wrapper, name, prop, { getSerializationInfo(klass)})
 	}
-	inline fun<reified R:XmlSerializable> wrappedElements(prop: KProperty1<T, MutableList<R>>, wrapper:String, name:String) {
-		wrappedElements(prop,R::class,wrapper,name)
+	inline fun<reified R:XmlSerializable> wrappedElements(wrapper: String,
+	                                                      name: String,
+	                                                      prop: KProperty1<T, MutableList<R>>) {
+		wrappedElements(wrapper, name, prop, R::class)
 	}
 	
 	fun<R:Any> elementsByTag(prop: KProperty1<T, MutableList<R>>,

@@ -1,6 +1,8 @@
 package ej.mod
 
-import ej.xml.*
+import ej.xml.HasSzInfo
+import ej.xml.XmlSerializable
+import ej.xml.XmlSzInfoBuilder
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
@@ -103,8 +105,8 @@ class ModData : ModDataNode, XmlSerializable {
 			name = "mod"
 			attr(ModData::name)
 			attr(ModData::version)
-			wrappedElements(ModData::stateVars,"state","var")
-			elements(ModData::scripts,"script")
+			wrappedElements("state", "var", ModData::stateVars)
+			elements("script", ModData::scripts)
 			readElement("hook") { _, attrs, input ->
 				val mod = this
 				content.add(XcScene().also { s ->
@@ -125,7 +127,7 @@ class ModData : ModDataNode, XmlSerializable {
 				})
 				TODO("convert hook to scene with trigger")
 			}
-			elements(ModData::monsters,"script")
+			elements("script", ModData::monsters)
 			readElement("encounter") { _, attrs, input ->
 				val mod = this
 				content.add(XcScene().also { s ->
@@ -168,8 +170,8 @@ class ModData : ModDataNode, XmlSerializable {
 			return unmarshaller().unmarshal(src) as ModData
 		}
 		fun saveMod(mod:ModData,dst: Writer) {
-			getSerializationInfo().serializeDocument(mod, XmlBuilder(dst))
-//			jaxbContext.createMarshaller().marshal(mod,dst)
+//			getSerializationInfo().serializeDocument(mod, XmlBuilder(dst))
+			jaxbContext.createMarshaller().marshal(mod,dst)
 		}
 		
 		fun unmarshaller() = jaxbContext.createUnmarshaller()
