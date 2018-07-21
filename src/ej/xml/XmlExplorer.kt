@@ -52,7 +52,7 @@ class XmlExplorer(input: XMLEventReader): XmlExplorerController() {
 			else error("Expected $expectedTag, got $tag")
 		}
 	}
-	fun exploreDocumentElements(expectedTag: String, handler: XmlExplorerController.(tag:String, attrs:Map<String, String>) -> Unit) {
+	fun exploreDocumentThenElements(expectedTag: String, handler: XmlExplorerController.(tag:String, attrs:Map<String, String>) -> Unit) {
 		exploreDocument { tag, _ ->
 			if (tag == expectedTag) forEachElement(handler)
 			else error("Expected $expectedTag, got $tag")

@@ -34,7 +34,7 @@ val Natives:NativesClass by lazy {
 fun loadNatives(input: InputStream):NativesClass {
 	val n = NativesClass()
 	
-	XmlExplorer(input).exploreDocumentElements("gamedata") { tag, _ ->
+	XmlExplorer(input).exploreDocumentThenElements("gamedata") { tag, _ ->
 		when (tag) {
 			"encounter-pools" -> forEachElement("pool") { attrs ->
 				n.encounterPools.add(NativePool(
