@@ -4,8 +4,12 @@ import ej.editor.utils.escapeXmlAttr
 import ej.utils.affixNonEmpty
 import ej.utils.crop
 import ej.utils.removeLast
+import ej.xml.HasSzInfo
 import ej.xml.XmlSerializable
+import ej.xml.XmlSzInfoBuilder
+import ej.xml.inherit
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.ObservableList
 import tornadofx.*
 import javax.xml.bind.Marshaller
@@ -14,7 +18,7 @@ import javax.xml.bind.annotation.*
 
 
 val XStatement.acceptsMenu: Boolean
-	get() = this is XcScene || this is Encounter.EncounterScene
+	get() = this is XcScene
 val XStatement.acceptsActions: Boolean
 	get() = acceptsMenu || this is XcNamedText
 
@@ -107,6 +111,37 @@ abstract class XContentContainer : XComplexStatement, StoryContainer {
 		})
 	}
 	override fun toString() = defaultToString("content")
+	
+	companion object : HasSzInfo<XContentContainer> {
+		override val szInfoClass= XContentContainer::class
+		
+		override fun XmlSzInfoBuilder<XContentContainer>.buildSzInfo() {
+			elementsByTag(XContentContainer::lib,
+			              "lib" to XcLib::class,
+			              "text" to XcNamedText::class,
+			              "scene" to XcScene::class
+			         )
+			mixed(XContentContainer::content,
+			      {(it as? XcText)?.text},
+			      {XcText(it)},
+			      "t" to XcText::class,
+			      "display" to XsDisplay::class,
+			      "forward" to XsForward::class,
+			      "set" to XsSet::class,
+			      "output" to XsOutput::class,
+			      "if" to XmlFlatIf::class,
+			      "else" to XmlFlatElse::class,
+			      "elseif" to XmlFlatElseif::class,
+			      "switch" to XlSwitch::class,
+			      "comment" to XlComment::class,
+			      "menu" to XsMenu::class,
+			      "next" to XsNext::class,
+			      "button" to XsButton::class,
+			      "battle" to XsBattle::class
+			      )
+		}
+		
+	}
 }
 internal fun XContentContainer.defaultToString(tagname: String, attrs: String="") =
 		defaultToString(tagname,attrs,content.joinToString(" ",limit=5))
@@ -153,11 +188,14 @@ class XcLib : StoryStmt {
 @XmlRootElement(name = "scene")
 class XcScene : XContentContainer(), StoryStmt {
 	@get:XmlAttribute
-	override var name by property("")
+	override var name:String by property("")
 	override fun nameProperty() = getProperty(XcScene::name)
 	
 	@get:XmlTransient
 	override var owner:ModDataNode? = null
+	
+	val triggerProperty = SimpleObjectProperty<SceneTrigger?>()
+	var trigger:SceneTrigger? by triggerProperty
 
 	@Suppress("unused", "UNUSED_PARAMETER")
 	override fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any?){
@@ -166,6 +204,17 @@ class XcScene : XContentContainer(), StoryStmt {
 	}
 	
 	override fun toString() = defaultToString("scene","name='$name'",lib.joinToString(" "))
+	
+	companion object : HasSzInfo<XcScene> {
+		override val szInfoClass = XcScene::class
+		
+		override fun XmlSzInfoBuilder<XcScene>.buildSzInfo() {
+			inherit(XContentContainer)
+			attr(XcScene::name)
+			
+		}
+		
+	}
 }
 
 @XmlRootElement(name="text")

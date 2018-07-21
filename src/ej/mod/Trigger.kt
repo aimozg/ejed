@@ -9,14 +9,14 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-sealed class SceneTrigger {
+sealed class SceneTrigger : ModDataNode{
 
 }
 
 class TimedTrigger : SceneTrigger() {
 	val conditionProperty = ExpressionProperty("true")
 	var condition by conditionProperty
-	
+	// TODO type
 }
 
 class EncounterTrigger : SceneTrigger() {

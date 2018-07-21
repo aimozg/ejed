@@ -29,7 +29,7 @@ hook = element hook {
     attribute type { 'daily' | 'hourly' },
     content*
 }
-exportable = monster | script | storynode | encounter
+exportable = monster | script | storynode
 storynode = lib | scene | Text
 lib = element lib {
     attribute name { text },
@@ -40,15 +40,22 @@ Text = element text {
     content*
 }
 scene = element scene {
-    attribute name { text },
-    content*,
-    scene-fin
+    attribute name { text }
+    & trigger?
+    & (
+        content*,
+        scene-fin
+    )
 }
 
 # #############################################
 # encounter
-encounter = element encounter {
-    attribute pool { text }
+trigger = element trigger {
+    encounter-trigger | timed-trigger
+}
+encounter-trigger = (
+    attribute type { 'encounter'}
+    & attribute pool { text }
     & attribute name { text }
     & element condition {
         expression
@@ -56,11 +63,13 @@ encounter = element encounter {
     & element chance {
         expression
     }?
-    & element scene {
-        content*,
-        scene-fin
-    }
-}
+)
+timed-trigger = (
+    attribute type { 'timed' }
+    & element condition {
+        expression
+    }?
+)
 
 # #############################################
 # monster

@@ -29,7 +29,7 @@ fun <T : Any> XmlSerializationInfo<T>.deserialize(input: XmlExplorerController,
 }
 
 fun <T : Any> XmlSerializationInfo<T>.deserializeDocument(input: XmlExplorer): T {
-	return input.exploreDocument(name ?: error("Cannot load as document unnamed XmlSerializationInfo")) { attrs ->
+	return input.exploreDocument(name ?: error("$klass XmlSerializationInfo is unnamed")) { attrs ->
 		deserialize(input, attrs, null)
 	}
 }

@@ -1,6 +1,5 @@
 package ej.mod
 
-import ej.utils.ValidateNonBlank
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -34,16 +33,14 @@ encounter = element encounter {
  */
 
 @XmlRootElement(name="encounter")
-class Encounter : ModDataNode {
+class XmlEncounter : ModDataNode {
 	@XmlTransient
 	val poolProperty = SimpleStringProperty("")
-	@ValidateNonBlank
 	@get:XmlAttribute
 	var pool:String by poolProperty
 	
 	@XmlTransient
 	val nameProperty = SimpleStringProperty("")
-	@ValidateNonBlank
 	@get:XmlAttribute
 	var name by nameProperty
 	
@@ -65,7 +62,7 @@ class Encounter : ModDataNode {
 	@XmlRootElement(name="scene")
 	class EncounterScene : XContentContainer(), StoryStmt {
 		@get:XmlTransient
-		override var owner: Encounter? = null
+		override var owner: XmlEncounter? = null
 		
 		override val name: String get() = owner?.name?:""
 		
@@ -76,7 +73,7 @@ class Encounter : ModDataNode {
 		@Suppress("unused", "UNUSED_PARAMETER")
 		override fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any?){
 			super.afterUnmarshal(unmarshaller,parent)
-			owner = parent as Encounter?
+			owner = parent as XmlEncounter?
 		}
 		override fun toString(): String {
 			return defaultToString("scene")

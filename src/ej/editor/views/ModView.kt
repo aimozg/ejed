@@ -141,13 +141,13 @@ class ModView: AModView() {
 								})
 								action { createScene() }
 							}
-							item("Subscene") {
+							item("Named Text") {
 								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
 									it?.value?.acceptsScenes == true
 								})
 								action { createSubscene() }
 							}
-							item("Scene Library") {
+							item("Group") {
 								enableWhen(tree.selectionModel.selectedItemProperty().booleanBinding {
 									it?.value?.acceptsScenes == true
 								})
@@ -232,8 +232,8 @@ class ModView: AModView() {
 		val parent: StoryStmt? =
 				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
 		textInputDialog(
-				"New Subscene",
-				"ID of new subscene",
+				"New Named Text",
+				"ID of new named text",
 				"Unnamed"
 		) { dialogResult ->
 			addScene(parent, XcNamedText().apply { name = dialogResult })
@@ -243,8 +243,8 @@ class ModView: AModView() {
 		val parent:StoryStmt? =
 				(tree.selectedValue as? ModTreeNode.StoryNode)?.story
 		textInputDialog(
-				"New Scene Library",
-				"ID of new scene library",
+				"New Group",
+				"ID of new Group",
 				"Unnamed"
 		) { dialogResult ->
 			addScene(parent, XcLib().apply { name = dialogResult })

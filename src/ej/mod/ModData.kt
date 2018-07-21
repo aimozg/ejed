@@ -1,8 +1,6 @@
 package ej.mod
 
-import ej.xml.HasSzInfo
-import ej.xml.XmlSerializable
-import ej.xml.XmlSzInfoBuilder
+import ej.xml.*
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
@@ -22,7 +20,7 @@ import kotlin.coroutines.experimental.buildSequence
  */
 
 interface ModDataNode
-interface XStatement : ModDataNode
+interface XStatement : ModDataNode, XmlSerializable
 interface XComplexStatement: XStatement {
 	val content: ObservableList<XStatement>
 }
@@ -62,7 +60,6 @@ class ModData : ModDataNode, XmlSerializable {
 	
 	fun allStories() = buildSequence {
 		val run = ArrayList(content)
-		run.addAll(encounters.map { it.scene })
 		while(run.isNotEmpty()) {
 			val e = run.removeAt(0)
 			yield(e)
@@ -71,7 +68,7 @@ class ModData : ModDataNode, XmlSerializable {
 	}
 	
 	@get:XmlElement(name="encounter")
-	val encounters = ArrayList<Encounter>().observable()
+	private val encounters = ArrayList<XmlEncounter>().observable()
 	
 	override fun toString(): String {
 		return "<mod name='$name' version='$version'>" +
@@ -84,27 +81,76 @@ class ModData : ModDataNode, XmlSerializable {
 	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
+		content.addAll(encounters.map { e ->
+			XcScene().also {s ->
+				s.name = e.name
+				s.owner = this@ModData
+				s.content.addAll(e.scene.content)
+				s.lib.addAll(e.scene.lib)
+				s.trigger = EncounterTrigger().also { t ->
+					t.chance = e.chance
+					t.pool = e.pool
+					t.condition = e.condition
+				}
+			}
+		})
 		visit(StylingVisitor())
 	}
 	
 	companion object : HasSzInfo<ModData>{
 		override val szInfoClass = ModData::class
 		override fun XmlSzInfoBuilder<ModData>.buildSzInfo() {
+			name = "mod"
 			attr(ModData::name)
 			attr(ModData::version)
-			elements(ModData::stateVars)
-			elements(ModData::scripts)
-			readElement("hook") { tag, attrs, input ->
+			wrappedElements(ModData::stateVars,"state","var")
+			elements(ModData::scripts,"script")
+			readElement("hook") { _, attrs, input ->
+				val mod = this
+				content.add(XcScene().also { s ->
+					val trigger = TimedTrigger()
+					s.trigger = trigger
+					for ((k,v) in attrs) when(k) {
+						"type" -> TODO("load hook type")
+						"name" -> s.name = v
+						else -> error("Unexpected hook@$k")
+					}
+					input.forEachElement { tag, _ ->
+						when (tag) {
+							"scene" -> TODO("load hook scene content")
+							else -> error("Unexpected hook.$tag")
+						}
+					}
+					s.owner = mod
+				})
 				TODO("convert hook to scene with trigger")
 			}
-			elements(ModData::monsters)
-			readElement("encounter") { tag, attrs, input ->
-				TODO("convert encounter to scene with trigger")
+			elements(ModData::monsters,"script")
+			readElement("encounter") { _, attrs, input ->
+				val mod = this
+				content.add(XcScene().also { s ->
+					val trigger = EncounterTrigger()
+					s.trigger = trigger
+					for ((k,v) in attrs) when(k) {
+						"pool" -> trigger.pool = v
+						"name" -> s.name = v
+						else -> error("Unexpected encounter@$k")
+					}
+					input.forEachElement { tag, _ ->
+						when (tag) {
+							"condition" -> trigger.condition = text()
+							"chance" -> trigger.chance = text()
+							"scene" -> TODO("load encounter scene content")
+							else -> error("Unexpected encounter.$tag")
+						}
+					}
+					s.owner = mod
+				})
 			}
-			elements(ModData::content,
-			         "scene" to XcScene::class,
-			         "lib" to XcLib::class,
-			         "text" to XcLib::class)
+			elementsByTag(ModData::content,
+			              "scene" to XcScene::class,
+			              "lib" to XcLib::class,
+			              "text" to XcLib::class)
 			afterLoad {
 				visit(StylingVisitor())
 			}
@@ -114,13 +160,16 @@ class ModData : ModDataNode, XmlSerializable {
 			JAXBContext.newInstance(ModData::class.java)
 		}
 		fun loadMod(src: InputStream):ModData {
+//			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 			return unmarshaller().unmarshal(src) as ModData
 		}
 		fun loadMod(src: Reader):ModData {
+//			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 			return unmarshaller().unmarshal(src) as ModData
 		}
 		fun saveMod(mod:ModData,dst: Writer) {
-			jaxbContext.createMarshaller().marshal(mod,dst)
+			getSerializationInfo().serializeDocument(mod, XmlBuilder(dst))
+//			jaxbContext.createMarshaller().marshal(mod,dst)
 		}
 		
 		fun unmarshaller() = jaxbContext.createUnmarshaller()

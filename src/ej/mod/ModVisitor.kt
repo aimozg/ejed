@@ -27,7 +27,20 @@ abstract class ModVisitor {
 	open fun visitNamedText(x:XcNamedText) {
 		visitAnyContentContainer(x)
 	}
+	open fun visitTimedTrigger(t:TimedTrigger) {
+		visitAnyNode(t)
+	}
+	open fun visitEncounterTrigger(t:EncounterTrigger) {
+		visitAnyNode(t)
+	}
+	open fun visitTrigger(t:SceneTrigger) {
+		when (t) {
+			is TimedTrigger -> visitTimedTrigger(t)
+			is EncounterTrigger -> visitEncounterTrigger(t)
+		}
+	}
 	open fun visitScene(x:XcScene) {
+		x.trigger?.let { visitTrigger(it) }
 		visitAnyContentContainer(x)
 	}
 	open fun visitOutput(x:XsOutput){
@@ -77,17 +90,11 @@ abstract class ModVisitor {
 		visitAnyNode(x)
 		visitAllMonsters(x.monsters)
 		visitAllStatements(x.content)
-		visitAllEncounters(x.encounters)
 		// TODO hooks, scripts
 	}
 	open fun visitMonster(x:MonsterData) {
 		visitAnyNode(x)
 		visitAllStatements(x.desc.content)
-		// TODO scripts
-	}
-	open fun visitEncounter(x:Encounter) {
-		visitAnyNode(x)
-		visitAllStatements(x.scene.content)
 		// TODO scripts
 	}
 	//// utils
@@ -101,9 +108,6 @@ abstract class ModVisitor {
 	}
 	open fun visitAllMonsters(monsters:MutableList<MonsterData>) {
 		visitAllNodes(monsters)
-	}
-	open fun visitAllEncounters(encounters:MutableList<Encounter>) {
-		visitAllNodes(encounters)
 	}
 }
 fun ModDataNode.visit(visitor:ModVisitor) {
@@ -139,7 +143,6 @@ fun ModDataNode.visit(visitor:ModVisitor) {
 		// Non-statements
 		is ModData -> visitor.visitMod(this)
 		is MonsterData -> visitor.visitMonster(this)
-		is Encounter -> visitor.visitEncounter(this)
 		else -> {
 			println("[WARN] Generic node ${this.javaClass}")
 			visitor.visitAnyNode(this)

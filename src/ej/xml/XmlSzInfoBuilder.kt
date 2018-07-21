@@ -20,6 +20,9 @@ class XmlSzInfoBuilder<T : Any>(name:String?,
 		if (name != null) info.name = name
 	}
 	
+	var name:String?
+		get() = info.name
+		set(value) { info.name = value }
 	fun readAttr(name:String,
 	             consumer:AttrConsumer<T>) {
 		info.attri[name] = consumer
@@ -160,31 +163,31 @@ class XmlSzInfoBuilder<T : Any>(name:String?,
 		info.producers += eio
 	}
 	
-	@JvmName("elements")
 	fun<R:Any> elements(prop: KProperty1<T, MutableList<R>>, szinfo:()->XmlSerializationInfo<R>,name:String) {
 		saveElements(prop,XmlElementConverter(name, szinfo),name)
 	}
-	@JvmName("elementsKlass")
 	fun<R:XmlSerializable> elements(prop: KProperty1<T, MutableList<R>>, klass:KClass<R>,name:String) {
 		elements(prop,{ getSerializationInfo(klass)},name)
 	}
-	
-	@JvmName("elementsWrapped")
-	fun<R:Any> elements(prop: KProperty1<T, MutableList<R>>, szinfo:()->XmlSerializationInfo<R>,wrapper:String,name:String) {
+	inline fun<reified R:XmlSerializable> elements(prop: KProperty1<T, MutableList<R>>, name:String) {
+		elements(prop,R::class,name)
+	}
+	fun<R:Any> wrappedElements(prop: KProperty1<T, MutableList<R>>, szinfo:()->XmlSerializationInfo<R>, wrapper:String, name:String) {
 		checkElement()
 		val eio = WrappedListPropertyEio(wrapper, XmlElementConverter(name, szinfo), prop)
 		info.elements[wrapper] = eio
 		info.producers += eio
 	}
-	@JvmName("elementsWrappedKlass")
-	fun<R:XmlSerializable> elements(prop: KProperty1<T, MutableList<R>>, klass:KClass<R>, wrapper:String, name:String) {
+	fun<R:XmlSerializable> wrappedElements(prop: KProperty1<T, MutableList<R>>, klass:KClass<R>, wrapper:String, name:String) {
 		checkElement()
-		elements(prop,{ getSerializationInfo(klass)},wrapper,name)
+		wrappedElements(prop,{ getSerializationInfo(klass)},wrapper,name)
+	}
+	inline fun<reified R:XmlSerializable> wrappedElements(prop: KProperty1<T, MutableList<R>>, wrapper:String, name:String) {
+		wrappedElements(prop,R::class,wrapper,name)
 	}
 	
-	@JvmName("elementsMapped")
-	fun<R:Any> elements(prop: KProperty1<T, MutableList<R>>,
-	                    mappings:List<Pair<String,()->XmlSerializationInfo<out R>>>) {
+	fun<R:Any> elementsByTag(prop: KProperty1<T, MutableList<R>>,
+	                         mappings:List<Pair<String,()->XmlSerializationInfo<out R>>>) {
 		checkElement()
 		val pio = PolymorphicListIO(prop,mappings)
 		for ((tag, _) in mappings) {
@@ -193,10 +196,15 @@ class XmlSzInfoBuilder<T : Any>(name:String?,
 		info.producers += pio
 	}
 	
-	@JvmName("elementsMappedKlass")
-	fun <R : XmlSerializable> elements(prop: KProperty1<T, MutableList<R>>,
-	                                   vararg mappings: Pair<String, KClass<out R>>) {
-		elements(prop,mappings.map { (tag, klass) -> tag to { getSerializationInfo(klass)} })
+	fun <R : XmlSerializable> elementsByTag(prop: KProperty1<T, MutableList<R>>,
+	                                        mapping0: Pair<String, KClass<out R>>,
+	                                        vararg mappings: Pair<String, KClass<out R>>) {
+		elementsByTag(prop,
+		              (listOf(mapping0) + mappings)
+				              .map { (tag, klass) ->
+					              tag to { getSerializationInfo(klass)}
+				              }
+		)
 	}
 
 	fun noBody() {
@@ -214,12 +222,12 @@ class XmlSzInfoBuilder<T : Any>(name:String?,
 	
 	@JvmName("mixedBodyListMapped")
 	fun<E:Any> mixed(prop: KProperty1<T, MutableList<E>>,
-	                 to:(E?)->String?,
-	                 from:(String)->E,
+	                 toStr:(E?)->String?,
+	                 fromStr:(String)->E,
 	                 mappings:List<Pair<String,()->XmlSerializationInfo<out E>>>) {
 		if (info.texti != null) error("textBody() already set")
 		if (nobody) error("Cannot have mixed() and nobody()")
-		val mio = MixedListIO(prop,LambdaConverter(to,from),mappings)
+		val mio = MixedListIO(prop, LambdaConverter(toStr, fromStr), mappings)
 		info.texti = mio
 		for ((tag, _) in mappings) {
 			info.elements[tag] = mio
@@ -228,10 +236,10 @@ class XmlSzInfoBuilder<T : Any>(name:String?,
 	}
 	@JvmName("mixedBodyListMappedKlass")
 	fun<E:XmlSerializable> mixed(prop: KProperty1<T, MutableList<E>>,
-	                 to:(E?)->String?,
-	                 from:(String)->E,
-	                 vararg mappings:Pair<String,KClass<out E>>) {
-		mixed(prop,to,from,mappings.map { (tag,klass) ->
+	                             toStr:(E?)->String?,
+	                             fromStr:(String)->E,
+	                             vararg mappings:Pair<String,KClass<out E>>) {
+		mixed(prop, toStr, fromStr, mappings.map { (tag,klass) ->
 			tag to { getSerializationInfo(klass) }
 		})
 	}
@@ -274,8 +282,7 @@ inline fun <reified T : R, R:Any> serializationInfo(
 			init()
 		}.build()
 
-fun<T:R,R:Any> copySzInfo(src:XmlSerializationInfo<R>, tgtb:XmlSzInfoBuilder<T>) {
-	val tgt = tgtb.info
+fun<T:R,R:Any> copySzInfo(src:XmlSerializationInfo<R>, tgt:XmlSerializationInfo<T>) {
 	tgt.attri.putAll(src.attri)
 	tgt.texti = src.texti
 	tgt.elements.putAll(src.elements)
@@ -283,6 +290,18 @@ fun<T:R,R:Any> copySzInfo(src:XmlSerializationInfo<R>, tgtb:XmlSzInfoBuilder<T>)
 	tgt.producers.addAll(src.producers)
 	tgt.beforeSave = src.beforeSave
 	tgt.afterLoad = src.afterLoad
+}
+fun<T:R,R:Any> copySzInfo(src:XmlSerializationInfo<R>, tgtb:XmlSzInfoBuilder<T>) {
+	copySzInfo(src, tgtb.info)
+}
+fun<T:R,R:Any> XmlSzInfoBuilder<T>.inherit(from:XmlSerializationInfo<R>) {
+	copySzInfo(from, info)
+}
+fun<T:R,R:Any> XmlSzInfoBuilder<T>.inherit(from:HasSzInfo<R>) {
+	inherit(from.getSerializationInfo())
+}
+inline fun<T:R,reified R:XmlSerializable> XmlSzInfoBuilder<T>.inherit() {
+	inherit(getSerializationInfo(R::class))
 }
 
 interface XmlSerializable
@@ -306,3 +325,4 @@ fun<T:Any> getSerializationInfo(clazz: KClass<T>): XmlSerializationInfo<T> {
 		}
 	} as XmlSerializationInfo<T>
 }
+fun<T:Any> HasSzInfo<T>.getSerializationInfo() = getSerializationInfo(szInfoClass)
