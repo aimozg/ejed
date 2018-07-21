@@ -1,9 +1,8 @@
 package ej.mod
 
 import ej.editor.utils.*
-import ej.utils.ValidateNonBlank
-import ej.utils.ValidateUnique
 import ej.utils.affix
+import ej.xml.XmlSerializable
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -14,11 +13,9 @@ import javax.xml.bind.Unmarshaller
 import javax.xml.bind.annotation.*
 
 @XmlRootElement(name="monster")
-class MonsterData : Patchable, ModDataNode {
+class MonsterData : Patchable, ModDataNode, XmlSerializable {
 	
 	val idProperty = SimpleStringProperty("")
-	@ValidateNonBlank
-	@ValidateUnique
 	@get:XmlAttribute
 	@PatchNoMerge
 	var id: String by idProperty

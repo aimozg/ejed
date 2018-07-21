@@ -1,11 +1,12 @@
 package ej.mod
 
+import ej.xml.XmlSerializable
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlEnum
 import javax.xml.bind.annotation.XmlEnumValue
 import javax.xml.bind.annotation.XmlValue
 
-class ModScript {
+class ModScript : XmlSerializable {
 	@get:XmlAttribute
 	var language: ScriptLanguage = ScriptLanguage.LUA
 	

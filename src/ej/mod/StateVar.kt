@@ -1,27 +1,29 @@
 package ej.mod
 
-import ej.utils.ValidateNonBlank
-import ej.utils.ValidateUnique
-import ej.utils.classValidatorFor
+import ej.xml.HasSzInfo
+import ej.xml.XmlSerializable
+import ej.xml.XmlSzInfoBuilder
 import javax.xml.bind.annotation.XmlAttribute
 import javax.xml.bind.annotation.XmlValue
 
-class StateVar {
-	@ValidateNonBlank
-	@ValidateUnique
+class StateVar : XmlSerializable {
 	@get:XmlAttribute
 	var name:String = ""
 	
 	@get:XmlValue
 	var initialValue:String = ""
 	
-	fun validate(context: ModData) = VALIDATOR.validate(this, context.stateVars)
 	override fun toString(): String {
 		return "<var name='$name'>$initialValue</var>"
 	}
 	
 	
-	companion object {
-		internal val VALIDATOR by lazy { classValidatorFor<StateVar>() }
+	companion object : HasSzInfo<StateVar> {
+		override val szInfoClass = StateVar::class
+		
+		override fun XmlSzInfoBuilder<StateVar>.buildSzInfo() {
+			attr(StateVar::name)
+			text(StateVar::initialValue)
+		}
 	}
 }

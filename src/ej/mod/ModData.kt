@@ -1,8 +1,8 @@
 package ej.mod
 
-import ej.utils.ValidateElements
-import ej.utils.ValidateNonBlank
-import ej.utils.classValidatorFor
+import ej.xml.HasSzInfo
+import ej.xml.XmlSerializable
+import ej.xml.XmlSzInfoBuilder
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
@@ -28,42 +28,37 @@ interface XComplexStatement: XStatement {
 }
 
 @XmlRootElement(name="mod")
-class ModData : ModDataNode {
+class ModData : ModDataNode, XmlSerializable {
 	@get:XmlTransient
 	var sourceFile: File? = null
 	
 	val nameProperty = SimpleStringProperty("")
-	@ValidateNonBlank
 	@get:XmlAttribute
-	var name by nameProperty
+	var name:String  by nameProperty
 	
 	val versionProperty = SimpleIntegerProperty(0)
 	@get:XmlAttribute
-	var version by versionProperty
+	var version: Int by versionProperty
 	
-	@ValidateElements(locator="name")
 	@get:XmlElementWrapper(name="state")
 	@get:XmlElement(name="var")
-	val stateVars = ArrayList<StateVar>().observable()
+	val stateVars: ObservableList<StateVar> = ArrayList<StateVar>().observable()
 	
 	@get:XmlElement(name="hook")
-	@ValidateElements()
-	val hooks = ArrayList<ModHookData>().observable()
+	val hooks: ObservableList<ModHookData> = ArrayList<ModHookData>().observable()
 	
 	@get:XmlElement(name="script")
-	@ValidateElements()
 	val scripts = ArrayList<ModScript>().observable()
 	
 	@get:XmlElement(name="monster")
-	@ValidateElements(locator="id")
-	val monsters = ArrayList<MonsterData>().observable()
+	val monsters: ObservableList<MonsterData> = ArrayList<MonsterData>().observable()
 	
 	@get:XmlElements(
 			XmlElement(name="lib",type=XcLib::class),
 			XmlElement(name="scene",type=XcScene::class),
 			XmlElement(name="text",type=XcNamedText::class)
 	)
-	val content = ArrayList<StoryStmt>().observable()
+	val content: ObservableList<StoryStmt> = ArrayList<StoryStmt>().observable()
 	
 	fun allStories() = buildSequence {
 		val run = ArrayList(content)
@@ -76,7 +71,6 @@ class ModData : ModDataNode {
 	}
 	
 	@get:XmlElement(name="encounter")
-	@ValidateElements
 	val encounters = ArrayList<Encounter>().observable()
 	
 	override fun toString(): String {
@@ -88,15 +82,34 @@ class ModData : ModDataNode {
 				"</mod>"
 	}
 	
-	fun validate() = VALIDATOR.validate(this)
-	
 	@Suppress("unused", "UNUSED_PARAMETER")
 	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
 		visit(StylingVisitor())
 	}
 	
-	companion object {
-		internal val VALIDATOR by lazy { classValidatorFor<ModData>() }
+	companion object : HasSzInfo<ModData>{
+		override val szInfoClass = ModData::class
+		override fun XmlSzInfoBuilder<ModData>.buildSzInfo() {
+			attr(ModData::name)
+			attr(ModData::version)
+			elements(ModData::stateVars)
+			elements(ModData::scripts)
+			readElement("hook") { tag, attrs, input ->
+				TODO("convert hook to scene with trigger")
+			}
+			elements(ModData::monsters)
+			readElement("encounter") { tag, attrs, input ->
+				TODO("convert encounter to scene with trigger")
+			}
+			elements(ModData::content,
+			         "scene" to XcScene::class,
+			         "lib" to XcLib::class,
+			         "text" to XcLib::class)
+			afterLoad {
+				visit(StylingVisitor())
+			}
+		}
+		
 		val jaxbContext: JAXBContext by lazy {
 			JAXBContext.newInstance(ModData::class.java)
 		}

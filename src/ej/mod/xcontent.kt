@@ -4,6 +4,7 @@ import ej.editor.utils.escapeXmlAttr
 import ej.utils.affixNonEmpty
 import ej.utils.crop
 import ej.utils.removeLast
+import ej.xml.XmlSerializable
 import javafx.beans.property.Property
 import javafx.collections.ObservableList
 import tornadofx.*
@@ -24,7 +25,7 @@ internal fun XStatement.defaultToString(tagname:String, attrs:String, content:St
 interface StoryContainer {
 	val lib: ObservableList<StoryStmt>
 }
-interface StoryStmt : XStatement, StoryContainer {
+interface StoryStmt : XStatement, StoryContainer, XmlSerializable {
 	@get:XmlTransient
 	val owner: ModDataNode?
 	@get:XmlTransient
