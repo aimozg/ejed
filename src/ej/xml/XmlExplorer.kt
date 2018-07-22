@@ -25,7 +25,7 @@ class XmlExplorer(input: XMLEventReader): XmlExplorerController() {
 	
 	private val events = input.typed
 	
-	fun<R> exploreDocument(handler: XmlExplorerController.(rootTag:String, rootAttrs:Map<String, String>) -> R):R {
+	override fun<R> exploreDocument(handler: XmlExplorerController.(rootTag:String, rootAttrs:Map<String, String>) -> R):R {
 		var wasStartDocument = false
 		var wasElement = false
 		var r:R? = null
@@ -44,19 +44,6 @@ class XmlExplorer(input: XMLEventReader): XmlExplorerController() {
 			is EndDocument -> break@docloop
 		}
 		return r ?: error("Malformed document")
-	}
-	
-	fun<R> exploreDocument(expectedTag: String, handler: XmlExplorerController.(rootAttrs:Map<String, String>) -> R):R {
-		return exploreDocument { tag, attrs ->
-			if (tag == expectedTag) handler(attrs)
-			else error("Expected $expectedTag, got $tag")
-		}
-	}
-	fun exploreDocumentThenElements(expectedTag: String, handler: XmlExplorerController.(tag:String, attrs:Map<String, String>) -> Unit) {
-		exploreDocument { tag, _ ->
-			if (tag == expectedTag) forEachElement(handler)
-			else error("Expected $expectedTag, got $tag")
-		}
 	}
 	
 	var skip = 1

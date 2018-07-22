@@ -41,3 +41,13 @@ fun<T> MutableList<T>.longSwap(i:Int, j:Int):Boolean {
 	}
 	return true
 }
+
+/**
+ * If [replace] returns non-null value, replace old value with it
+ */
+inline fun<T> MutableList<T>.replaceSome(replace:(T)->T?) {
+	for ((i,el) in withIndex()) {
+		val value = replace(el)
+		if (value != null) set(i, value)
+	}
+}

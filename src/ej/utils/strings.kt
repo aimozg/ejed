@@ -10,6 +10,9 @@ fun String?.affix(prefix:String,suffix:String=""):String =
 fun String?.affixNonEmpty(prefix:String,suffix:String=""):String =
 		if (this.isNullOrEmpty()) "" else prefix+this+suffix
 
+infix fun String?.ifEmpty(default:String): String =
+		if (this == null || this.isEmpty()) default else this
+
 fun String.crop(maxLength:Int, ellipsis:String="..."):String =
 		if (length <= maxLength) this
 		else if (maxLength < ellipsis.length) this.substring(0, maxLength)

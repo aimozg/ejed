@@ -11,6 +11,14 @@ interface ElementConverter<A:Any> {
 	            parent: Any?): A
 	fun write(builder:XmlBuilder, value:A)
 }
+interface OverwritingElementConverter<A:XmlSerializable>: ElementConverter<A> {
+	fun convertInto(obj:A,
+	                tag: String,
+	                attrs: Map<String, String>,
+	                input: XmlExplorerController,
+	                parent: Any?)
+	
+}
 class TextElementConverter<A:Any>(val tag:String,val t:TextConverter<A>) : ElementConverter<A> {
 	override fun convert(tag: String,
 	                     attrs: Map<String, String>,
@@ -49,12 +57,23 @@ object BoolConverter : TextConverter<Boolean> {
 	override fun convert(s: String) = s == "true"
 }
 
+object NullableBoolConverter : TextConverter<Boolean> {
+	override fun toString(a: Boolean?) = when (a) {
+		true -> "true"
+		false -> "false"
+		else -> null
+	}
+	override fun convert(s: String) = s == "true"
+}
+
 class MappedConverter<E : Any>(val to: Map<E, String>, val from:Map<String,E>) : TextConverter<E> {
 	override fun toString(a: E?): String? = if (a == null) null else to[a]
 	override fun convert(s: String): E = from[s] ?: error("Enum value $s not found")
 }
 
-class XmlElementConverter<E: Any>(val tag:String, szinfoFactory: ()->XmlSerializationInfo<E>) : ElementConverter<E> {
+typealias SzInfoMaker<E> = ()->XmlSerializationInfo<E>
+
+open class XmlElementConverter<E: Any>(val tag:String, szinfoFactory: SzInfoMaker<E>) : ElementConverter<E> {
 	
 	val szinfo by lazy(szinfoFactory)
 	override fun convert(tag: String,
@@ -62,6 +81,27 @@ class XmlElementConverter<E: Any>(val tag:String, szinfoFactory: ()->XmlSerializ
 	                     input: XmlExplorerController,
 	                     parent: Any?): E =
 			szinfo.deserialize(input, attrs, parent)
+	
+	override fun write(builder: XmlBuilder, value: E) {
+		szinfo.serialize(value, tag, builder)
+	}
+}
+class XmlOverwritingElementConverter<E: XmlSerializable>(val tag:String, szinfoFactory: SzInfoMaker<E>) : OverwritingElementConverter<E> {
+	override fun convertInto(obj: E,
+	                         tag: String,
+	                         attrs: Map<String, String>,
+	                         input: XmlExplorerController,
+	                         parent: Any?) {
+		szinfo.deserializeInto(obj, input,attrs,parent)
+	}
+	
+	val szinfo by lazy(szinfoFactory)
+	override fun convert(tag: String,
+	                     attrs: Map<String, String>,
+	                     input: XmlExplorerController,
+	                     parent: Any?): E =
+			szinfo.deserialize(input, attrs, parent)
+	
 	override fun write(builder: XmlBuilder, value: E) {
 		szinfo.serialize(value, tag, builder)
 	}

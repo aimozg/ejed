@@ -1,25 +1,28 @@
 package ej.mod
 
 import ej.xml.XmlSerializable
-import javax.xml.bind.annotation.XmlAttribute
-import javax.xml.bind.annotation.XmlEnum
-import javax.xml.bind.annotation.XmlEnumValue
-import javax.xml.bind.annotation.XmlValue
+import ej.xml.XmlSerializableCompanion
+import ej.xml.XmlSzInfoBuilder
 
 class ModScript : XmlSerializable {
-	@get:XmlAttribute
 	var language: ScriptLanguage = ScriptLanguage.LUA
 	
-	@get:XmlValue
 	var content:String = ""
 	
 	override fun toString() = "<script language='$language'> $content </script>"
+	
+	companion object : XmlSerializableCompanion<ModScript> {
+		override val szInfoClass = ModScript::class
+		
+		override fun XmlSzInfoBuilder<ModScript>.buildSzInfo() {
+			attribute(ModScript::language, {it.name.toLowerCase()})
+			textBody(ModScript::content)
+		}
+		
+	}
 }
 
-@XmlEnum(String::class)
 enum class ScriptLanguage {
-	@XmlEnumValue("lua")
 	LUA,
-	@XmlEnumValue("xlogic")
 	XLOGIC;
 }

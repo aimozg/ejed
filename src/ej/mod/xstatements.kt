@@ -1,59 +1,62 @@
 package ej.mod
 
-import com.sun.xml.internal.txw2.annotation.XmlElement
 import ej.editor.expr.ExpressionProperty
 import ej.utils.affix
+import ej.xml.XmlSerializableCompanion
+import ej.xml.XmlSzInfoBuilder
+import ej.xml.inherit
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
-import javax.xml.bind.annotation.XmlAttribute
-import javax.xml.bind.annotation.XmlRootElement
-import javax.xml.bind.annotation.XmlTransient
-import javax.xml.bind.annotation.XmlValue
 
 
-@XmlRootElement(name = "display")
 class XsDisplay : XStatement {
-	@XmlTransient
 	val refProperty = SimpleStringProperty("")
-	@get:XmlAttribute
 	var ref: String by refProperty
 	
 	override fun toString() = defaultToString("display","",ref)
+	
+	companion object : XmlSerializableCompanion<XsDisplay> {
+		override val szInfoClass = XsDisplay::class
+		
+		override fun XmlSzInfoBuilder<XsDisplay>.buildSzInfo() {
+			attribute(XsDisplay::ref)
+			emptyBody()
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "forward")
 class XsForward : XStatement {
-	@XmlTransient
 	val refProperty = SimpleStringProperty("")
-	@get:XmlAttribute
 	var ref: String by refProperty
 	
-	override fun toString() = defaultToString("forward","",ref)
+	override fun toString() = defaultToString("forward", "", ref)
+	
+	companion object : XmlSerializableCompanion<XsForward> {
+		override val szInfoClass = XsForward::class
+		
+		override fun XmlSzInfoBuilder<XsForward>.buildSzInfo() {
+			attribute(XsForward::ref)
+			emptyBody()
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "set")
 class XsSet : XStatement {
-	@XmlTransient
 	val varnameProperty = SimpleObjectProperty("")
-	@get:XmlAttribute(name = "var")
 	var varname: String by varnameProperty
 	
-	@XmlTransient
 	val inobjProperty = SimpleObjectProperty<String?>()
-	@get:XmlAttribute(name = "in")
 	var inobj: String? by inobjProperty
 	
 	// TODO enum
-	@XmlTransient
 	val opProperty = SimpleObjectProperty<String?>( null)
-	@get:XmlAttribute(name = "op")
 	var op: String? by opProperty
 	
-	@XmlTransient
 	val valueProperty = ExpressionProperty("")
-	@get:XmlAttribute(name = "value")
 	var value: String by valueProperty
 	
 	
@@ -64,53 +67,69 @@ class XsSet : XStatement {
 			op.affix(" op='", "'") +
 			" value='$value'",
 			"")
+	
+	companion object : XmlSerializableCompanion<XsSet> {
+		override val szInfoClass = XsSet::class
+		
+		override fun XmlSzInfoBuilder<XsSet>.buildSzInfo() {
+			attribute(XsSet::varname, "var")
+			attribute(XsSet::inobj, "in")
+			attribute(XsSet::op, "op")
+			attribute(XsSet::value, "value")
+			emptyBody()
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "output")
 class XsOutput : XStatement {
-	@XmlTransient
 	val expressionProperty = SimpleStringProperty("")
-	@get:XmlValue
-	var expression by expressionProperty
+	var expression:String by expressionProperty
 	
 	override fun toString() = defaultToString("output","",expression)
+	
+	companion object : XmlSerializableCompanion<XsOutput> {
+		override val szInfoClass = XsOutput::class
+		
+		override fun XmlSzInfoBuilder<XsOutput>.buildSzInfo() {
+			textBody(XsOutput::expression)
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "menu")
 class XsMenu : XContentContainer() {
 	
 	override fun toString() = defaultToString("menu","")
+	
+	companion object : XmlSerializableCompanion<XsMenu> {
+		override val szInfoClass = XsMenu::class
+		
+		override fun XmlSzInfoBuilder<XsMenu>.buildSzInfo() {
+			inherit(XContentContainer)
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "button")
 class XsButton() : XStatement {
 	constructor(text:String):this() {
 		this.text =text
 	}
 	
-	@XmlTransient
 	val textProperty = SimpleStringProperty("")
-	@get:XmlAttribute
-	var text by textProperty
+	var text:String by textProperty
 	
-	@XmlTransient
 	val disabledProperty = SimpleBooleanProperty(false)
-	@get:XmlAttribute
 	var disabled by disabledProperty
 	
-	@XmlTransient
 	val refProperty = SimpleStringProperty("")
-	@get:XmlAttribute
-	var ref by refProperty
+	var ref:String by refProperty
 	
-	@XmlTransient
 	val posProperty = SimpleObjectProperty<Int?>(null)
-	@get:XmlAttribute
 	var pos:Int? by posProperty
 	
-	@XmlTransient
-	val hintProperty = SimpleObjectProperty<XsButtonHint>()
-	@get:XmlElement
+	val hintProperty = SimpleObjectProperty<XsButtonHint?>()
 	var hint by hintProperty
 	
 	
@@ -118,37 +137,72 @@ class XsButton() : XStatement {
 			"text='$text'" +
 			(if (disabled) " disabled" else "") +
 			" ref='$ref'", hint?.toString()?:"")
+	
+	companion object : XmlSerializableCompanion<XsButton> {
+		override val szInfoClass = XsButton::class
+		
+		override fun XmlSzInfoBuilder<XsButton>.buildSzInfo() {
+			attribute(XsButton::text)
+			attribute(XsButton::disabled)
+			attribute(XsButton::ref)
+			attribute(XsButton::pos)
+			element(XsButton::hint)
+		}
+		
+	}
 }
 
 class XsButtonHint : XContentContainer() {
-	@get:XmlAttribute
 	var header: String? = null
 	
 	override fun toString() = defaultToString("hint", header.affix("header='", "'"))
+	
+	companion object : XmlSerializableCompanion<XsButtonHint> {
+		override val szInfoClass = XsButtonHint::class
+		
+		override fun XmlSzInfoBuilder<XsButtonHint>.buildSzInfo() {
+			inherit(XContentContainer)
+			attribute(XsButtonHint::header)
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "next")
 class XsNext : XStatement {
-	@XmlTransient
 	val refProperty = SimpleStringProperty("")
-	@get:XmlAttribute
-	var ref by refProperty
+	var ref:String by refProperty
 	
 	
 	override fun toString() = defaultToString("next", "", ref)
+	
+	companion object : XmlSerializableCompanion<XsNext>{
+		override val szInfoClass = XsNext::class
+		
+		override fun XmlSzInfoBuilder<XsNext>.buildSzInfo() {
+			attribute(XsNext::ref)
+			emptyBody()
+		}
+		
+	}
 }
 
-@XmlRootElement(name = "battle")
 class XsBattle : XStatement {
-	@XmlTransient
 	val monsterProperty = SimpleStringProperty("")
-	@get:XmlAttribute
-	var monster by monsterProperty
+	var monster:String by monsterProperty
 	
-	@XmlTransient
-	val optionsProperty = SimpleStringProperty("")
-	@get:XmlAttribute
-	var options by optionsProperty
+	val optionsProperty = SimpleObjectProperty<String?>()
+	var options:String? by optionsProperty
 	
 	override fun toString() = defaultToString("battle",options.affix(" options='", "'"),monster)
+	
+	companion object : XmlSerializableCompanion<XsBattle> {
+		override val szInfoClass = XsBattle::class
+		
+		override fun XmlSzInfoBuilder<XsBattle>.buildSzInfo() {
+			attribute(XsBattle::monster)
+			attribute(XsBattle::options)
+			emptyBody()
+		}
+		
+	}
 }

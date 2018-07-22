@@ -1,6 +1,10 @@
 package ej.mod
 
 import ej.editor.expr.ExpressionProperty
+import ej.xml.Attribute
+import ej.xml.XmlAutoSerializable
+import ej.xml.XmlSerializable
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 
@@ -9,23 +13,33 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-sealed class SceneTrigger : ModDataNode{
+sealed class SceneTrigger : ModDataNode, XmlSerializable
 
-}
-
-class TimedTrigger : SceneTrigger() {
+class TimedTrigger : SceneTrigger(), XmlAutoSerializable {
 	val conditionProperty = ExpressionProperty("true")
-	var condition by conditionProperty
-	// TODO type
+	@Attribute
+	var condition:String by conditionProperty
+	
+	val typeProperty = SimpleObjectProperty(Type.DAILY)
+	@Attribute
+	var type: Type by typeProperty
+	
+	enum class Type {
+		DAILY,
+		HOURLY
+	}
 }
 
-class EncounterTrigger : SceneTrigger() {
+class EncounterTrigger : SceneTrigger(), XmlAutoSerializable {
 	val poolProperty = SimpleStringProperty("")
+	@Attribute
 	var pool: String by poolProperty
 	
 	val conditionProperty = ExpressionProperty("true")
-	var condition by conditionProperty
+	@Attribute
+	var condition: String by conditionProperty
 	
 	val chanceProperty = ExpressionProperty("1")
-	var chance by chanceProperty
+	@Attribute
+	var chance: String by chanceProperty
 }

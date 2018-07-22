@@ -49,6 +49,26 @@ class PropertyEio<in T : Any, A : Any>(
 	override fun setValue(obj: T, value: A) = prop.set(obj, value)
 }
 
+class PropertyOverwritingEio<in T:Any, A:XmlSerializable>(
+		val converter: OverwritingElementConverter<A>,
+		val prop: KProperty1<in T, A>
+) : ElementIO<T>() {
+	init {
+		prop.isAccessible = true
+	}
+	override fun consumeElement(obj: T,
+	                            tag: String,
+	                            attrs: Map<String, String>,
+	                            input: XmlExplorerController) {
+		val v = prop.get(obj)
+		converter.convertInto(v, tag, attrs, input, obj)
+	}
+	
+	override fun produce(builder: XmlBuilder, obj: T) {
+		converter.write(builder, prop.get(obj))
+	}
+}
+
 class NullablePropertyEio<in T : Any, A : Any>(
 		converter: ElementConverter<A>,
 		val prop: KMutableProperty1<in T, A?>

@@ -18,9 +18,32 @@ abstract class XmlExplorerController {
 			if (r != null) handler(r.first, r.second)
 		}
 	}
+	fun<R> collectElements(handler: XmlExplorerController.(tag:String,attrs:Map<String,String>) -> R): List<R> {
+		val list = ArrayList<R>()
+		forEachElement { tag, attrs ->
+			list.add(handler(tag, attrs))
+		}
+		return list
+	}
 	fun forEachElement(expectedTag: String, handler: XmlExplorerController.(attrs:Map<String, String>) -> Unit) {
 		forEachElement { tag, attrs ->
 			if (tag == expectedTag) handler(attrs)
+			else error("Expected $expectedTag, got $tag")
+		}
+	}
+	
+	abstract fun<R> exploreDocument(handler: XmlExplorerController.(rootTag: String, rootAttrs: Map<String, String>) -> R): R
+	
+	fun<R> exploreDocument(expectedTag: String, handler: XmlExplorerController.(rootAttrs: Map<String, String>) -> R): R {
+		return exploreDocument { tag, attrs ->
+			if (tag == expectedTag) handler(attrs)
+			else error("Expected $expectedTag, got $tag")
+		}
+	}
+	
+	fun exploreDocumentThenElements(expectedTag: String, handler: XmlExplorerController.(tag: String, attrs: Map<String, String>) -> Unit) {
+		exploreDocument { tag, _ ->
+			if (tag == expectedTag) forEachElement(handler)
 			else error("Expected $expectedTag, got $tag")
 		}
 	}

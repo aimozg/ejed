@@ -82,11 +82,9 @@ monster = element monster {
     }?
     & element plural { 'true' | 'false' }?
     & element a { text }?
-    & element pronouns {
-        attribute he { text },
-        attribute his { text },
-        attribute him { text }
-    }?
+    & element he { text }?
+    & element his { text }?
+    & element him { text }?
     & monsterBody?
     & monsterCombat?
     & script*

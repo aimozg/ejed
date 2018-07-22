@@ -1,29 +1,17 @@
 package ej.mod
 
-import ej.xml.HasSzInfo
-import ej.xml.XmlSerializable
-import ej.xml.XmlSzInfoBuilder
-import javax.xml.bind.annotation.XmlAttribute
-import javax.xml.bind.annotation.XmlValue
+import ej.xml.Attribute
+import ej.xml.TextBody
+import ej.xml.XmlAutoSerializable
 
-class StateVar : XmlSerializable {
-	@get:XmlAttribute
+class StateVar : XmlAutoSerializable {
+	@Attribute
 	var name:String = ""
 	
-	@get:XmlValue
+	@TextBody
 	var initialValue:String = ""
 	
 	override fun toString(): String {
 		return "<var name='$name'>$initialValue</var>"
-	}
-	
-	
-	companion object : HasSzInfo<StateVar> {
-		override val szInfoClass = StateVar::class
-		
-		override fun XmlSzInfoBuilder<StateVar>.buildSzInfo() {
-			attr(StateVar::name)
-			text(StateVar::initialValue)
-		}
 	}
 }

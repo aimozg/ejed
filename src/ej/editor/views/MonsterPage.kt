@@ -2,6 +2,7 @@ package ej.editor.views
 
 import ej.editor.AModView
 import ej.editor.Styles
+import ej.editor.utils.NullableStringConverter
 import ej.editor.utils.colspan
 import ej.editor.utils.smartRow
 import ej.mod.ModData
@@ -50,15 +51,15 @@ class MonsterBasicView:AMonsterView("Basic") {
 					label("Pronouns:")
 					field("'he'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
-						textfield(monster.pronouns.he)
+						textfield(monster.pronounHeProperty, NullableStringConverter)
 					}
 					field("'his'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
-						textfield(monster.pronouns.his)
+						textfield(monster.pronounHisProperty, NullableStringConverter)
 					}
 					field("'him'") {
 						labelContainer.alignment = Pos.CENTER_RIGHT
-						textfield(monster.pronouns.him)
+						textfield(monster.pronounHimProperty, NullableStringConverter)
 					}
 				}
 			}

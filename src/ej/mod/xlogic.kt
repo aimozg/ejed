@@ -4,24 +4,33 @@ import ej.editor.expr.ExpressionProperty
 import ej.editor.utils.ObservableSingletonList
 import ej.editor.utils.observableConcatenation
 import ej.utils.affix
+import ej.xml.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
-import javax.xml.bind.annotation.*
 
-@XmlRootElement(name="comment")
-class XlComment(): XStatement {
-	constructor(text:String):this(){
+class XlComment() : XStatement {
+	constructor(text: String) : this() {
 		this.text = text
 	}
 	
-	@XmlTransient
 	val textProperty = SimpleStringProperty("")
-	@get:XmlValue
 	var text: String by textProperty
 	
 	override fun toString() = "[# $text #]"
+	
+	companion object : XmlSerializableCompanion<XlComment> {
+		override val szInfoClass = XlComment::class
+		
+		override fun XmlSzInfoBuilder<XlComment>.buildSzInfo() {
+			textBody(XlComment::text)
+			handleAttribute("text") {
+				text = it
+			}
+		}
+		
 	}
+}
 
 /*
  * if 1:
@@ -43,19 +52,23 @@ class XlComment(): XStatement {
  *     flat-else
  *     content-4
  */
-class XlIf(): XStatement {
+class XlIf(): XStatement,XmlAutoSerializable {
 	constructor(test:String):this() {
 		this.test = test
 	}
 	
 	val testProperty = ExpressionProperty("")
+	@Attribute
 	var test:String by testProperty
 	
+	@Element("then")
 	val thenGroup = XlThen()
 	
+	@Elements("elseif")
 	val elseifGroups = ArrayList<XlElseIf>().observable()
 	
 	val elseGroupProperty = SimpleObjectProperty<XlElse?>()
+	@Element("else")
 	var elseGroup: XlElse? by elseGroupProperty
 	
 	val allGroups = observableConcatenation(
@@ -79,6 +92,7 @@ class XlElseIf(): PartOfIf() {
 		this.test = test
 	}
 	val testProperty = ExpressionProperty("")
+	@Attribute
 	var test: String by testProperty
 	override fun toString() = defaultToString("elseif","test=$test")
 }
@@ -118,100 +132,108 @@ internal fun XlIf.ungrouped():XmlFlatIf {
 	return u
 }
 
-@XmlRootElement(name="if")
 internal class XmlFlatIf() : XContentContainer(), XStatement {
 	constructor(test:String):this() {
 		this.test = test
 	}
 	
-	@XmlTransient
 	val testProperty = SimpleStringProperty("")
-	@get:XmlAttribute
 	var test: String by testProperty
 	
 	override fun toString() = defaultToString("if","test=$test")
+	
+	companion object : XmlSerializableCompanion<XmlFlatIf> {
+		override val szInfoClass = XmlFlatIf::class
+		
+		override fun XmlSzInfoBuilder<XmlFlatIf>.buildSzInfo() {
+			inherit(XContentContainer)
+			attribute(XmlFlatIf::test)
+		}
+	}
 }
 
-@XmlRootElement(name="else")
 internal class XmlFlatElse : XStatement {
 	override fun toString() = "[else]"
+	
+	companion object : XmlSerializableCompanion<XmlFlatElse> {
+		override val szInfoClass = XmlFlatElse::class
+		
+		override fun XmlSzInfoBuilder<XmlFlatElse>.buildSzInfo() {
+			emptyBody()
+		}
+	}
 }
 
-@XmlRootElement(name="elseif")
 internal class XmlFlatElseif() : XStatement {
 	constructor(test:String):this() {
 		this.test = test
 	}
 	
-	@XmlTransient
 	val testProperty = SimpleStringProperty("")
-	@get:XmlAttribute
 	var test: String by testProperty
 	
 	override fun toString() = defaultToString("elseif","test='$test'","")
+	
+	companion object : XmlSerializableCompanion<XmlFlatElseif> {
+		override val szInfoClass = XmlFlatElseif::class
+		
+		override fun XmlSzInfoBuilder<XmlFlatElseif>.buildSzInfo() {
+			attribute(XmlFlatElseif::test)
+			emptyBody()
+		}
+		
+	}
 }
 
-@XmlRootElement(name="switch")
 class XlSwitch : XStatement {
 	
-	@XmlTransient
 	val valueProperty = SimpleStringProperty(null)
-	@get:XmlAttribute
 	var value:String? by valueProperty
 	
-	@XmlElement(name="switch")
 	val branches = ArrayList<XlSwitchCase>().observable()
 	
-	@XmlTransient
 	val defaultBranchProperty = SimpleObjectProperty<XlSwitchDefault?>(null)
-	@get:XmlElement(name="default")
 	var defaultBranch: XlSwitchDefault? by defaultBranchProperty
 	
-	@XmlTransient
 	val allGroups = observableConcatenation(
 			branches,
 			ObservableSingletonList(defaultBranchProperty))
 	
 	override fun toString() = defaultToString("switch",value.affix("value="),branches.joinToString()+defaultBranch?.toString()?.affix(" "))
 	
+	companion object : XmlSerializableCompanion<XlSwitch> {
+		override val szInfoClass = XlSwitch::class
+		
+		override fun XmlSzInfoBuilder<XlSwitch>.buildSzInfo() {
+			attribute(XlSwitch::value)
+			elements("case",XlSwitch::branches)
+			element(XlSwitch::defaultBranch,"default")
+		}
+		
+	}
 }
 sealed class PartOfSwitch: XContentContainer()
-@XmlRootElement(name="case")
 class XlSwitchCase : PartOfSwitch() {
 	
-	@XmlTransient
 	val testProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="test")
 	var test:String? by testProperty
 	
-	@XmlTransient
 	val valueProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="value")
 	var value:String? by valueProperty
 	
-	@XmlTransient
 	val neProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="ne")
 	var ne:String? by neProperty
 	
-	@XmlTransient
 	val ltProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="lt")
 	var lt:String? by ltProperty
 	
-	@XmlTransient
 	val gtProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="gt")
 	var gt:String? by gtProperty
 	
-	@XmlTransient
 	val lteProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="lte")
 	var lte:String? by lteProperty
 	
-	@XmlTransient
 	val gteProperty = SimpleStringProperty(null)
-	@get:XmlAttribute(name="gte")
 	var gte:String? by gteProperty
 	
 	override fun toString() = defaultToString(
@@ -223,9 +245,33 @@ class XlSwitchCase : PartOfSwitch() {
 			lte.affix(" lte=")+
 			gte.affix(" gte=")
 	)
+	
+	companion object : XmlSerializableCompanion<XlSwitchCase> {
+		override val szInfoClass = XlSwitchCase::class
+		
+		override fun XmlSzInfoBuilder<XlSwitchCase>.buildSzInfo() {
+			inherit(XContentContainer)
+			attribute(XlSwitchCase::test, "test")
+			attribute(XlSwitchCase::value, "value")
+			attribute(XlSwitchCase::ne, "ne")
+			attribute(XlSwitchCase::lt, "lt")
+			attribute(XlSwitchCase::gt, "gt")
+			attribute(XlSwitchCase::lte, "lte")
+			attribute(XlSwitchCase::gte, "gte")
+		}
+		
+	}
 }
 
-@XmlRootElement(name="default")
 class XlSwitchDefault : PartOfSwitch() {
 	override fun toString() = defaultToString("default")
+	
+	companion object : XmlSerializableCompanion<XlSwitchDefault> {
+		override val szInfoClass = XlSwitchDefault::class
+		
+		override fun XmlSzInfoBuilder<XlSwitchDefault>.buildSzInfo() {
+			inherit(XContentContainer)
+		}
+		
+	}
 }

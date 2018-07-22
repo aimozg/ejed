@@ -9,8 +9,8 @@ import kotlin.reflect.KProperty1
 
 open class PolymorphicListIO<T:Any,E:Any>(
 		val prop: KProperty1<T, MutableList<E>>,
-		val mappings: List<Pair<String,()->XmlSerializationInfo<out E>>>
-) : ElementConsumer<T>, XmlProducer<T> {
+		val mappings: List<Pair<String,SzInfoMaker<out E>>>
+) : ElementIO<T>() {
 	protected open fun notfound(e:E,builder: XmlBuilder,obj:T) {
 		error("Cannot serialize $e")
 	}
@@ -43,7 +43,7 @@ open class PolymorphicListIO<T:Any,E:Any>(
 class MixedListIO<T:Any,E:Any>(
 		prop: KProperty1<T, MutableList<E>>,
 		val textConverter: TextConverter<E>,
-		mappings: List<Pair<String,()->XmlSerializationInfo<out E>>>
+		mappings: List<Pair<String,SzInfoMaker<out E>>>
 ) : TextConsumer<T>, PolymorphicListIO<T,E>(prop,mappings) {
 	override fun notfound(e: E, builder: XmlBuilder, obj: T) {
 		val s = textConverter.toString(e)

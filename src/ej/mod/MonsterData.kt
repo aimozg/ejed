@@ -1,108 +1,102 @@
 package ej.mod
 
-import ej.editor.utils.*
+import ej.editor.utils.PatchNoMerge
+import ej.editor.utils.Patchable
+import ej.editor.utils.spawnCopy
+import ej.editor.utils.spawnPatchedCopy
 import ej.utils.affix
-import ej.xml.XmlSerializable
+import ej.xml.*
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
-import java.io.StringWriter
-import javax.xml.bind.Marshaller
-import javax.xml.bind.Unmarshaller
-import javax.xml.bind.annotation.*
 
-@XmlRootElement(name="monster")
 class MonsterData : Patchable, ModDataNode, XmlSerializable {
 	
 	val idProperty = SimpleStringProperty("")
-	@get:XmlAttribute
 	@PatchNoMerge
 	var id: String by idProperty
 	
 	val baseIdProperty = SimpleStringProperty()
-	@get:XmlAttribute(name = "base")
 	@PatchNoMerge
 	var baseId: String? by baseIdProperty
 	
 	val nameProperty = SimpleStringProperty()
-	@get:XmlElement
 	var name: String? by nameProperty
 	
-	@XmlElement(name="desc")
-	private var descRaw: MonsterDesc? = null
-	@XmlTransient
 	val desc = MonsterDesc()
 	
 	val pluralProperty = SimpleBooleanProperty()
-	@get:XmlElement
 	var plural by pluralProperty
 	
 	val articleProperty = SimpleStringProperty()
-	@get:XmlElement(name = "a")
-	var article by articleProperty
+	var article: String? by articleProperty
 	
-	@XmlElement(name = "pronouns")
-	private var pronounsRaw: Pronouns? = null
-	@XmlTransient
-	val pronouns = Pronouns()
-	
-	@XmlElement(name="body")
-	private var bodyRaw: MonsterBodyData? = null
-	@XmlTransient
 	val body = MonsterBodyData()
 	
-	@XmlElement(name="combat")
-	private var combatRaw: MonsterCombatData? = null
-	@XmlTransient
 	val combat = MonsterCombatData()
 	
-	@XmlElement(name = "script")
-	private var scriptRaw: ModScript? = null
-	@XmlTransient
 	val script = ModScript()
 	
-	@XmlRootElement(name="desc")
-	class MonsterDesc : XContentContainer()
-	
-	class Pronouns : Patchable {
-		@get:XmlAttribute
-		var he: String = "he"
-		@get:XmlAttribute
-		var his: String = "his"
-		@get:XmlAttribute
-		var him: String = "him"
+	class MonsterDesc : XContentContainer() {
+		companion object : XmlSerializableCompanion<MonsterDesc> {
+			override val szInfoClass = MonsterDesc::class
+			override fun XmlSzInfoBuilder<MonsterDesc>.buildSzInfo() {
+				inherit(XContentContainer)
+			}
+		}
 	}
 	
-	override fun toString() = "<monster id='$id'" +baseId.affix(" base='", "'") +"> " +name.affix(" <name>", "</name>") +" </monster>"
+	val pronounHeProperty = SimpleObjectProperty<String?>()
+	var pronounHe: String? by pronounHeProperty
+	val pronounHisProperty = SimpleObjectProperty<String?>()
+	var pronounHis: String? by pronounHisProperty
+	val pronounHimProperty = SimpleObjectProperty<String?>()
+	var pronounHim: String? by pronounHimProperty
 	
-	fun patchedCopy(baseProvider:(id:String)->MonsterData?):MonsterData {
+	override fun toString() = "<monster id='$id'" + baseId.affix(" base='", "'") + "> " + name.affix(" <name>",
+	                                                                                                 "</name>") + " </monster>"
+	
+	fun patchedCopy(baseProvider: (id: String) -> MonsterData?): MonsterData {
 		return spawnCopy().applyPatch(baseProvider)
 	}
-	fun applyPatch(baseProvider:(id:String)->MonsterData?):MonsterData {
+	
+	fun applyPatch(baseProvider: (id: String) -> MonsterData?): MonsterData {
 		val base = findBase(baseProvider)
-		return spawnPatchedCopy(this, base?.applyPatch(baseProvider)?:DefaultMonsterData)
+		return spawnPatchedCopy(this, base?.applyPatch(baseProvider) ?: DefaultMonsterData)
 	}
 	
 	fun findBase(baseProvider: (id: String) -> MonsterData?) = baseId?.let(baseProvider)
 	
-	fun toXML() = StringWriter().also { writer ->
-		ModData.jaxbContext.createMarshaller().marshal(this, writer)
-	}.buffer.toString()
-	
-	@Suppress("unused", "UNUSED_PARAMETER")
-	private fun afterUnmarshal(unmarshaller: Unmarshaller, parent:Any){
-		pronouns.applyPatch(pronounsRaw)
-		body.applyPatch(bodyRaw)
-		combat.applyPatch(combatRaw)
-		desc.content.addAll(descRaw?.content?: emptyList())
-	}
-	@Suppress("unused", "UNUSED_PARAMETER")
-	private fun beforeMarshal(marshaller: Marshaller) {
-		pronounsRaw = pronouns.takeIf { it.hasNotNulls() }
-		bodyRaw = body.takeIf { it.hasNotNulls() }
-		combatRaw = combat.takeIf { it.hasNotNulls() }
-		descRaw = desc.takeIf { it.content.isNotEmpty() }
+	companion object : XmlSerializableCompanion<MonsterData> {
+		override val szInfoClass = MonsterData::class
+		
+		override fun XmlSzInfoBuilder<MonsterData>.buildSzInfo() {
+			attribute(MonsterData::id)
+			attribute(MonsterData::baseId, "base")
+			element(MonsterData::name)
+			elementOverwrite(MonsterData::desc)
+			element(MonsterData::plural)
+			element(MonsterData::article, "a")
+			element(MonsterData::pronounHe, "he")
+			element(MonsterData::pronounHim, "him")
+			element(MonsterData::pronounHis, "his")
+			handleElement("pronouns") { _, _, input ->
+				input.forEachElement { tag, _ ->
+					when (tag) {
+						"he" -> pronounHe = text()
+						"him" -> pronounHim = text()
+						"his" -> pronounHis = text()
+						else -> error("unknown monster.pronouns.$tag")
+					}
+				}
+			}
+			elementOverwrite(MonsterData::body)
+			elementOverwrite(MonsterData::combat)
+			elementOverwrite(MonsterData::script)
+			
+		}
+		
 	}
 }
 
@@ -110,293 +104,293 @@ val DefaultMonsterData by lazy {
 	DefaultModData.monsters.find { it.id == "default" } ?: kotlin.error("Unable to load default monster data")
 }
 
-class MonsterBodyData : Patchable {
+class MonsterBodyData : Patchable, XmlAutoSerializable {
 	
-	@get:XmlElement
+	@Element
 	var vagina: VaginaData? = null
 	
-	@get:XmlElement(name = "breasts")
+	@Elements("penis")
 	val penises: MutableList<PenisData> = ArrayList()
 	
-	@get:XmlElement(name = "balls")
+	@Element("balls")
 	var balls: TesticleData? = null
 	
-	@get:XmlElement(name = "breasts")
+	@Elements("breasts")
 	val breastRows: MutableList<BreastData> = ArrayList()
 	
-	@get:XmlElement(name = "anal")
+	@Element("anal")
 	var anal: AnalData? = null
 	
-	@get:XmlElement(name = "height")
+	@Element("height")
 	var heightName: String? = null
 	
-	@get:XmlElement(name = "hips")
+	@Element("hips")
 	var hipsName: String? = null
 	
-	@get:XmlElement(name = "butt")
+	@Element("butt")
 	var buttName: String? = null
 	
-	@get:XmlElement(name = "skin")
+	@Element("skin")
 	var skin: SkinData? = null
 	
-	@get:XmlElement(name = "hair")
+	@Element("hair")
 	var hair: HairData? = null
 	
-	@get:XmlElement(name = "antennae")
+	@Element("antennae")
 	var antennaeName: String? = null
 	
-	@get:XmlElement(name = "arms")
+	@Element("arms")
 	var armsName: String? = null
 	
-	@get:XmlElement(name = "beard")
+	@Element("beard")
 	var beard: BeardData? = null
 	
-	@get:XmlElement(name = "claws")
+	@Element("claws")
 	var claws: ClawsData? = null
 	
-	@get:XmlElement(name = "ears")
+	@Element("ears")
 	var earsName: String? = null
 	
-	@get:XmlElement(name = "eyes")
+	@Element("eyes")
 	var eyes: EyesData? = null
 	
-	@get:XmlElement(name = "face")
+	@Element("face")
 	var faceName: String? = null
 	
-	@get:XmlElement(name = "gills")
+	@Element("gills")
 	var gillsName: String? = null
 	
-	@get:XmlElement(name = "horns")
+	@Element("horns")
 	var horns: HornsData? = null
 	
-	@get:XmlElement(name = "legs")
+	@Element("legs")
 	var legs: LegsData? = null
 	
-	@get:XmlElement(name = "rearBody")
+	@Element("rearBody")
 	var rearBodyName: String? = null
 	
-	@get:XmlElement(name = "tail")
+	@Element("tail")
 	var tail: TailData? = null
 	
-	@get:XmlElement(name = "tongue")
+	@Element("tongue")
 	var tongueName: String? = null
 	
-	@get:XmlElement(name = "wings")
+	@Element("wings")
 	var wingsName: String? = null
 	
-	class VaginaData : Patchable {
-		@get:XmlAttribute
+	class VaginaData : Patchable, XmlAutoSerializable {
+		@Attribute
 		var virgin: Boolean? = null
-		@get:XmlAttribute(name="wetness")
+		@Attribute("wetness")
 		var wetnessName: String? = null
-		@get:XmlAttribute(name="looseness")
+		@Attribute("looseness")
 		var loosenessName: String? = null
 	}
 	
-	class PenisData : Patchable {
-		@get:XmlAttribute(name="length")
+	class PenisData : Patchable, XmlAutoSerializable {
+		@Attribute("length")
 		var lengthName: String? = null
-		@get:XmlAttribute(name="thickness")
+		@Attribute("thickness")
 		var thicknessName: String? = null
-		@get:XmlAttribute(name="type")
+		@Attribute("type")
 		var typeName: String? = null
 	}
 	
-	class TesticleData : Patchable {
-		@get:XmlAttribute(name="count")
-		var count:Int? = null
-		@get:XmlAttribute(name="size")
-		var sizeName:String? = null
+	class TesticleData : Patchable, XmlAutoSerializable {
+		@Attribute("count")
+		var count: Int? = null
+		@Attribute("size")
+		var sizeName: String? = null
 	}
 	
-	class BreastData : Patchable {
-		@get:XmlValue
+	class BreastData : Patchable, XmlAutoSerializable {
+		@TextBody
 		var sizeName: String = "flat"
 	}
 	
-	class AnalData : Patchable {
-		@get:XmlAttribute
+	class AnalData : Patchable, XmlAutoSerializable {
+		@Attribute
 		var looseness: String? = null
-		@get:XmlAttribute
+		@Attribute
 		var wetness: String? = null
 	}
 	
-	class SkinData : Patchable {
-		@get:XmlAttribute(name = "coverage")
+	class SkinData : Patchable, XmlAutoSerializable {
+		@Attribute("coverage")
 		var coverageName: String? = null
-		@get:XmlElement
+		@Element
 		var base: SkinLayerData? = null
-		@get:XmlElement
+		@Element
 		var coat: SkinLayerData? = null
 	}
 	
-	class SkinLayerData : Patchable {
-		@get:XmlAttribute(name = "type")
+	class SkinLayerData : Patchable, XmlAutoSerializable {
+		@Attribute("type")
 		var typeName: String? = null
 		
-		@get:XmlAttribute
+		@Attribute
 		var color: String? = null
 		
-		@get:XmlAttribute
+		@Attribute
 		var color2: String? = null
 		
-		@get:XmlAttribute(name = "pattern")
+		@Attribute("pattern")
 		var patternName: String? = null
 		
-		@get:XmlAttribute
+		@Attribute
 		var adj: String? = null
 		
-		@get:XmlAttribute
+		@Attribute
 		var desc: String? = null
 	}
 	
-	class HairData : Patchable {
-		@get:XmlAttribute(name="length")
-		var lengthName:String? = null
-		@get:XmlAttribute(name="color")
-		var color:String? = null
-		@get:XmlAttribute(name="type")
-		var typeName:String? = null
+	class HairData : Patchable, XmlAutoSerializable {
+		@Attribute("length")
+		var lengthName: String? = null
+		@Attribute("color")
+		var color: String? = null
+		@Attribute("type")
+		var typeName: String? = null
 	}
 	
-	class BeardData : Patchable {
+	class BeardData : Patchable, XmlAutoSerializable {
 		
-		@get:XmlAttribute(name="style")
+		@Attribute("style")
 		var styleName: String? = null
 		
-		@get:XmlAttribute(name="length")
+		@Attribute("length")
 		var lengthName: String? = null
 	}
 	
-	class ClawsData : Patchable {
+	class ClawsData : Patchable, XmlAutoSerializable {
 		
-		@get:XmlAttribute(name="type")
+		@Attribute("type")
 		var typeName: String? = null
 		
-		@get:XmlAttribute(name="color")
+		@Attribute("color")
 		var color: String? = null
 	}
 	
-	class EyesData : Patchable {
+	class EyesData : Patchable, XmlAutoSerializable {
 		
-		@get:XmlAttribute(name="type")
+		@Attribute("type")
 		var typeName: String? = null
 		
-		@get:XmlAttribute(name="count")
+		@Attribute("count")
 		var count: Int? = null
 		
-		@get:XmlAttribute(name="color")
+		@Attribute("color")
 		var color: String? = null
 	}
 	
-	class HornsData : Patchable {
+	class HornsData : Patchable, XmlAutoSerializable {
 		
-		@get:XmlAttribute(name="type")
+		@Attribute("type")
 		var typeName: String? = null
 		
-		@get:XmlAttribute(name="count")
+		@Attribute("count")
 		var count: Int? = null
 	}
 	
-	class LegsData : Patchable {
+	class LegsData : Patchable, XmlAutoSerializable {
 		
-		@get:XmlAttribute(name="type")
+		@Attribute("type")
 		var typeName: String? = null
 		
-		@get:XmlAttribute(name="count")
+		@Attribute("count")
 		var count: Int? = null
 	}
 	
-	class TailData : Patchable {
+	class TailData : Patchable, XmlAutoSerializable {
 		
-		@get:XmlAttribute(name="type")
+		@Attribute("type")
 		var typeName: String? = null
 		
-		@get:XmlAttribute(name="count")
+		@Attribute("count")
 		var count: Int? = null
 	}
 }
 
-class MonsterCombatData : Patchable {
+class MonsterCombatData : Patchable, XmlAutoSerializable {
 	
 	val levelProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var level by levelProperty
+	@Element
+	var level: Int? by levelProperty
 	
 	val strProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var str by strProperty
+	@Element
+	var str: Int? by strProperty
 	
 	val touProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var tou by touProperty
+	@Element
+	var tou: Int? by touProperty
 	
 	val speProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var spe by speProperty
+	@Element
+	var spe: Int? by speProperty
 	
 	val intProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var int by intProperty
+	@Element
+	var int: Int? by intProperty
 	
 	val wisProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var wis by wisProperty
+	@Element
+	var wis: Int? by wisProperty
 	
 	val libProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var lib by libProperty
+	@Element
+	var lib: Int? by libProperty
 	
 	val senProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var sen by senProperty
+	@Element
+	var sen: Int? by senProperty
 	
 	val corProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement
-	var cor by corProperty
+	@Element
+	var cor: Int? by corProperty
 	
 	val bonusHpProperty = SimpleObjectProperty<Int>()
-	@get:XmlElement(name="bonusHP")
-	var bonusHp by bonusHpProperty
-
-	@XmlElement(name="weapon")
-	private var weaponRaw: WeaponData? = null
+	@Element("bonusHP")
+	var bonusHp: Int? by bonusHpProperty
 	
-	@XmlElement(name="armor")
-	private var armorRaw: ArmorData? = null
+	@Element
+	var weapon: WeaponData? = null
 	
-	@XmlElement(name="loot")
-	private var loot: LootData? = null
+	@Element
+	var armor: ArmorData? = null
 	
-	class WeaponData {
+	@Element
+	var loot: LootData? = null
+	
+	class WeaponData : XmlAutoSerializable {
 		// TODO
 	}
 	
-	class ArmorData {
+	class ArmorData : XmlAutoSerializable {
 		// TODO
 	}
 	
-	class LootData {
-		@get:XmlElement
+	class LootData : XmlAutoSerializable {
+		@Element
 		var gems: GemsData? = null
 		
-		@get:XmlElement(name = "item")
+		@Elements("item")
 		val items: MutableList<LootItemData> = ArrayList()
 		
-		class GemsData {
-			@get:XmlAttribute
+		class GemsData : XmlAutoSerializable {
+			@Attribute
 			var min: Int? = null
-			@get:XmlAttribute
+			@Attribute
 			var max: Int? = null
-			@get:XmlAttribute
+			@Attribute
 			var value: Int? = null
 		}
 		
-		class LootItemData {
-			@get:XmlAttribute
+		class LootItemData : XmlAutoSerializable {
+			@Attribute
 			var weight: Double? = null
 			
-			@get:XmlValue
+			@TextBody
 			var itemid: String? = null
 		}
 	}
