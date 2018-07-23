@@ -23,6 +23,6 @@ deploy:
     all_branches: true
   prerelease: true
   overwrite: true
-  body: "Use at your own risk. When updating, you don't need to re-download Editor-libs.jar unless its size is different."
+  body: "Use at your own risk (Ctrl+Z usually doesn't work, saves get corrupted on error and such). When updating, you don't need to re-download Editor-libs.jar unless its size is different."
 notifications:
   email: false
