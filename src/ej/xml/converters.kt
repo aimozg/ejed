@@ -34,7 +34,7 @@ class TextElementConverter<A:Any>(val tag:String,val t:TextConverter<A>) : Eleme
 	
 }
 
-class LambdaConverter<A : Any>(
+class LambdaTextConverter<A : Any>(
 		val serializeFn: (A?) -> String?,
 		val deserializeFn: (String) -> A
 ) : TextConverter<A> {
@@ -42,22 +42,22 @@ class LambdaConverter<A : Any>(
 	override fun convert(s: String): A = deserializeFn(s)
 }
 
-object StringConverter : TextConverter<String> {
+class StringTextConverter : TextConverter<String> {
 	override fun toString(a: String?) = a
 	override fun convert(s: String) = s
 }
 
-object IntConverter : TextConverter<Int> {
+class IntTextConverter : TextConverter<Int> {
 	override fun toString(a: Int?) = a?.toString()
 	override fun convert(s: String) = s.toInt()
 }
 
-object BoolConverter : TextConverter<Boolean> {
+class BoolTextConverter : TextConverter<Boolean> {
 	override fun toString(a: Boolean?) = if (a == true) "true" else null
 	override fun convert(s: String) = s == "true"
 }
 
-object NullableBoolConverter : TextConverter<Boolean> {
+class TristateBoolTextConverter : TextConverter<Boolean> {
 	override fun toString(a: Boolean?) = when (a) {
 		true -> "true"
 		false -> "false"
@@ -66,7 +66,7 @@ object NullableBoolConverter : TextConverter<Boolean> {
 	override fun convert(s: String) = s == "true"
 }
 
-class MappedConverter<E : Any>(val to: Map<E, String>, val from:Map<String,E>) : TextConverter<E> {
+class MappedTextConverter<E : Any>(val to: Map<E, String>, val from:Map<String,E>) : TextConverter<E> {
 	override fun toString(a: E?): String? = if (a == null) null else to[a]
 	override fun convert(s: String): E = from[s] ?: error("Enum value $s not found")
 }

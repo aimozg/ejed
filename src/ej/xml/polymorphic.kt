@@ -96,14 +96,11 @@ open class PolymorphicElementConverter<E: Any>(
 class MixedContentConverter<E: Any>(
 		val textConverter: TextConverter<E>,
 		picker: PolymorphicPicker<E>
-): PolymorphicElementConverter<E>(picker), TextConverter<E> {
-	override fun convert(s: String): E = textConverter.convert(s)
-	
-	override fun toString(a: E?): String? = textConverter.toString(a)
+): PolymorphicElementConverter<E>(picker) {
 	
 	override fun write(builder: XmlBuilder, value: E) {
 		if (!tryWrite(builder, value)) {
-			val s = toString(value)
+			val s = textConverter.toString(value)
 			if (s != null) builder.text(s)
 			else error("No mapping for $value")
 		}

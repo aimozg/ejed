@@ -61,27 +61,27 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	
 	@JvmName("attrString")
 	fun attribute(prop: KMutableProperty1<T, String>, name: String = prop.name) {
-		saveAttr(name, prop, StringConverter)
+		saveAttr(name, prop, StringTextConverter())
 	}
 	
 	@JvmName("attrStringN")
 	fun attribute(prop: KMutableProperty1<T, String?>, name: String = prop.name) {
-		saveAttrN(name, prop, StringConverter)
+		saveAttrN(name, prop, StringTextConverter())
 	}
 	
 	@JvmName("attrInt")
 	fun attribute(prop: KMutableProperty1<T, Int>, name: String = prop.name) {
-		saveAttr(name, prop, IntConverter)
+		saveAttr(name, prop, IntTextConverter())
 	}
 	
 	@JvmName("attrIntN")
 	fun attribute(prop: KMutableProperty1<T, Int?>, name: String = prop.name) {
-		saveAttrN(name, prop, IntConverter)
+		saveAttrN(name, prop, IntTextConverter())
 	}
 	
 	@JvmName("attrBool")
 	fun attribute(prop: KMutableProperty1<T, Boolean>, name: String = prop.name) {
-		saveAttr(name, prop, BoolConverter)
+		saveAttr(name, prop, BoolTextConverter())
 	}
 	
 	@JvmName("attrMapped")
@@ -89,7 +89,7 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	                        to: Map<E, String>,
 	                        from: Map<String, E>,
 	                        name: String = prop.name) {
-		saveAttr(name, prop, MappedConverter(to, from))
+		saveAttr(name, prop, MappedTextConverter(to, from))
 	}
 	
 	@JvmName("attrMapped")
@@ -139,17 +139,17 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	
 	@JvmName("elementString")
 	fun element(prop: KMutableProperty1<T, String>, name: String = prop.name) {
-		registerElementIO(PropertyEio(TextElementConverter(name, StringConverter), prop), name)
+		registerElementIO(PropertyEio(TextElementConverter(name, StringTextConverter()), prop), name)
 	}
 	
 	@JvmName("elementStringN")
 	fun element(prop: KMutableProperty1<T, String?>, name: String = prop.name) {
-		registerElementIO(NullablePropertyEio(TextElementConverter(name, StringConverter), prop), name)
+		registerElementIO(NullablePropertyEio(TextElementConverter(name, StringTextConverter()), prop), name)
 	}
 	
 	@JvmName("elementBoolean")
 	fun element(prop: KMutableProperty1<T, Boolean>, name: String = prop.name) {
-		registerElementIO(PropertyEio(TextElementConverter(name, BoolConverter), prop), name)
+		registerElementIO(PropertyEio(TextElementConverter(name, BoolTextConverter()), prop), name)
 	}
 	
 	@JvmName("elementSz")
@@ -299,12 +299,12 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	}
 	fun textBody(prop: KMutableProperty1<T, String>) {
 		if (nobody) error("Cannot have both textBody() and emptyBody()")
-		registerTextIO(PropertyTio(StringConverter, prop))
+		registerTextIO(PropertyTio(StringTextConverter(), prop))
 	}
 	@JvmName("textBodyNullable")
 	fun textBody(prop: KMutableProperty1<T, String?>) {
 		if (nobody) error("Cannot have both textBody() and emptyBody()")
-		registerTextIO(NullablePropertyTio(StringConverter, prop))
+		registerTextIO(NullablePropertyTio(StringTextConverter(), prop))
 	}
 	
 	fun handleText(handler: TextConsumer<T>) {
@@ -313,15 +313,21 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	
 	@JvmName("mixedBodyListMapped")
 	fun <E : Any> mixedBody(prop: KProperty1<T, MutableList<E>>,
-	                        toStr: (E?) -> String?,
-	                        fromStr: (String) -> E,
+	                        textConverter: TextConverter<E>,
 	                        mappings: List<Pair<String, () -> XmlSerializationInfo<out E>>>) {
 		if (info.texti != null) error("textBody() already set")
 		if (nobody) error("Cannot have mixedBody() and emptyBody()")
-		val mcc = MixedContentConverter(LambdaConverter(toStr, fromStr), TagPolymorphicPicker(mappings))
+		val mcc = MixedContentConverter(textConverter, TagPolymorphicPicker(mappings))
 		val eio = ListPropertyEio(mcc, prop)
-		info.texti = ListPropertyTio(mcc, prop)
+		info.texti = ListPropertyTio(mcc.textConverter, prop)
 		registerElementIO(eio, mappings.map { it.first })
+	}
+	@JvmName("mixedBodyListMapped")
+	fun <E : Any> mixedBody(prop: KProperty1<T, MutableList<E>>,
+	                        toStr: (E?) -> String?,
+	                        fromStr: (String) -> E,
+	                        mappings: List<Pair<String, () -> XmlSerializationInfo<out E>>>) {
+		mixedBody(prop,LambdaTextConverter(toStr, fromStr), mappings)
 	}
 	
 	@JvmName("mixedBodyListMappedKlass")
@@ -329,7 +335,15 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	                                    toStr: (E?) -> String?,
 	                                    fromStr: (String) -> E,
 	                                    vararg mappings: Pair<String, KClass<out E>>) {
-		mixedBody(prop, toStr, fromStr, mappings.map { (tag, klass) ->
+		mixedBody(prop, LambdaTextConverter(toStr, fromStr), mappings.map { (tag, klass) ->
+			tag to { getSerializationInfo(klass) }
+		})
+	}
+	@JvmName("mixedBodyListMappedKlass")
+	fun <E : XmlSerializable> mixedBody(prop: KProperty1<T, MutableList<E>>,
+	                                    textConverter: TextConverter<E>,
+	                                    mappings: Iterable<Pair<String, KClass<out E>>>) {
+		mixedBody(prop, textConverter, mappings.map { (tag, klass) ->
 			tag to { getSerializationInfo(klass) }
 		})
 	}

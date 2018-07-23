@@ -5,21 +5,98 @@ import kotlin.coroutines.experimental.buildSequence
 import kotlin.reflect.*
 import kotlin.reflect.full.*
 
+/**
+ * ```
+ * @Attribute var name: String = "value";
+ * @Attribute("v2") var name2: String = "value2";
+ * ```
+ * <->
+ * ```<element... name="value" v2="value2" .../>```
+ */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Attribute(val name: String = "")
 
+/**
+ * ```
+ * @Element var name: String = "value";
+ * @Element("v2") var name2: String = "value2";
+ * ```
+ * <->
+ * ```<name>value</name> <v2>value2</v2>```
+ */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Element(val name: String = "")
 
+/**
+ * ```
+ * @TextBody var name: String = "value";
+ * ```
+ * <->
+ * ```<owner-element... >value</owner-element>```
+ */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class TextBody
 
+/**
+ * ```
+ * @Elements("item") val items = arrayListOf("me", "her")
+ * @Elements("person", true) val persons = arrayListOf("Alice", "Bob")
+ * @Elements("object")
+ * val objects = arrayListOf(XmlAutoSerializableA, XmlAutoSerializableB)
+ * ```
+ * <->
+ * ```
+ * <item>me</item>
+ * <item>her</item>
+ * <persons>
+ *     <person>Alice</person>
+ *     <person>Bob</person>
+ * </persons>
+ * <object some-property="value">
+ *     <some-other-property>A</some-other-property>
+ * </object>
+ * <object some-property="value2">
+ *     <some-other-property>B</some-other-property>
+ * </object>
+ * ```
+ */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Elements(val name: String, val wrapped:Boolean = false, val wrapperName:String="")
+
+/**
+ * ```
+ * @PolymorphicElements(polymorphisms=[
+ *      Polymorphism("gun", Gun::class),
+ *      Polymorphism("sword", Sword::class)
+ * ])
+ * val items = arrayListOf(Sword("Excalibur"), Gun("Railgun"))
+ * ```
+ * <->
+ * ```
+ * <sword>Excalibur</sword>
+ * <gun>Railgun</gun>
+ * ```
+ */
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class PolymorphicElements(
+		val wrapped:Boolean = false,
+		val wrapperName: String = "",
+		vararg val polymorphisms:Polymorphism
+)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Polymorphism(val qualifier:String,val klass:KClass<out XmlSerializable>)
+
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MixedBody(
+		val stringConverter:KClass<out TextConverter<*>> = StringTextConverter::class,
+		vararg val polymorphisms:Polymorphism
+)
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
@@ -49,10 +126,10 @@ private class PropertyTypeinfo(
 	
 	fun textConverter(): TextConverter<*>? =
 			when {
-				type == String::class.starProjectedType -> StringConverter
-				type == Int::class.starProjectedType -> IntConverter
+				type == String::class.starProjectedType -> StringTextConverter()
+				type == Int::class.starProjectedType -> IntTextConverter()
 				type == Boolean::class.starProjectedType ->
-					if (nullable) NullableBoolConverter else BoolConverter
+					if (nullable) TristateBoolTextConverter() else BoolTextConverter()
 				type.isSubtypeOf(Enum::class.starProjectedType) -> {
 					val to = HashMap<Enum<*>, String>()
 					val from = HashMap<String, Enum<*>>()
@@ -62,7 +139,7 @@ private class PropertyTypeinfo(
 						to[enum] = enum.name
 						from[enum.name] = enum
 					}
-					MappedConverter(to, from)
+					MappedTextConverter(to, from)
 				}
 				else -> null
 			}
@@ -160,6 +237,33 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 					registerElementIO(ListPropertyEio(elemConverter as ElementConverter<Any>,
 					                                  property as KProperty1<T, MutableList<Any>>), elemName)
 				}
+			}
+			is PolymorphicElements -> {
+				if (!pti.list) error("Cannot have @PolymorphicElements for non-list $property")
+				val converter = PolymorphicElementConverter(TagPolymorphicPicker(
+						annotation.polymorphisms.map { it.qualifier to it.klass }
+				))
+				if (annotation.wrapped) {
+					val wrapperName = annotation.wrapperName ifEmpty property.name
+					@Suppress("UNCHECKED_CAST")
+					val eio = WrappedListPropertyEio(wrapperName,
+					                                 converter,
+					                                 property as KProperty1<T,MutableList<XmlSerializable>>)
+					registerElementIO(eio,wrapperName)
+				} else {
+					@Suppress("UNCHECKED_CAST")
+					val eio = ListPropertyEio(converter,
+					                          property as KProperty1<T,MutableList<XmlSerializable>>)
+					registerElementIO(eio, annotation.polymorphisms.map { it.qualifier })
+				}
+			}
+			is MixedBody -> {
+				if (!pti.list) error("Cannot have @PolymorphicElements for non-list $property")
+				val converter = annotation.stringConverter.createInstance()
+				@Suppress("UNCHECKED_CAST")
+				mixedBody(property as KProperty1<T,MutableList<XmlSerializable>>,
+				          converter as TextConverter<XmlSerializable>,
+				          annotation.polymorphisms.map { it.qualifier to it.klass })
 			}
 			is TextBody -> {
 				if (pti.list) error("Cannot have @TextBody for list $property")

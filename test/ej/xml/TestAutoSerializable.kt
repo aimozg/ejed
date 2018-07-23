@@ -41,8 +41,8 @@ class TestAutoSerializable {
 		val actual = output.buffer.toString()
 		val r = try {
 			XmlExplorer(StringReader(actual)).run(expected)
-		} catch (e:Exception) {
-			throw AssertionError("In $actual:",e)
+		} catch (e: Exception) {
+			throw AssertionError("In $actual:", e)
 		}
 		
 		if (reverse) {
@@ -70,12 +70,16 @@ class TestAutoSerializable {
 		assertEquals(mapOf(*expected), actual)
 	}
 	
+	fun assertNoAttrs(actual: Map<String, String>) {
+		assertEquals(emptyMap<String, String>(), actual)
+	}
+	
 	@Test
 	fun testEmpty() {
 		@RootElement("mock")
 		class Mock : XmlAutoSerializable
 		assertXml(Mock(), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
+			assertNoAttrs(rootAttrs)
 			assertNoElements()
 		}
 	}
@@ -231,9 +235,9 @@ class TestAutoSerializable {
 			var s12: String = "1213"
 		}
 		assertXml(Mock(), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
+			assertNoAttrs(rootAttrs)
 			forEachElement { tag, attrs ->
-				assertAttrs(attrs)
+				assertNoAttrs(attrs)
 				when (tag) {
 					"s1" -> assertEquals("123", text())
 					"s3" -> assertEquals("456", text())
@@ -268,7 +272,7 @@ class TestAutoSerializable {
 			var value: String? = "123"
 		}
 		assertXml(Mock2(), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
+			assertNoAttrs(rootAttrs)
 			assertEquals("123", text())
 		}
 		@RootElement("mock")
@@ -277,7 +281,7 @@ class TestAutoSerializable {
 			var value: String? = null
 		}
 		assertXml(Mock3(), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
+			assertNoAttrs(rootAttrs)
 			assertEquals("", text())
 		}
 	}
@@ -297,7 +301,7 @@ class TestAutoSerializable {
 			var e4: Mock1? = Mock1("789")
 		}
 		assertXml(Mock2(), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
+			assertNoAttrs(rootAttrs)
 			forEachElement { tag, attrs ->
 				when (tag) {
 					"e1" -> assertAttrs(attrs, "me" to "123")
@@ -318,11 +322,11 @@ class TestAutoSerializable {
 			val things: MutableList<Mock1> = init.map { Mock1(it) }.toMutableList()
 		}
 		assertXml(Mock2("a", "b"), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
+			assertNoAttrs(rootAttrs)
 			val things = collectElements { tag, attrs ->
 				when (tag) {
 					"thing" -> {
-						assertAttrs(attrs)
+						assertNoAttrs(attrs)
 						text()
 					}
 					else -> error("Unexpected mock.$tag")
@@ -354,7 +358,7 @@ class TestAutoSerializable {
 			assertEquals(
 					listOf("a" to "123", "c" to "789"),
 					collectElements { tag, attrs ->
-						assertAttrs(attrs)
+						assertNoAttrs(attrs)
 						tag to text()
 					}
 			)
@@ -366,41 +370,203 @@ class TestAutoSerializable {
 		class Inner(@TextBody var content: String = "") : XmlAutoSerializable
 		@RootElement("mock")
 		class Outer(vararg init: String) : XmlAutoSerializable {
-			@Elements("e",true, "inners")
+			@Elements("e", true, "inners")
 			val things: MutableList<Inner> = init.map { Inner(it) }.toMutableList()
 		}
 		assertXml(Outer("a", "b"), "mock") { rootAttrs ->
-			assertAttrs(rootAttrs)
-			assertEquals(listOf(Unit),collectElements { tag, attrs ->
+			assertNoAttrs(rootAttrs)
+			collectOneElement { tag, attrs ->
 				when (tag) {
 					"inners" -> {
-						assertAttrs(attrs)
+						assertNoAttrs(attrs)
 						assertEquals(listOf("a", "b"),
 						             collectElements { tag2, attrs2 ->
 							             assertEquals("e", tag2)
-							             assertAttrs(attrs2)
+							             assertNoAttrs(attrs2)
 							             text()
 						             })
 					}
 					else -> error("Unexpected $tag")
 				}
-			})
+			}
 		}
 	}
 	
 	enum class Foo {
-		VALUE1,BAR,BAZ
+		VALUE1, BAR, BAZ
 	}
+	
 	@Test
 	fun testEnums() {
 		@RootElement("mock")
 		class Mock : XmlAutoSerializable {
 			@Attribute
-			var foo:Foo = Foo.VALUE1
+			var foo: Foo = Foo.VALUE1
 		}
-		assertXml(Mock(),"mock") { rootAttrs ->
+		assertXml(Mock(), "mock") { rootAttrs ->
 			assertAttrs(rootAttrs, "foo" to "VALUE1")
 			assertNoElements()
+		}
+	}
+	
+	@Test
+	fun testPolymorphicElements() {
+		class Gun(@Attribute var name: String = "") : XmlAutoSerializable
+		class Sword(@TextBody var name: String = "") : XmlAutoSerializable
+		@RootElement("mock")
+		class Mock(vararg init: XmlAutoSerializable) : XmlAutoSerializable {
+			@PolymorphicElements(polymorphisms = [Polymorphism("gun", Gun::class), Polymorphism("sword", Sword::class)])
+			val things = mutableListOf(*init)
+		}
+		assertXml(Mock(Sword("Excalibur"), Gun("Railgun"), Gun("Trigun")), "mock") { rootAttrs ->
+			assertNoAttrs(rootAttrs)
+			assertEquals(
+					listOf("sword Excalibur", "gun Railgun", "gun Trigun"),
+					collectElements { tag, attrs ->
+						when (tag) {
+							"gun" -> {
+								assertEquals(setOf("name"), attrs.keys)
+								assertNoElements()
+								"gun ${attrs["name"]!!}"
+							}
+							"sword" -> {
+								assertNoAttrs(attrs)
+								"sword ${text()}"
+							}
+							else -> error("unexpected $tag")
+						}
+					}
+			)
+		}
+	}
+	
+	@Test
+	fun testPolymorphicElementsWrapped() {
+		class Gun(@Attribute var name: String = "") : XmlAutoSerializable
+		class Sword(@TextBody var name: String = "") : XmlAutoSerializable
+		@RootElement("mock")
+		class Mock(vararg init: XmlAutoSerializable) : XmlAutoSerializable {
+			@PolymorphicElements(true, "",
+			                     Polymorphism("gun", Gun::class), Polymorphism("sword", Sword::class))
+			val things = mutableListOf(*init)
+		}
+		assertXml(Mock(Sword("Excalibur"), Gun("Railgun"), Gun("Trigun")), "mock") { rootAttrs ->
+			assertNoAttrs(rootAttrs)
+			collectOneElement { wtag, wattrs ->
+				assertEquals("things", wtag)
+				assertNoAttrs(wattrs)
+				assertEquals(
+						listOf("sword Excalibur", "gun Railgun", "gun Trigun"),
+						collectElements { tag, attrs ->
+							when (tag) {
+								"gun" -> {
+									assertEquals(setOf("name"), attrs.keys)
+									assertNoElements()
+									"gun ${attrs["name"]!!}"
+								}
+								"sword" -> {
+									assertNoAttrs(attrs)
+									"sword ${text()}"
+								}
+								else -> error("unexpected $tag")
+							}
+						}
+				)
+			}
+		}
+	}
+	
+	@Test
+	fun testMixedBody() {
+		class Gun(@Attribute var name: String = "") : XmlAutoSerializable
+		class Sword(@TextBody var name: String = "") : XmlAutoSerializable
+		@RootElement("mock")
+		class Mock(vararg init: Any) : XmlAutoSerializable {
+			@MixedBody(polymorphisms = [Polymorphism("gun", Gun::class), Polymorphism("sword", Sword::class)])
+			val things = mutableListOf(*init)
+		}
+		assertXml(Mock(
+				Sword("Excalibur"),
+				"vs",
+				Gun("Railgun"),
+				"and",
+				Gun("Trigun")),
+		          "mock") { rootAttrs ->
+			assertNoAttrs(rootAttrs)
+			assertEquals(
+					listOf("sword Excalibur", "vs", "gun Railgun", "and", "gun Trigun"),
+					collectNodes { node ->
+						node.fold(
+								{ it },
+								{ (tag, attrs) ->
+									
+									when (tag) {
+										"gun" -> {
+											assertEquals(setOf("name"), attrs.keys)
+											assertNoElements()
+											"gun ${attrs["name"]!!}"
+										}
+										"sword" -> {
+											assertNoAttrs(attrs)
+											"sword ${text()}"
+										}
+										else -> error("unexpected $tag")
+									}
+								}
+						)
+					}
+			)
+		}
+	}
+	interface Thing : XmlAutoSerializable
+	@Test
+	fun testMixedBodyWithTextConverter() {
+		class Gun(@Attribute var name: String = "") : Thing
+		class Sword(@TextBody var name: String = "") : Thing
+		class Word(var data: String = "") : Thing
+		class WordConverter:TextConverter<Word> {
+			override fun convert(s: String): Word = Word(s)
+			
+			override fun toString(a: Word?): String? = a?.data
+			
+		}
+		@RootElement("mock")
+		class Mock(vararg init: Thing) : XmlAutoSerializable {
+			@MixedBody(WordConverter::class,
+					Polymorphism("gun", Gun::class), Polymorphism("sword", Sword::class))
+			val things = mutableListOf(*init)
+		}
+		assertXml(Mock(
+				Sword("Excalibur"),
+				Word("vs"),
+				Gun("Railgun"),
+				Word("and"),
+				Gun("Trigun")),
+		          "mock") { rootAttrs ->
+			assertNoAttrs(rootAttrs)
+			assertEquals(
+					listOf("sword Excalibur", "vs", "gun Railgun", "and", "gun Trigun"),
+					collectNodes { node ->
+						node.fold(
+								{ it },
+								{ (tag, attrs) ->
+									
+									when (tag) {
+										"gun" -> {
+											assertEquals(setOf("name"), attrs.keys)
+											assertNoElements()
+											"gun ${attrs["name"]!!}"
+										}
+										"sword" -> {
+											assertNoAttrs(attrs)
+											"sword ${text()}"
+										}
+										else -> error("unexpected $tag")
+									}
+								}
+						)
+					}
+			)
 		}
 	}
 }
