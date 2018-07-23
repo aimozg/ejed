@@ -24,23 +24,27 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression> 
 	fun functionsReturning(rawType:String) = functions.filter {
 		it.returnTypeRaw == rawType
 	}
+	fun buildersReturning(rawType:String):List<ExpressionBuilder> = listOfNotNull(
+			enumByTypeName(rawType)?.let {
+				ExternalEnumBuilder(it)
+			}
+	) + functionsReturning(rawType).map {
+		ExternalFunctionBuilder(it)
+	}
+	fun functionByName(name:String) = functions.find { it.name == name }
+	fun enumByTypeName(typename:String) = enums.find { it.name == typename }
 	
 	override fun tryConvert(converter: BuilderConverter, expr: CallExpression): ExpressionBuilder? {
 		val id = expr.function.asId?.value ?: return null
 		val arity = expr.arguments.size
-		for (function in functions) {
-			if (function.name != id) continue
-			if (function.arity != arity) return null
-			val efb = ExternalFunctionBuilder(function)
-			for ((argument,param) in expr.arguments.zip(efb.params)) {
-				param.value = converter.convert(argument)
-			}
-			return efb
+		val function = functionByName(id) ?: return null
+		if (function.arity != arity) return null
+		val efb = ExternalFunctionBuilder(function)
+		for ((argument,param) in expr.arguments.zip(efb.params)) {
+			param.value = converter.convert(argument)
 		}
-		return null
+		return efb
 	}
-	
-	
 }
 
 val Stdlib:StdlibDecl by lazy {

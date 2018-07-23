@@ -4,6 +4,7 @@ import ej.editor.expr.*
 import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.lists.CreatureChooser
+import ej.editor.expr.lists.SimpleExpressionChooser
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 
@@ -43,7 +44,14 @@ class ExternalFunctionBuilder(
 //					"string" -> TextExprChooser
 					"Creature" -> CreatureChooser
 					/* TODO pick proper chooser*/
-					else -> AnyExprChooser
+					else -> {
+						val list = Stdlib.buildersReturning(l.type)
+						if (list.isNotEmpty()) {
+							SimpleExpressionChooser(list)
+						} else {
+							AnyExprChooser
+						}
+					}
 				}
 				valueLink(prop, l.name, chooser)
 			}

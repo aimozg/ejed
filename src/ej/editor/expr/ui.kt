@@ -161,7 +161,7 @@ open class ListChooserDialog<T:Any> : ChooserDialog<T>() {
 		this.items.setAll(items)
 		list.cellFormat(formatter)
 		list.selectionModel.select(initial)
-		return showModal(title,initial)
+		return showModal(title,initial ?: items.firstOrNull())
 	}
 }
 class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
@@ -203,6 +203,6 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 				else it
 			})
 		}
-		return showModal(title,initial)
+		return showModal(title, initial ?: items.firstOrNull())
 	}
 }
