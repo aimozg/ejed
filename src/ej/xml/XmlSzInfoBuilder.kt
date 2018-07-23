@@ -120,6 +120,10 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 		registerElementIO(eio, listOf(name))
 	}
 	
+	fun handlerForElement(name: String): ElementConsumer<T>? {
+		return info.elements[name]
+	}
+	
 	fun handleElement(name: String, handler: ElementConsumer<T>) {
 		info.elements[name] = handler
 	}

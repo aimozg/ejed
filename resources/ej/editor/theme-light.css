@@ -1,0 +1,48 @@
+/* Scene statement tree node */
+.tree-graphic {
+    -fx-font-family: "Lucida Console";
+}
+/* Node type: text */
+.xtext {
+    -fx-font-family: "Lucida Fax";
+}
+/* Node type: flow control (if, switch) */
+.xlogic {
+    -fx-text-background-color: #008;
+}
+/* Node type: comment */
+.xcomment {
+    -fx-text-background-color: #080;
+}
+/* Node type: command */
+.xcommand {
+    -fx-text-background-color: #800;
+}
+/* Node type: scene transition (menu, next, battle, forward) */
+.xnext {
+    -fx-text-background-color: #808;
+}
+
+/* Expression editor */
+.xexpr {
+}
+/* Expression editor: link */
+.xexpr-link {
+    -fx-fill: #00f;
+    -fx-cursor: hand;
+    -fx-underline: true;
+}
+/* Expression editor: bad link */
+.xexpr-link.xexpr-bad-link {
+    -fx-fill: #f00;
+}
+
+.tree-cell.dragover .tree-graphic {
+    -fx-border-color: #0f0;
+}
+.tree-cell.dragover.dragover-from-top .tree-graphic {
+    -fx-border-width: 2px 0 0 0;
+}
+.tree-cell.dragover.dragover-from-bottom .tree-graphic {
+    -fx-border-width: 0 0 2px 0;
+}

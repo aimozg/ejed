@@ -5,6 +5,7 @@ import javafx.scene.Cursor
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
+import java.io.File
 
 /*
  * Created by aimozg on 26.06.2018.
@@ -14,6 +15,13 @@ class Styles : Stylesheet() {
 	companion object {
 		val FONT_FACE_TEXT = "Lucida Fax"
 		val FONT_FACE_SCRIPT = "Lucida Console"
+		
+		val THEME_DARK =
+				File("theme-dark.css").takeIf { it.exists() }?.toURI()?.toURL()?.toExternalForm() ?:
+				Styles::class.java.getResource("/ej/editor/theme-dark.css").toExternalForm()
+		val THEME_LIGHT =
+				File("theme-light.css").takeIf { it.exists() }?.toURI()?.toURL()?.toExternalForm() ?:
+				Styles::class.java.getResource("/ej/editor/theme-light.css").toExternalForm()
 
 		val wrapper by cssclass()
 		val consola by cssclass()
@@ -35,6 +43,7 @@ class Styles : Stylesheet() {
 		val xlogic by cssclass()
 		val xcommand by cssclass()
 		val xcomment by cssclass()
+		val xnext by cssclass()
 		val smallButton by cssclass()
 		val smallButtonSpace by cssclass()
 		

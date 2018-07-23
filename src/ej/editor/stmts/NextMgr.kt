@@ -23,5 +23,5 @@ object NextMgr : StatementManager<XsNext>() {
 
 	override fun treeGraphic(stmt: XsNext, tree: StatementTree) = simpleTreeLabel(
 			stmt.refProperty.stringBinding { "[Next] --> $it" }
-	).addClass(Styles.xlogic)
+	).addClass(Styles.xnext)
 }

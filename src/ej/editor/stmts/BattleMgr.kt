@@ -24,7 +24,7 @@ object BattleMgr : StatementManager<XsBattle>() {
 	override fun treeGraphic(stmt: XsBattle, tree: StatementTree) = simpleTreeLabel(
 			stmt.monsterProperty.stringBinding{"Battle with $it"}
 	) {
-		addClass(Styles.xcommand)
+		addClass(Styles.xnext)
 	}
 	
 }

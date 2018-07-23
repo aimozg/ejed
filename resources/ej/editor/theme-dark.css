@@ -1,0 +1,86 @@
+.root {
+    /* Base object color */
+    -fx-base: #3c3f41;
+
+    /* Window BG */
+    -fx-background: #313335;
+
+    /* Text controls & data controls BG */
+    -fx-control-inner-background: #2b2b2b;
+
+    /* Button controls BG
+     * Derives from -fx-color which is -fx-base for default button,
+     * but may change depending on state (hover/disabled/armed/..)
+     */
+    -fx-body-color: derive(-fx-color,10%);
+    -fx-body-color-bottomup: -fx-body-color;
+    -fx-body-color-to-right: -fx-body-color;
+
+
+    -fx-inner-border: derive(-fx-color, 30%);
+    -fx-inner-border-horizontal: derive(-fx-color, 30%);
+    -fx-inner-border-vertical: derive(-fx-color, 30%);
+}
+
+.menu-bar {
+    -fx-background-color: -fx-base;
+}
+
+.button:default {
+    -fx-base: #5d7580;
+    -fx-font-weight: bold;
+}
+
+/* Scene statement tree node */
+.tree-graphic {
+    -fx-font-family: "Lucida Console";
+}
+/* Node type: text */
+.xtext {
+    -fx-font-family: "Lucida Fax";
+    -fx-text-background-color: #eee;
+}
+/* Node type: flow control (if, switch) */
+.xlogic {
+    -fx-text-background-color: #acf;
+}
+/* Node type: comment */
+.xcomment {
+    -fx-text-background-color: #6a6;
+}
+/* Node type: command */
+.xcommand {
+    -fx-text-background-color: #faa;
+}
+/* Node type: scene transition (menu, next, battle, forward) */
+.xnext {
+    -fx-text-background-color: #a8f;
+}
+
+/* Expression editor */
+.xexpr {
+}
+/* Expression editor: text */
+.xexpr Text {
+    -fx-fill: #eee;
+}
+/* Expression editor: link */
+.xexpr-link {
+    -fx-fill: #48f;
+    -fx-cursor: hand;
+    -fx-underline: true;
+}
+/* Expression editor: bad link */
+.xexpr-link.xexpr-bad-link {
+    -fx-fill: #f44;
+}
+
+.tree-cell.dragover .tree-graphic {
+    -fx-border-color: #0f0;
+}
+.tree-cell.dragover.dragover-from-top .tree-graphic {
+    -fx-border-width: 2px 0 0 0;
+}
+.tree-cell.dragover.dragover-from-bottom .tree-graphic {
+    -fx-border-width: 0 0 2px 0;
+}

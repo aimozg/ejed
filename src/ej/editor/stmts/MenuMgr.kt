@@ -13,7 +13,7 @@ object MenuMgr : StatementManager<XsMenu>() {
 		// TODO goto choices
 	}
 	
-	override fun treeGraphic(stmt: XsMenu, tree: StatementTree) = simpleTreeLabel("Menu:").addClass(Styles.xlogic)
+	override fun treeGraphic(stmt: XsMenu, tree: StatementTree) = simpleTreeLabel("Menu:").addClass(Styles.xnext)
 	
 }
 

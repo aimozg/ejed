@@ -207,6 +207,7 @@ class XlSwitch : XStatement {
 		override fun XmlSzInfoBuilder<XlSwitch>.buildSzInfo() {
 			attribute(XlSwitch::value)
 			elements("case",XlSwitch::branches)
+			handleElement("switch",handlerForElement("case")!!)
 			element(XlSwitch::defaultBranch,"default")
 		}
 		

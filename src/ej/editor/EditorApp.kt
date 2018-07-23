@@ -7,6 +7,7 @@ import ej.editor.utils.textInputDialog
 import ej.editor.views.ModListView
 import ej.editor.views.ModView
 import ej.mod.ModData
+import ej.utils.replaceSome
 import javafx.geometry.Side
 import javafx.scene.input.KeyCombination
 import tornadofx.*
@@ -56,6 +57,20 @@ class EditorView : AModView() {
 						controller.saveModAs()
 					}
 				}
+				menu("View") {
+					item("Dark theme").action {
+						FX.stylesheets.replaceSome {
+							if (it == Styles.THEME_LIGHT) Styles.THEME_DARK
+							else null
+						}
+					}
+					item("Light theme").action {
+						FX.stylesheets.replaceSome {
+							if (it == Styles.THEME_DARK) Styles.THEME_LIGHT
+							else null
+						}
+					}
+				}
 			}
 		}
 		right = rightDrawer
@@ -89,6 +104,7 @@ class EditorApp : App(EditorView::class) {
 	
 	init {
 		importStylesheet(Styles::class)
+		FX.stylesheets += Styles.THEME_DARK
 	}
 	
 	companion object {

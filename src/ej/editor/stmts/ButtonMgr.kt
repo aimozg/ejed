@@ -32,5 +32,5 @@ object ButtonMgr : StatementManager<XsButton>() {
 			         stmt.disabledProperty) { text, ref, disabled ->
 				(if (disabled == true) "(disabled) " else "") + "[$text] --> $ref"
 			}
-	).addClass(Styles.xlogic)
+	).addClass(Styles.xnext)
 }

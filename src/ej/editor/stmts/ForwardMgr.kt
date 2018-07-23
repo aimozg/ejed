@@ -14,7 +14,7 @@ object ForwardMgr : StatementManager<XsForward>() {
 			simpleTreeLabel(
 					stmt.refProperty.stringBinding{"Forward => $it"}
 			) {
-				addClass(Styles.xcommand)
+				addClass(Styles.xnext)
 			}
 	
 	override fun editorBody(stmt: XsForward,
