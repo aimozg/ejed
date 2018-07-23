@@ -21,6 +21,10 @@ annotation class TextBody
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Elements(val name: String)
 
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class WrappedElements(val wrapperName:String, val name: String)
+
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class RootElement(val name: String)
@@ -51,10 +55,17 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 		val attrAnno = property.findAnnotation<Attribute>()
 		val elemAnno = property.findAnnotation<Element>()
 		val elemsAnno = property.findAnnotation<Elements>()
+		val welemsAnno = property.findAnnotation<WrappedElements>()
 		val textAnno = property.findAnnotation<TextBody>()
-		if (attrAnno == null && elemAnno == null && elemsAnno == null && textAnno == null) continue
+		if (attrAnno == null
+				&& elemAnno == null
+				&& elemsAnno == null
+				&& welemsAnno == null
+				&& textAnno == null) continue
 		val attrName = attrAnno?.name ifEmpty property.name
-		val elemName = elemAnno?.name ifEmpty (elemsAnno?.name ifEmpty property.name)
+		val elemName = welemsAnno?.name ifEmpty
+				elemAnno?.name ifEmpty
+				elemsAnno?.name ifEmpty property.name
 		val nullable = property.returnType.isMarkedNullable
 		var textConverter: TextConverter<*>? = null
 		var elemConverter: ElementConverter<*>? = null
@@ -106,8 +117,8 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 				saveAttr(attrName, property as KMutableProperty1<T, Any>, textConverter as TextConverter<Any>)
 			}
 		}
-		if (elemAnno != null || elemsAnno != null) {
-			if (elemConverter == null && (elemAnno != null || elemsAnno != null)) {
+		if (elemAnno != null || elemsAnno != null || welemsAnno != null) {
+			if (elemConverter == null) {
 				if (textConverter != null) {
 					elemConverter = TextElementConverter(elemName, textConverter)
 				} else {
@@ -117,9 +128,19 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 			
 			if (list) {
 				if (elemAnno != null) error("Cannot have @Element for list $property")
-				@Suppress("UNCHECKED_CAST")
-				registerElementIO(ListPropertyEio(elemConverter as ElementConverter<Any>,
-				                                  property as KProperty1<T, MutableList<Any>>), elemName)
+				if (welemsAnno != null) {
+					val wrapperName = welemsAnno.wrapperName ifEmpty elemName
+					@Suppress("UNCHECKED_CAST")
+					val eio = WrappedListPropertyEio(wrapperName,
+					                                 elemConverter as ElementConverter<Any>,
+					                                 property as KProperty1<T, MutableList<Any>>)
+					registerElementIO(eio,
+					                  wrapperName)
+				} else {
+					@Suppress("UNCHECKED_CAST")
+					registerElementIO(ListPropertyEio(elemConverter as ElementConverter<Any>,
+					                                  property as KProperty1<T, MutableList<Any>>), elemName)
+				}
 			} else if (property is KMutableProperty1<T, *>) {
 				if (elemsAnno != null) error("Cannot have @Elements for non-list $property")
 				if (nullable) {

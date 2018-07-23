@@ -426,6 +426,9 @@ internal fun <T : Any> XmlSerializableCompanion<T>.create() = XmlSzInfoBuilder(n
 
 internal val KnownSzInfos = WeakHashMap<KClass<*>, XmlSerializationInfo<*>>()
 
+inline fun <reified T : Any> getSerializationInfo(): XmlSerializationInfo<T> {
+	return getSerializationInfoSafe(T::class) ?: error("No XmlSerializationInfo for ${T::class}")
+}
 fun <T : Any> getSerializationInfo(clazz: KClass<T>): XmlSerializationInfo<T> {
 	return getSerializationInfoSafe(clazz) ?: error("No XmlSerializationInfo for $clazz")
 }

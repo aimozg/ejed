@@ -39,7 +39,11 @@ class TestAutoSerializable {
 		val szInfo = getSerializationInfo(src::class as KClass<T>)
 		szInfo.serializeDocument(src, builder)
 		val actual = output.buffer.toString()
-		val r = XmlExplorer(StringReader(actual)).run(expected)
+		val r = try {
+			XmlExplorer(StringReader(actual)).run(expected)
+		} catch (e:Exception) {
+			throw AssertionError("In $actual:",e)
+		}
 		
 		if (reverse) {
 			val src2 = szInfo.deserializeDocument(XmlExplorer(StringReader(actual)))
@@ -342,6 +346,33 @@ class TestAutoSerializable {
 						tag to text()
 					}
 			)
+		}
+	}
+	
+	@Test
+	fun testWrapped() {
+		class Inner(@TextBody var content: String = "") : XmlAutoSerializable
+		@RootElement("mock")
+		class Outer(vararg init: String) : XmlAutoSerializable {
+			@WrappedElements("inners", "e")
+			val things: MutableList<Inner> = init.map { Inner(it) }.toMutableList()
+		}
+		assertXml(Outer("a", "b"), "mock") { rootAttrs ->
+			assertAttrs(rootAttrs)
+			assertEquals(listOf(Unit),collectElements { tag, attrs ->
+				when (tag) {
+					"inners" -> {
+						assertAttrs(attrs)
+						assertEquals(listOf("a", "b"),
+						             collectElements { tag2, attrs2 ->
+							             assertEquals("e", tag2)
+							             assertAttrs(attrs2)
+							             text()
+						             })
+					}
+					else -> error("Unexpected $tag")
+				}
+			})
 		}
 	}
 }

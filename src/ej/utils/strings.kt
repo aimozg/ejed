@@ -12,6 +12,9 @@ fun String?.affixNonEmpty(prefix:String,suffix:String=""):String =
 
 infix fun String?.ifEmpty(default:String): String =
 		if (this == null || this.isEmpty()) default else this
+@JvmName("ifEmptyNullable")
+infix fun String?.ifEmpty(default:String?): String? =
+		if (this == null || this.isEmpty()) default else this
 
 fun String.crop(maxLength:Int, ellipsis:String="..."):String =
 		if (length <= maxLength) this
