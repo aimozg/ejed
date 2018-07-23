@@ -18,6 +18,7 @@ fun <T : Any> XmlSerializationInfo<T>.deserializeInto(obj: T,
                                                       input: XmlExplorerController,
                                                       myAttrs: Map<String, String>,
                                                       parent: Any?) {
+	beforeLoad?.invoke(obj, parent)
 	for ((k, v) in myAttrs) {
 		val aio = attri[k] ?: defaultAttrConsumer
 		aio.consumeAttr(obj, k, v)

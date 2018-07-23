@@ -98,6 +98,10 @@ annotation class MixedBody(
 		vararg val polymorphisms:Polymorphism
 )
 
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ParentElement
+
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class RootElement(val name: String)
@@ -178,9 +182,16 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 	clazz.findAnnotation<RootElement>()?.let { rootAnno ->
 		name = rootAnno.name
 	}
+	var parentElement: KMutableProperty1<T,in Any?>? = null
 	for (property in clazz.declaredMemberProperties) {
 		val pti by lazy { PropertyTypeinfo(property) }
 		for (annotation in property.annotations) when (annotation) {
+			is ParentElement -> {
+				if (property !is KMutableProperty1<T,*>) error("@ParentElement $property must be mutable")
+				if (parentElement != null) error("Duplicate @ParentElement $parentElement and $property")
+				@Suppress("UNCHECKED_CAST")
+				parentElement = property as KMutableProperty1<T, in Any?>
+			}
 			is Attribute -> {
 				if (pti.list) error("Cannot have @Attribute for list $property")
 				val attrName = annotation.name ifEmpty property.name
@@ -282,4 +293,9 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 		}
 	}
 	if (info.texti == null && info.elements.isEmpty()) emptyBody()
+	parentElement?.let {
+		beforeLoad { parent ->
+			parentElement.set(this,parent)
+		}
+	}
 }

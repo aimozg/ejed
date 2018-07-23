@@ -11,6 +11,6 @@ class ExternalEnumChooser(
 		decl: EnumDecl
 ) : AbstractListValueChooser<EnumDecl.EnumConstDecl>(decl.values) {
 	override fun formatter(item: EnumDecl.EnumConstDecl?): String {
-		return item?.listname?:"<???>"
+		return item?.name?:"<???>"
 	}
 }

@@ -36,6 +36,7 @@ class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>) {
 	internal val producers = ArrayList<XmlProducer<T>>()
 	internal var beforeSave: (T.() -> Unit)? = null
 	internal var afterSave: (T.() -> Unit)? = null
+	internal var beforeLoad: (T.(Any?) -> Unit)? = null
 	internal var afterLoad: (T.(Any?) -> Unit)? = null
 	internal val constructor = klass.constructors
 			.find { it.parameters.none { p -> !p.isOptional && !p.isVararg } }

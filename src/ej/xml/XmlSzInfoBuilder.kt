@@ -348,6 +348,14 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 		})
 	}
 	
+	fun beforeLoad(fn: T.(Any?) -> Unit) {
+		val old = info.beforeLoad
+		if (old == null) info.beforeLoad = fn
+		else info.beforeLoad = {
+			old(it)
+			fn(it)
+		}
+	}
 	fun afterLoad(fn: T.(Any?) -> Unit) {
 		val old = info.afterLoad
 		if (old == null) info.afterLoad = fn

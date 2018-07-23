@@ -35,7 +35,7 @@ class XmlExplorer(input: XMLEventReader): XmlExplorerController() {
 				if (!wasStartDocument) error("Expected StartDocument, got $d")
 				if (!wasElement) {
 					wasElement = true
-					r = handler(d.name.localPart, d.readAttributes())
+					r = handler(d.name.toString(), d.readAttributes())
 				}
 			}
 			is EndElement,

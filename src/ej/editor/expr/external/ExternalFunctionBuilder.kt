@@ -3,6 +3,7 @@ package ej.editor.expr.external
 import ej.editor.expr.*
 import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.expr.lists.BoolExprChooser
+import ej.editor.expr.lists.CreatureChooser
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 
@@ -37,6 +38,10 @@ class ExternalFunctionBuilder(
 			if (l != null && prop != null) {
 				val chooser: ExpressionChooser = when (l.type) {
 					"boolean" -> BoolExprChooser
+//					"int" -> IntExprChooser
+//					"float" -> FloatExprChooser
+//					"string" -> TextExprChooser
+					"Creature" -> CreatureChooser
 					/* TODO pick proper chooser*/
 					else -> AnyExprChooser
 				}
@@ -46,7 +51,7 @@ class ExternalFunctionBuilder(
 		}
 	}
 
-	override fun name() = decl.listname
+	override fun name() = decl.listname ?: decl.name
 
 	override fun copyMe() = ExternalFunctionBuilder(decl).also {
 		for ((my, their) in this.params.zip(it.params)) {

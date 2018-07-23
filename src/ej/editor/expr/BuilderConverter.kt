@@ -1,5 +1,6 @@
 package ej.editor.expr
 
+import ej.editor.expr.external.Stdlib
 import ej.editor.expr.impl.*
 
 /*
@@ -26,7 +27,8 @@ object DefaultBuilderConverter : BuilderConverter {
 		is ListExpression -> null
 		is ObjectExpression -> null
 		is CallExpression ->
-			CreatureSexTest.tryConvert(this,expr)
+			Stdlib.tryConvert(this, expr)
+//			CreatureSexTest.tryConvert(this,expr)
 		is DotExpression ->
 			ModVariableBuilder.tryConvert(this, expr)
 					?: CreatureStat.tryConvert(this, expr)

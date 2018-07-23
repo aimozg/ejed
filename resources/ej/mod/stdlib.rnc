@@ -7,10 +7,10 @@ stdlib = element stdlib {
 }
 
 typename = 'boolean' | 'int' | 'float' | 'string' |
-           'Creature' | 'Variable'
+           'Creature' | 'Variable' | string
 identifier = string
 
-declaration = function | enum
+declaration = function | enum | command
 
 enum = element enum {
 	attribute name { identifier }
@@ -19,7 +19,6 @@ enum = element enum {
 enum-value-decl = element value {
 	attribute name { string }
 	& attribute impl { string }
-	& element listname { string }?
 	& element description { text }?
 }
 
@@ -29,7 +28,7 @@ function = element function {
 	& element listname { string }?
 	& element description { text }?
 	& param-decl*
-	& function-editor
+	& expression-editor
 	& function-impl?
 }
 
@@ -39,7 +38,7 @@ param-decl = element param {
 	& attribute \default { string }?
 }
 
-function-editor = element editor {
+expression-editor = element editor {
 	(text | param-editor)+
 }
 param-editor = element param {
@@ -52,4 +51,11 @@ function-impl = element impl {
 }
 param-ref = element param {
 	attribute name { identifier }
+}
+
+command = element command {
+	attribute name { identifier }
+	& element listname { string }?
+	& element description { text }?
+	& expression-editor
 }

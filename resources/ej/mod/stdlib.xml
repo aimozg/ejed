@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<stdlib xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xsi:noNamespaceSchemaLocation="stdlib.rnc">
+<stdlib>
     <!-- Tests -->
     <enum name="SexTest">
         <value name="sexless" impl="0"/>
@@ -19,8 +18,12 @@
         <listname>Creature: Test Sex</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="SexTest" type="SexTest"/>
-        <editor>
-            <param name="Creature"/> is <param name="SexText"/>.
-        </editor>
+        <editor><param name="Creature"/> is <param name="SexTest"/></editor>
     </function>
+    <command name="DynStats">
+        <listname>Creature: Change stats</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Cor" type="int" default="0"/>
+        <editor>Alter <param name="Creature"/> stats: cor <param name="Cor"/></editor>
+    </command>
 </stdlib>
