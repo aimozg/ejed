@@ -1,6 +1,6 @@
 package ej.mod
 
-import ej.xml.XmlExplorer
+import ej.xml.*
 import java.io.File
 import java.io.InputStream
 
@@ -9,16 +9,36 @@ import java.io.InputStream
  * Confidential until published on GitHub
  */
 
-class NativePool(var id:String, var desc:String)
+class NativePool : XmlAutoSerializable {
+	@Attribute var id:String = ""
+	@Attribute var desc:String? = null
+}
 
-class NativeMonster(var id:String)
+class NativeMonster : XmlAutoSerializable {
+	@Attribute var id:String = ""
+	@Element var desc:String? = null
+}
 
-class NativeScene(var ref:String, var desc:String)
+class NativeScene : XmlAutoSerializable {
+	@Attribute var ref:String = ""
+	@Element var desc:String? = null
+}
 
-class NativesClass {
+class NativeItem : XmlAutoSerializable {
+	@Attribute var id:String = ""
+	@Element var desc:String? = null
+}
+
+@RootElement("gamedata")
+class NativesClass : XmlAutoSerializable {
+	@WrappedElements("encounter-pools","pool")
 	val encounterPools = ArrayList<NativePool>()
+	@WrappedElements("monsters","monster")
 	val monsters = ArrayList<NativeMonster>()
+	@WrappedElements("scenes","scene")
 	val scenes = ArrayList<NativeScene>()
+	@WrappedElements("items","item")
+	val items = ArrayList<NativeItem>()
 }
 
 val Natives:NativesClass by lazy {
@@ -32,30 +52,5 @@ val Natives:NativesClass by lazy {
 }
 
 fun loadNatives(input: InputStream):NativesClass {
-	val n = NativesClass()
-	
-	XmlExplorer(input).exploreDocumentThenElements("gamedata") { tag, _ ->
-		when (tag) {
-			"encounter-pools" -> forEachElement("pool") { attrs ->
-				n.encounterPools.add(NativePool(
-						attrs["id"]!!, attrs["desc"]?:""
-				))
-			}
-			"monsters" -> forEachElement("monster") { attrs ->
-				n.monsters.add(NativeMonster(attrs["id"]!!))
-			}
-			"items" -> {} // TODO load items
-			"scenes" -> forEachElement("scene") { attrs ->
-				val s = NativeScene(attrs["ref"]!!,"")
-				forEachElement { tag2, _ -> when(tag2) {
-					"desc" -> s.desc = text()
-					else -> error("Unknown tag $tag2")
-				} }
-				n.scenes.add(s)
-			}
-			else -> error("Unknown tag $tag")
-		}
-	}
-	
-	return n
+	return getSerializationInfo<NativesClass>().deserializeDocument(XmlExplorer(input))
 }
