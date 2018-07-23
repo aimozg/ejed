@@ -1,7 +1,6 @@
 package ej.editor
 
 import javafx.geometry.Pos
-import javafx.scene.Cursor
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -165,52 +164,8 @@ class Styles : Stylesheet() {
 			padding = box(5.px)
 		}
 		xtext {
-			fontFamily = FONT_FACE_TEXT
-			text {
-				fontFamily = FONT_FACE_TEXT
-			}
 			and("TextFlow") {
 				padding = box(0.px, 0.px, 15.px, 0.px)
-			}
-		}
-		xlogic {
-			text {
-				fontFamily = FONT_FACE_SCRIPT
-				fill = Color.NAVY
-			}
-		}
-		xcommand {
-			text {
-				fontFamily = FONT_FACE_SCRIPT
-				fill = Color.DARKRED
-			}
-		}
-		xcomment {
-			text {
-				fontFamily = FONT_FACE_SCRIPT
-				fill = c("#252")
-			}
-		}
-		xexpr {
-		
-		}
-		xexprLink {
-			cursor = Cursor.HAND
-			underline = true
-			fill = c("#22f")
-		}
-		xexprBadLink {
-			fill = c("#f22")
-		}
-		treeCell {
-			and(dragover) {
-				treeGraphic { borderColor += box(Color.GREEN) }
-				and(dragoverFromTop) {
-					treeGraphic { borderWidth += box(2.px, 0.px, 0.px, 0.px) }
-				}
-				and(dragoverFromBottom) {
-					treeGraphic { borderWidth += box(0.px, 0.px, 2.px, 0.px) }
-				}
 			}
 		}
 		toolbarGrid contains button {
