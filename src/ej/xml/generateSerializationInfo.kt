@@ -19,17 +19,67 @@ annotation class TextBody
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Elements(val name: String)
-
-@Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class WrappedElements(val wrapperName:String, val name: String)
+annotation class Elements(val name: String, val wrapped:Boolean = false, val wrapperName:String="")
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class RootElement(val name: String)
 
 interface XmlAutoSerializable : XmlSerializable
+
+private class PropertyTypeinfo(
+		val property: KProperty<*>
+) {
+	val nullable = property.returnType.isMarkedNullable
+	val type: KType
+	val list: Boolean
+	
+	init {
+		val type0 = property.returnType.withNullability(false)
+		if (type0.isSubtypeOf(MutableList::class.starProjectedType)) {
+			list = true
+			val arg0 = type0.arguments[0]
+			if (arg0.variance != KVariance.INVARIANT) error("List element $property must be invariant")
+			type = arg0.type ?: error("List element $property must be typed")
+		} else {
+			list = false
+			type = type0
+		}
+	}
+	
+	fun textConverter(): TextConverter<*>? =
+			when {
+				type == String::class.starProjectedType -> StringConverter
+				type == Int::class.starProjectedType -> IntConverter
+				type == Boolean::class.starProjectedType ->
+					if (nullable) NullableBoolConverter else BoolConverter
+				type.isSubtypeOf(Enum::class.starProjectedType) -> {
+					val to = HashMap<Enum<*>, String>()
+					val from = HashMap<String, Enum<*>>()
+					@Suppress("UNCHECKED_CAST")
+					val klass = type.classifier as KClass<Enum<*>>
+					for (enum in klass.java.enumConstants) {
+						to[enum] = enum.name
+						from[enum.name] = enum
+					}
+					MappedConverter(to, from)
+				}
+				else -> null
+			}
+	
+	fun elemConverter(elemName: String) = when {
+		type.isSubtypeOf(XmlSerializable::class.starProjectedType) -> {
+			val szInfo = (type.classifier as KClass<*>).let { { getSerializationInfo(it) } }
+			@Suppress("UNCHECKED_CAST")
+			XmlElementConverter(elemName, szInfo as SzInfoMaker<Any>)
+		}
+		else -> {
+			textConverter()?.let {
+				TextElementConverter(elemName, it)
+			}
+		}
+	}
+}
 
 internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T>): XmlSerializationInfo<T> = serializationInfo(
 		clazz) {
@@ -52,84 +102,53 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 		name = rootAnno.name
 	}
 	for (property in clazz.declaredMemberProperties) {
-		val attrAnno = property.findAnnotation<Attribute>()
-		val elemAnno = property.findAnnotation<Element>()
-		val elemsAnno = property.findAnnotation<Elements>()
-		val welemsAnno = property.findAnnotation<WrappedElements>()
-		val textAnno = property.findAnnotation<TextBody>()
-		if (attrAnno == null
-				&& elemAnno == null
-				&& elemsAnno == null
-				&& welemsAnno == null
-				&& textAnno == null) continue
-		val attrName = attrAnno?.name ifEmpty property.name
-		val elemName = welemsAnno?.name ifEmpty
-				elemAnno?.name ifEmpty
-				elemsAnno?.name ifEmpty property.name
-		val nullable = property.returnType.isMarkedNullable
-		var textConverter: TextConverter<*>? = null
-		var elemConverter: ElementConverter<*>? = null
-		val list:Boolean
-		val type0: KType = property.returnType.withNullability(false)
-		val type: KType
-		if (type0.isSubtypeOf(MutableList::class.starProjectedType)) {
-			list = true
-			val arg0 = type0.arguments[0]
-			if (arg0.variance != KVariance.INVARIANT) error("List element $property must be invariant")
-			type = arg0.type ?: error("List element $property must be typed")
-		} else {
-			list = false
-			type = type0
-		}
-		when {
-			type == String::class.starProjectedType -> textConverter = StringConverter
-			type == Int::class.starProjectedType -> textConverter = IntConverter
-			type == Boolean::class.starProjectedType ->
-				textConverter = if (nullable) NullableBoolConverter else BoolConverter
-			type.isSubtypeOf(XmlSerializable::class.starProjectedType) -> {
-				val szInfo = (type.classifier as KClass<*>).let { { getSerializationInfo(it) } }
-				@Suppress("UNCHECKED_CAST")
-				elemConverter = XmlElementConverter(elemName, szInfo as SzInfoMaker<Any>)
-			}
-			type.isSubtypeOf(Enum::class.starProjectedType) -> {
-				val to = HashMap<Enum<*>,String>()
-				val from = HashMap<String,Enum<*>>()
-				@Suppress("UNCHECKED_CAST")
-				val klass = type.classifier as KClass<Enum<*>>
-				for (enum in klass.java.enumConstants) {
-					to[enum] = enum.name
-					from[enum.name] = enum
-				}
-				textConverter = MappedConverter(to,from)
-			}
-		}
-		if (attrAnno != null) {
-			if (property !is KMutableProperty1<T, *>) error("Property @Attribute $property must be mutable for $nameOrClass@$attrName")
-			if (textConverter == null) {
-				error("Property @Attribute $property has no compatible to-text converter")
-			}
-			if (list) error("Cannot @Attribute list $property")
-			if (nullable) {
-				@Suppress("UNCHECKED_CAST")
-				saveAttrN(attrName, property as KMutableProperty1<T, Any?>, textConverter as TextConverter<Any>)
-			} else {
-				@Suppress("UNCHECKED_CAST")
-				saveAttr(attrName, property as KMutableProperty1<T, Any>, textConverter as TextConverter<Any>)
-			}
-		}
-		if (elemAnno != null || elemsAnno != null || welemsAnno != null) {
-			if (elemConverter == null) {
-				if (textConverter != null) {
-					elemConverter = TextElementConverter(elemName, textConverter)
+		val pti by lazy { PropertyTypeinfo(property) }
+		for (annotation in property.annotations) when (annotation) {
+			is Attribute -> {
+				if (pti.list) error("Cannot have @Attribute for list $property")
+				val attrName = annotation.name ifEmpty property.name
+				if (property !is KMutableProperty1<T, *>) error("@Attribute $property must be mutable for $nameOrClass@$attrName")
+				val textConverter = pti.textConverter()
+						?: error("@Attribute $property has no compatible to-text converter")
+				if (pti.list) error("Cannot @Attribute list $property")
+				if (pti.nullable) {
+					@Suppress("UNCHECKED_CAST")
+					saveAttrN(attrName, property as KMutableProperty1<T, Any?>, textConverter as TextConverter<Any>)
 				} else {
-					error("Property @Element $property has no compatible to-element or to-text converter")
+					@Suppress("UNCHECKED_CAST")
+					saveAttr(attrName, property as KMutableProperty1<T, Any>, textConverter as TextConverter<Any>)
 				}
 			}
-			
-			if (list) {
-				if (elemAnno != null) error("Cannot have @Element for list $property")
-				if (welemsAnno != null) {
-					val wrapperName = welemsAnno.wrapperName ifEmpty elemName
+			is Element -> {
+				if (pti.list) error("Cannot have @Element for list $property")
+				val elemName = annotation.name ifEmpty property.name
+				val elemConverter = pti.elemConverter(elemName)
+						?: error("@Element $property has no compatible to-element or to-text converter")
+				if (property is KMutableProperty1<T,*>) {
+					if (pti.nullable) {
+						@Suppress("UNCHECKED_CAST")
+						registerElementIO(
+								NullablePropertyEio(elemConverter as ElementConverter<Any>,
+								                    property as KMutableProperty1<T, Any?>),
+								elemName
+						)
+					} else {
+						@Suppress("UNCHECKED_CAST")
+						registerElementIO(
+								PropertyEio(elemConverter as ElementConverter<Any>,
+								            property as KMutableProperty1<T, Any>),
+								elemName
+						)
+					}
+				} else TODO("elementOverwrite Not implemented yet")
+			}
+			is Elements -> {
+				if (!pti.list) error("Cannot have @Elements for non-list $property")
+				val elemName = annotation.name
+				val elemConverter = pti.elemConverter(elemName)
+						?: error("@Element $property has no compatible to-element or to-text converter")
+				if (annotation.wrapped) {
+					val wrapperName = annotation.wrapperName ifEmpty property.name
 					@Suppress("UNCHECKED_CAST")
 					val eio = WrappedListPropertyEio(wrapperName,
 					                                 elemConverter as ElementConverter<Any>,
@@ -141,38 +160,20 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 					registerElementIO(ListPropertyEio(elemConverter as ElementConverter<Any>,
 					                                  property as KProperty1<T, MutableList<Any>>), elemName)
 				}
-			} else if (property is KMutableProperty1<T, *>) {
-				if (elemsAnno != null) error("Cannot have @Elements for non-list $property")
-				if (nullable) {
+			}
+			is TextBody -> {
+				if (pti.list) error("Cannot have @TextBody for list $property")
+				if (property !is KMutableProperty1<T, *>) error("@TextBody $property must be mutable for $nameOrClass")
+				val textConverter = pti.textConverter()
+						?: error("@TextBody $property has no compatible to-text converter")
+				if (pti.nullable) {
 					@Suppress("UNCHECKED_CAST")
-					registerElementIO(
-							NullablePropertyEio(elemConverter as ElementConverter<Any>,
-							                    property as KMutableProperty1<T, Any?>),
-							elemName
-					)
+					registerTextIO(NullablePropertyTio(textConverter as TextConverter<Any>,
+					                                   property as KMutableProperty1<T, Any?>))
 				} else {
 					@Suppress("UNCHECKED_CAST")
-					registerElementIO(
-							PropertyEio(elemConverter as ElementConverter<Any>,
-							            property as KMutableProperty1<T, Any>),
-							elemName
-					)
+					registerTextIO(PropertyTio(textConverter as TextConverter<Any>, property as KMutableProperty1<T, Any>))
 				}
-			} else {
-				TODO("not implemented yet")
-			}
-		}
-		textAnno?.let {
-			if (property !is KMutableProperty1<T, *>) error("Property @Attribute $property must be mutable for $nameOrClass@$attrName")
-			if (textConverter == null) {
-				error("Property @Attribute $property has no compatible to-text converter")
-			}
-			if (nullable) {
-				@Suppress("UNCHECKED_CAST")
-				registerTextIO(NullablePropertyTio(textConverter as TextConverter<Any>,property as KMutableProperty1<T, Any?>))
-			} else {
-				@Suppress("UNCHECKED_CAST")
-				registerTextIO(PropertyTio(textConverter as TextConverter<Any>,property as KMutableProperty1<T, Any>))
 			}
 		}
 	}

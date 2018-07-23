@@ -178,6 +178,18 @@ class TestAutoSerializable {
 	}
 	
 	@Test
+	fun textUnknownElemsType() {
+		@RootElement("mock")
+		class Mock : XmlAutoSerializable {
+			@Elements("s")
+			var s = mutableListOf<Any>(System.getSecurityManager())
+		}
+		assertFails {
+			getSerializationInfo(Mock::class)
+		}
+	}
+	
+	@Test
 	fun textUnknownTextType() {
 		@RootElement("mock")
 		class Mock : XmlAutoSerializable {
@@ -354,7 +366,7 @@ class TestAutoSerializable {
 		class Inner(@TextBody var content: String = "") : XmlAutoSerializable
 		@RootElement("mock")
 		class Outer(vararg init: String) : XmlAutoSerializable {
-			@WrappedElements("inners", "e")
+			@Elements("e",true, "inners")
 			val things: MutableList<Inner> = init.map { Inner(it) }.toMutableList()
 		}
 		assertXml(Outer("a", "b"), "mock") { rootAttrs ->
@@ -373,6 +385,22 @@ class TestAutoSerializable {
 					else -> error("Unexpected $tag")
 				}
 			})
+		}
+	}
+	
+	enum class Foo {
+		VALUE1,BAR,BAZ
+	}
+	@Test
+	fun testEnums() {
+		@RootElement("mock")
+		class Mock : XmlAutoSerializable {
+			@Attribute
+			var foo:Foo = Foo.VALUE1
+		}
+		assertXml(Mock(),"mock") { rootAttrs ->
+			assertAttrs(rootAttrs, "foo" to "VALUE1")
+			assertNoElements()
 		}
 	}
 }

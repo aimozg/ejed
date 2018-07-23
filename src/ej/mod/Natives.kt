@@ -31,13 +31,13 @@ class NativeItem : XmlAutoSerializable {
 
 @RootElement("gamedata")
 class NativesClass : XmlAutoSerializable {
-	@WrappedElements("encounter-pools","pool")
+	@Elements("pool", true, "encounter-pools")
 	val encounterPools = ArrayList<NativePool>()
-	@WrappedElements("monsters","monster")
+	@Elements("monster", true)
 	val monsters = ArrayList<NativeMonster>()
-	@WrappedElements("scenes","scene")
+	@Elements("scene", true)
 	val scenes = ArrayList<NativeScene>()
-	@WrappedElements("items","item")
+	@Elements("item",true)
 	val items = ArrayList<NativeItem>()
 }
 
