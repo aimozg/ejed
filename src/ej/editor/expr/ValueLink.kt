@@ -31,7 +31,7 @@ open class ValueLink<T:Any> : Text() {
 		})
 		bindClass(
 				nonNullObjectBinding(valueProperty) {
-					if (value == null) ej.editor.Styles.xexprBadLink else null
+					if (value == null) Styles.xexprBadLink else null
 				}
 		)
 		addClass(Styles.xexprLink)

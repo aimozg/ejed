@@ -1,6 +1,7 @@
 package ej.mod
 
 import ej.xml.*
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
@@ -21,6 +22,42 @@ interface XStatement : ModDataNode, XmlSerializable
 interface XComplexStatement: XStatement {
 	val content: ObservableList<XStatement>
 }
+interface StoryContainer : ModDataNode, XmlSerializable {
+	val lib: ObservableList<StoryStmt>
+}
+enum class ValidationStatus(val hasValid:Boolean,val hasInvalid:Boolean) {
+	UNKNOWN(false,false),
+	VALID(true,false),
+	MIXED(true,true),
+	INVALID(false,true);
+	
+	operator fun plus(other: ValidationStatus): ValidationStatus = when(this) {
+		UNKNOWN -> other
+		VALID -> if (other.hasInvalid) MIXED else VALID
+		MIXED -> MIXED
+		INVALID -> if (other.hasValid) MIXED else INVALID
+	}
+	operator fun times(other: ValidationStatus): ValidationStatus = when(this) {
+		UNKNOWN -> other
+		VALID -> if (other.hasInvalid) INVALID else VALID
+		MIXED -> MIXED
+		INVALID -> INVALID
+	}
+}
+interface StoryStmt : StoryContainer {
+	val owner: ModDataNode?
+	var name: String
+	val nameProperty: Property<String>
+	var isValid: ValidationStatus
+	val isValidProperty: Property<ValidationStatus>
+	val path:String get() = ownersToRoot().fold(name) { s, story ->
+		"${story.name}/$s"
+	}
+}
+val ModDataNode.acceptsMenu: Boolean
+	get() = this is XcScene
+val ModDataNode.acceptsActions: Boolean
+	get() = acceptsMenu || this is XcNamedText
 
 class ModData : ModDataNode, XmlSerializable {
 	var sourceFile: File? = null

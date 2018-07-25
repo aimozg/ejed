@@ -14,6 +14,7 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.collections.WeakListChangeListener
 import javafx.collections.transformation.FilteredList
+import javafx.scene.Node
 import javafx.util.StringConverter
 import tornadofx.*
 import java.util.concurrent.Callable
@@ -52,6 +53,12 @@ fun <T> ObservableList<T>.onChangeWeak(op: (ListChangeListener.Change<out T>) ->
 	val listener = ListChangeListener<T> { op(it) }
 	addListener(WeakListChangeListener(listener))
 	return listener
+}
+private val LISTENERS_PROPERTY_KEY = java.lang.Object()
+fun Any.saveIntoPropertiesOf(node: Node) {
+	@Suppress("UNCHECKED_CAST")
+	val list = (node.properties.getOrPut(LISTENERS_PROPERTY_KEY){ArrayList<Any>()}) as ArrayList<Any>
+	list.add(this)
 }
 
 fun <I : ObservableList<*>, O: Any> I.listBinding(calculator:(I)->O): Property<O> {

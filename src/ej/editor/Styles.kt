@@ -26,6 +26,7 @@ class Styles : Stylesheet() {
 		val consola by cssclass()
 		val monsterCombat by cssclass()
 		
+		val statementTree by cssclass()
 		val treeCell by cssclass()
 		val treeGraphic by cssclass()
 

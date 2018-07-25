@@ -2,6 +2,7 @@ package ej.editor.views
 
 import com.sun.javafx.binding.StringConstant
 import ej.editor.AModView
+import ej.editor.Styles
 import ej.editor.utils.*
 import ej.mod.*
 import javafx.beans.value.ObservableValue
@@ -45,7 +46,7 @@ sealed class ModTreeNode(
 			hasName = true,
 			removable = true
 	) {
-		override val textProperty = story.nameProperty()
+		override val textProperty = story.nameProperty
 		override val population = story.lib.transformed { StoryNode(it) }
 	}
 	class StoryListNode(val stories:ObservableList<StoryStmt>): ModTreeNode(
@@ -97,6 +98,7 @@ class ModView: AModView() {
 				paddingAll = 5.0
 				spacing = 5.0
 				expanded = true
+				/*
 				label("Add: ")
 				hbox(5.0) {
 					vgrow = Priority.NEVER
@@ -114,44 +116,60 @@ class ModView: AModView() {
 						createSubscene()
 					}
 				}
+				*/
+				hbox(5.0) {
+					vgrow = Priority.NEVER
+					alignment = Pos.BASELINE_LEFT
+					button("Validate").action {
+						mod.validate()
+					}
+				}
 				tree.attachTo(this) {
 					onUserSelect {
 						selectModEntry(it)
 					}
-					cellFormat {
-						when (it) {
-							is ModTreeNode.StoryNode -> {
-								//disclosureNode = null
-								when (it.story) {
-									is XcScene ->
-										graphic = boundFaGlyph(it.story.triggerProperty.stringBinding { trigger ->
-											when (trigger) {
-												is EncounterTrigger -> FontAwesome.Glyph.MAP_MARKER.char.toString()
-												is TimedTrigger -> FontAwesome.Glyph.CLOCK_ALT.char.toString()
-												null -> FontAwesome.Glyph.SHARE_ALT.char.toString()
+					cellFormat {_ ->
+						graphicProperty().bind(
+								itemProperty().objectBinding {
+									when (it) {
+										is ModTreeNode.StoryNode -> {
+											//disclosureNode = null
+											val g = when (it.story) {
+												is XcScene ->
+													boundFaGlyph(it.story.triggerProperty.stringBinding { trigger ->
+														when (trigger) {
+															is EncounterTrigger -> FontAwesome.Glyph.MAP_MARKER.char.toString()
+															is TimedTrigger -> FontAwesome.Glyph.CLOCK_ALT.char.toString()
+															null -> FontAwesome.Glyph.SHARE_ALT.char.toString()
+														}
+													})
+												is XcNamedText ->
+													FontAwesome.Glyph.FILE_TEXT_ALT.node()
+												is XcLib -> {
+													boundFaGlyph(it.story.lib.listBinding { lib ->
+														if (lib.isEmpty()) FontAwesome.Glyph.FOLDER_OPEN_ALT.char.toString()
+														else ""
+													})
+												}
+												else -> null
 											}
-										})
-									is XcNamedText ->
-										graphic = FontAwesome.Glyph.FILE_TEXT_ALT.node()
-									is XcLib -> {
-										/*
-										graphic = boundFaGlyph(it.story.lib.listBinding { lib ->
-											if (lib.isEmpty()) FontAwesome.Glyph.FOLDER_ALT.char.toString()
-											else ""
-										})
-										*/
+											g?.addClass(Styles.treeGraphic)?.bindClass(bindingN(it.story.isValidProperty) { status  ->
+												CssRule.c("validation-"+(status?:ValidationStatus.UNKNOWN).name.toLowerCase())
+											})?.saveIntoPropertiesOf(g)
+											disclosureNode?.addClass("folder")?.replaceChildren {
+												stackpane { addClass("glyph") }
+											}
+											g
+										}
+										is ModTreeNode.MonsterNode,
+										is ModTreeNode.StoryListNode,
+										is ModTreeNode.MonsterListNode,
+										is ModTreeNode.RootNode,
+										null -> null
 									}
 								}
-								disclosureNode?.addClass("folder")?.replaceChildren {
-									stackpane { addClass("glyph") }
-								}
-							}
-							is ModTreeNode.MonsterNode,
-							is ModTreeNode.StoryListNode,
-							is ModTreeNode.MonsterListNode,
-							is ModTreeNode.RootNode -> {} // do nothing
-						}
-						textProperty().bind(it.textProperty)
+						)
+						textProperty().bind(itemProperty().select { it.textProperty })
 					}
 					vgrow = Priority.ALWAYS
 					contextmenu {
@@ -217,7 +235,7 @@ class ModView: AModView() {
 		val nameProp = when (value) {
 			is ModTreeNode.RootNode -> mod.nameProperty
 			is ModTreeNode.MonsterNode -> value.monster.idProperty
-			is ModTreeNode.StoryNode -> value.story.nameProperty()
+			is ModTreeNode.StoryNode -> value.story.nameProperty
 			else -> kotlin.error("Cannot rename")
 		}
 		textInputDialog("Rename","Change ID to",nameProp.value) {

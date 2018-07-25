@@ -43,7 +43,9 @@ object TextMgr: StatementManager<XcText>() {
 			hiddenWhen(fnCollapsed)
 			managedWhen(fnExpanded)
 		}
-		label(stmt.textProperty().stringBinding {it?.replace("\n"," ")}) {
+		label(stmt.textProperty().stringBinding {
+			it?.replace("<br>","\\n")?.replace("\n"," ")
+		}) {
 			addClass(Styles.xtext)
 			hiddenWhen(fnExpanded)
 			managedWhen(fnCollapsed)

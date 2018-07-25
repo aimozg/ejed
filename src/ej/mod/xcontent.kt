@@ -7,17 +7,13 @@ import ej.xml.XmlSerializableCompanion
 import ej.xml.XmlSzInfoBuilder
 import ej.xml.inherit
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
 import tornadofx.*
 
 
-val XStatement.acceptsMenu: Boolean
-	get() = this is XcScene
-val XStatement.acceptsActions: Boolean
-	get() = acceptsMenu || this is XcNamedText
-
 @Suppress("unused")
-internal fun XStatement.defaultToString(tagname:String, attrs:String, content:String) =
+internal fun ModDataNode.defaultToString(tagname:String, attrs:String, content:String) =
 		"[" + tagname + attrs.affixNonEmpty("(",")") + content.affixNonEmpty(": ") + "]"
 
 open class XContentContainer : XComplexStatement, StoryContainer {
@@ -95,9 +91,12 @@ class XcText(text:String):XStatement {
 }
 
 class XcLib : StoryStmt {
-	override var name:String by property("")
-	override fun nameProperty() = getProperty(XcLib::name)
+	override val nameProperty = SimpleStringProperty("")
+	override var name:String by nameProperty
 	
+	override val isValidProperty = SimpleObjectProperty(ValidationStatus.UNKNOWN)
+	override var isValid: ValidationStatus by isValidProperty
+
 	override var owner:ModDataNode? = null
 	
 	override val lib = ArrayList<StoryStmt>().observable()
@@ -122,8 +121,11 @@ class XcLib : StoryStmt {
 }
 
 class XcScene : XContentContainer(), StoryStmt {
-	override var name:String by property("")
-	override fun nameProperty() = getProperty(XcScene::name)
+	override val nameProperty = SimpleStringProperty("")
+	override var name:String by nameProperty
+	
+	override val isValidProperty = SimpleObjectProperty(ValidationStatus.UNKNOWN)
+	override var isValid: ValidationStatus by isValidProperty
 	
 	override var owner:ModDataNode? = null
 	
@@ -150,8 +152,11 @@ class XcScene : XContentContainer(), StoryStmt {
 }
 
 class XcNamedText : XContentContainer(), StoryStmt {
-	override var name:String by property("")
-	override fun nameProperty() = getProperty(XcNamedText::name)
+	override val nameProperty = SimpleStringProperty("")
+	override var name:String by nameProperty
+	
+	override val isValidProperty = SimpleObjectProperty(ValidationStatus.UNKNOWN)
+	override var isValid: ValidationStatus by isValidProperty
 	
 	override var owner:ModDataNode? = null
 	

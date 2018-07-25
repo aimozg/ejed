@@ -12,6 +12,10 @@ abstract class ModVisitor {
 	open fun visitAnyStmt(x:XStatement){
 		visitAnyNode(x)
 	}
+	open fun visitAnyStory(x:StoryStmt){
+		visitAnyNode(x)
+		visitAllStories(x.lib)
+	}
 	open fun visitAnyContentContainer(x:XContentContainer) {
 		visitAnyStmt(x)
 		visitAllStatements(x.content)
@@ -21,10 +25,15 @@ abstract class ModVisitor {
 		visitAnyStmt(x)
 	}
 	open fun visitLib(x:XcLib) {
-		visitAnyStmt(x)
-		visitAllStatements(x.lib)
+		visitAnyStory(x)
 	}
 	open fun visitNamedText(x:XcNamedText) {
+		visitAnyStory(x)
+		visitAnyContentContainer(x)
+	}
+	open fun visitScene(x:XcScene) {
+		visitAnyStory(x)
+		x.trigger?.let { visitTrigger(it) }
 		visitAnyContentContainer(x)
 	}
 	open fun visitTimedTrigger(t:TimedTrigger) {
@@ -38,10 +47,6 @@ abstract class ModVisitor {
 			is TimedTrigger -> visitTimedTrigger(t)
 			is EncounterTrigger -> visitEncounterTrigger(t)
 		}
-	}
-	open fun visitScene(x:XcScene) {
-		x.trigger?.let { visitTrigger(it) }
-		visitAnyContentContainer(x)
 	}
 	open fun visitOutput(x:XsOutput){
 		visitAnyStmt(x)
@@ -89,7 +94,7 @@ abstract class ModVisitor {
 	open fun visitMod(x:ModData) {
 		visitAnyNode(x)
 		visitAllMonsters(x.monsters)
-		visitAllStatements(x.content)
+		visitAllStories(x.content)
 		// TODO hooks, scripts
 	}
 	open fun visitMonster(x:MonsterData) {
@@ -104,6 +109,9 @@ abstract class ModVisitor {
 		}
 	}
 	open fun<T:XStatement> visitAllStatements(stmts:MutableList<T>) {
+		visitAllNodes(stmts)
+	}
+	open fun<T:StoryStmt> visitAllStories(stmts:MutableList<T>) {
 		visitAllNodes(stmts)
 	}
 	open fun visitAllMonsters(monsters:MutableList<MonsterData>) {

@@ -57,6 +57,7 @@ open class StatementTree : TreeView<XStatement>() {
 	
 	init {
 		isShowRoot = false
+		addClass(Styles.statementTree)
 		val tree = this
 		cellFormat {
 			val cell = this
