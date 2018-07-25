@@ -22,6 +22,7 @@ sealed class ModTreeNode(
 ) {
 	open val population:ObservableList<out ModTreeNode> = emptyList<ModTreeNode>().observable()
 	abstract val textProperty: ObservableValue<String>
+	
 	class MonsterListNode(val mod:ModData): ModTreeNode(
 			acceptsMonsters = true
 	) {
@@ -45,10 +46,14 @@ sealed class ModTreeNode(
 	) {
 		override val textProperty = bindingN(story.nameProperty()) {
 			when(story) {
-				is XcScene -> "(Scene) $it"
-				is XcNamedText -> "(Subscene) $it"
+				is XcScene -> when(story.trigger) {
+					is TimedTrigger -> "(Event) $it"
+					is EncounterTrigger -> "(Encounter) $it"
+					null -> it?:"(Unnamed Scene)"
+				}
+				is XcNamedText -> "(Named text) $it"
 				is XcLib -> "$it/"
-				else -> it?:""
+				else -> it?:"(Unnamed Unknown)"
 			}
 		}
 		override val population = story.lib.transformed { StoryNode(it) }
@@ -112,10 +117,10 @@ class ModView: AModView() {
 					button("Scene").action {
 						createScene()
 					}
-					button("Library").action {
+					button("Group").action {
 						createLibrary()
 					}
-					button("Subscene").action {
+					button("Named text").action {
 						createSubscene()
 					}
 				}

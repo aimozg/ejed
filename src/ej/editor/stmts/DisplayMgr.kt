@@ -19,9 +19,9 @@ object DisplayMgr : StatementManager<XsDisplay>() {
 	override fun editorBody(stmt: XsDisplay,
 	                        tree: StatementTree
 	) = defaultEditorTextFlow {
-		text("Display subscene: ")
+		text("Display named text: ")
 		valueLink(stmt.refProperty,
-		          "Subscene",
+		          "Named text",
 		          SceneChooser(tree.rootStatement, controller.mod ?: return@defaultEditorTextFlow) { !it.acceptsMenu })
 	}
 	
