@@ -71,6 +71,7 @@ task fatJar(type: Jar) {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.controlsfx:controlsfx:8.40.14"
     compile "no.tornado:tornadofx:1.7.16"
     compile "org.funktionale:funktionale-either:1.2"
 //    compile 'com.uchuhimo:kotlinx-bimap:1.0'

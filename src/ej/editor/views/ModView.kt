@@ -12,6 +12,7 @@ import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
+import org.controlsfx.glyphfont.FontAwesome
 import tornadofx.*
 
 sealed class ModTreeNode(
@@ -44,18 +45,7 @@ sealed class ModTreeNode(
 			hasName = true,
 			removable = true
 	) {
-		override val textProperty = bindingN(story.nameProperty()) {
-			when(story) {
-				is XcScene -> when(story.trigger) {
-					is TimedTrigger -> "(Event) $it"
-					is EncounterTrigger -> "(Encounter) $it"
-					null -> it?:"(Unnamed Scene)"
-				}
-				is XcNamedText -> "(Named text) $it"
-				is XcLib -> "$it/"
-				else -> it?:"(Unnamed Unknown)"
-			}
-		}
+		override val textProperty = story.nameProperty()
 		override val population = story.lib.transformed { StoryNode(it) }
 	}
 	class StoryListNode(val stories:ObservableList<StoryStmt>): ModTreeNode(
@@ -129,6 +119,38 @@ class ModView: AModView() {
 						selectModEntry(it)
 					}
 					cellFormat {
+						when (it) {
+							is ModTreeNode.StoryNode -> {
+								//disclosureNode = null
+								when (it.story) {
+									is XcScene ->
+										graphic = boundFaGlyph(it.story.triggerProperty.stringBinding { trigger ->
+											when (trigger) {
+												is EncounterTrigger -> FontAwesome.Glyph.MAP_MARKER.char.toString()
+												is TimedTrigger -> FontAwesome.Glyph.CLOCK_ALT.char.toString()
+												null -> FontAwesome.Glyph.SHARE_ALT.char.toString()
+											}
+										})
+									is XcNamedText ->
+										graphic = FontAwesome.Glyph.FILE_TEXT_ALT.node()
+									is XcLib -> {
+										/*
+										graphic = boundFaGlyph(it.story.lib.listBinding { lib ->
+											if (lib.isEmpty()) FontAwesome.Glyph.FOLDER_ALT.char.toString()
+											else ""
+										})
+										*/
+									}
+								}
+								disclosureNode?.addClass("folder")?.replaceChildren {
+									stackpane { addClass("glyph") }
+								}
+							}
+							is ModTreeNode.MonsterNode,
+							is ModTreeNode.StoryListNode,
+							is ModTreeNode.MonsterListNode,
+							is ModTreeNode.RootNode -> {} // do nothing
+						}
 						textProperty().bind(it.textProperty)
 					}
 					vgrow = Priority.ALWAYS
