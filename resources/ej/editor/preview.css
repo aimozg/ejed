@@ -1,0 +1,11 @@
+#mainElement{font-family:'Lucida Fax', 'serif'}
+#mainElement .content-error{background:#822;}
+#mainElement .content-text{color:#222;}
+#mainElement .content-text.skipped {color: #888;}
+#mainElement .content-code {color: #228;}
+#mainElement .content-code.skipped {color: #88b;}
+#mainElement .content-comment {color: #282;}
+#mainElement .content-comment.skipped {color: #8b8;}
+#mainElement.noskip .skipped {display:none}
+#mainElement.nocode .content-code {display:none}
+#mainElement.nocomment .content-comment {display:none}

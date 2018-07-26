@@ -36,16 +36,16 @@ abstract class ModVisitor {
 		x.trigger?.let { visitTrigger(it) }
 		visitAnyContentContainer(x)
 	}
-	open fun visitTimedTrigger(t:TimedTrigger) {
-		visitAnyNode(t)
+	open fun visitTimedTrigger(x:TimedTrigger) {
+		visitAnyNode(x)
 	}
-	open fun visitEncounterTrigger(t:EncounterTrigger) {
-		visitAnyNode(t)
+	open fun visitEncounterTrigger(x:EncounterTrigger) {
+		visitAnyNode(x)
 	}
-	open fun visitTrigger(t:SceneTrigger) {
-		when (t) {
-			is TimedTrigger -> visitTimedTrigger(t)
-			is EncounterTrigger -> visitEncounterTrigger(t)
+	open fun visitTrigger(x:SceneTrigger) {
+		when (x) {
+			is TimedTrigger -> visitTimedTrigger(x)
+			is EncounterTrigger -> visitEncounterTrigger(x)
 		}
 	}
 	open fun visitOutput(x:XsOutput){
@@ -74,7 +74,7 @@ abstract class ModVisitor {
 	}
 	open fun visitIf(x:XlIf){
 		visitAnyStmt(x)
-		visitAnyContentContainer(x.thenGroup)
+		visitThen(x.thenGroup)
 		for (elseifGroup in x.elseifGroups) {
 			visitElseif(elseifGroup)
 		}
@@ -82,19 +82,37 @@ abstract class ModVisitor {
 			visitElse(it)
 		}
 	}
+	open fun visitThen(x: XlThen) {
+		visitAnyContentContainer(x)
+	}
 	open fun visitElseif(x: XlElseIf) {
 		visitAnyContentContainer(x)
 	}
 	open fun visitElse(x: XlElse) {
 		visitAnyStmt(x)
 	}
+	open fun visitSwitch(x: XlSwitch){
+		visitAnyStmt(x)
+		visitAllNodes(x.branches)
+		x.defaultBranch?.let {
+			visitSwitchDefault(it)
+		}
+	}
+	
+	open fun visitSwitchCase(x: XlSwitchCase){
+		visitAnyContentContainer(x)
+	}
+	open fun visitSwitchDefault(x: XlSwitchDefault){
+		visitAnyContentContainer(x)
+	}
+	
 	open fun visitComment(x:XlComment){
 		visitAnyStmt(x)
 	}
 	open fun visitMod(x:ModData) {
 		visitAnyNode(x)
 		visitAllMonsters(x.monsters)
-		visitAllStories(x.content)
+		visitAllStories(x.lib)
 		// TODO hooks, scripts
 	}
 	open fun visitMonster(x:MonsterData) {
@@ -135,8 +153,12 @@ fun ModDataNode.visit(visitor:ModVisitor) {
 		is XsButton -> visitor.visitButton(this)
 
 		is XlIf -> visitor.visitIf(this)
+		is XlThen -> visitor.visitThen(this)
 		is XlElseIf -> visitor.visitElseif(this)
 		is XlElse -> visitor.visitElse(this)
+		is XlSwitch -> visitor.visitSwitch(this)
+		is XlSwitchCase -> visitor.visitSwitchCase(this)
+		is XlSwitchDefault -> visitor.visitSwitchDefault(this)
 		is XlComment -> visitor.visitComment(this)
 		
 		is XContentContainer -> {

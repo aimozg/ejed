@@ -24,6 +24,7 @@ interface XComplexStatement: XStatement {
 }
 interface StoryContainer : ModDataNode, XmlSerializable {
 	val lib: ObservableList<StoryStmt>
+	val owner: ModDataNode?
 }
 enum class ValidationStatus(val hasValid:Boolean,val hasInvalid:Boolean) {
 	UNKNOWN(false,false),
@@ -45,7 +46,6 @@ enum class ValidationStatus(val hasValid:Boolean,val hasInvalid:Boolean) {
 	}
 }
 interface StoryStmt : StoryContainer {
-	val owner: ModDataNode?
 	var name: String
 	val nameProperty: Property<String>
 	var isValid: ValidationStatus
@@ -59,7 +59,9 @@ val ModDataNode.acceptsMenu: Boolean
 val ModDataNode.acceptsActions: Boolean
 	get() = acceptsMenu || this is XcNamedText
 
-class ModData : ModDataNode, XmlSerializable {
+class ModData : StoryContainer, ModDataNode, XmlSerializable {
+	override val owner: ModDataNode? = null
+	
 	var sourceFile: File? = null
 	
 	val nameProperty = SimpleStringProperty("")
@@ -74,10 +76,10 @@ class ModData : ModDataNode, XmlSerializable {
 	
 	val monsters: ObservableList<MonsterData> = ArrayList<MonsterData>().observable()
 	
-	val content: ObservableList<StoryStmt> = ArrayList<StoryStmt>().observable()
+	override val lib: ObservableList<StoryStmt> = ArrayList<StoryStmt>().observable()
 	
 	fun allStories() = buildSequence {
-		val run = ArrayList(content)
+		val run = ArrayList(lib)
 		while(run.isNotEmpty()) {
 			val e = run.removeAt(0)
 			yield(e)
@@ -89,7 +91,7 @@ class ModData : ModDataNode, XmlSerializable {
 		return "<mod name='$name' version='$version'>" +
 				" <state> ${stateVars.joinToString(" ")} </state>"+
 				monsters.joinToString(" ")+
-				content.joinToString(" ")+
+				lib.joinToString(" ")+
 				"</mod>"
 	}
 	
@@ -103,7 +105,7 @@ class ModData : ModDataNode, XmlSerializable {
 			elements("script", ModData::scripts)
 			handleElement("hook") { _, attrs, input ->
 				val mod = this
-				content.add(XcScene().also { s ->
+				lib.add(XcScene().also { s ->
 					val trigger = TimedTrigger()
 					s.trigger = trigger
 					for ((k,v) in attrs) when(k) {
@@ -144,9 +146,9 @@ class ModData : ModDataNode, XmlSerializable {
 				}
 				scene.trigger = trigger
 				scene.owner = mod
-				content.add(scene)
+				lib.add(scene)
 			}
-			elementsByTag(ModData::content,
+			elementsByTag(ModData::lib,
 			              "scene" to XcScene::class,
 			              "lib" to XcLib::class,
 			              "text" to XcLib::class)

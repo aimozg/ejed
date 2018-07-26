@@ -16,12 +16,10 @@ import tornadofx.*
 internal fun ModDataNode.defaultToString(tagname:String, attrs:String, content:String) =
 		"[" + tagname + attrs.affixNonEmpty("(",")") + content.affixNonEmpty(": ") + "]"
 
-open class XContentContainer : XComplexStatement, StoryContainer {
+open class XContentContainer : XComplexStatement {
 	
 	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observable()
 	private val contentRaw = ArrayList<XStatement>()
-	
-	override val lib = ArrayList<StoryStmt>().observable()
 	
 	override fun toString() = defaultToString("content")
 	
@@ -35,11 +33,6 @@ open class XContentContainer : XComplexStatement, StoryContainer {
 			afterSave {
 				contentRaw.clear()
 			}
-			elementsByTag(XContentContainer::lib,
-			              "lib" to XcLib::class,
-			              "text" to XcNamedText::class,
-			              "scene" to XcScene::class
-			         )
 			mixedBody(XContentContainer::contentRaw,
 			          { (it as? XcText)?.text },
 			          { XcText(it) },
@@ -123,6 +116,7 @@ class XcLib : StoryStmt {
 class XcScene : XContentContainer(), StoryStmt {
 	override val nameProperty = SimpleStringProperty("")
 	override var name:String by nameProperty
+	override val lib = ArrayList<StoryStmt>().observable()
 	
 	override val isValidProperty = SimpleObjectProperty(ValidationStatus.UNKNOWN)
 	override var isValid: ValidationStatus by isValidProperty
@@ -139,6 +133,11 @@ class XcScene : XContentContainer(), StoryStmt {
 		
 		override fun XmlSzInfoBuilder<XcScene>.buildSzInfo() {
 			inherit(XContentContainer)
+			elementsByTag(XcScene::lib,
+			              "lib" to XcLib::class,
+			              "text" to XcNamedText::class,
+			              "scene" to XcScene::class
+			)
 			attribute(XcScene::name)
 			elementByAttr(XcScene::trigger,"trigger","triggerType",
 			              "encounter" to EncounterTrigger::class,
@@ -154,6 +153,7 @@ class XcScene : XContentContainer(), StoryStmt {
 class XcNamedText : XContentContainer(), StoryStmt {
 	override val nameProperty = SimpleStringProperty("")
 	override var name:String by nameProperty
+	override val lib = ArrayList<StoryStmt>().observable()
 	
 	override val isValidProperty = SimpleObjectProperty(ValidationStatus.UNKNOWN)
 	override var isValid: ValidationStatus by isValidProperty
@@ -167,6 +167,11 @@ class XcNamedText : XContentContainer(), StoryStmt {
 		
 		override fun XmlSzInfoBuilder<XcNamedText>.buildSzInfo() {
 			inherit(XContentContainer)
+			elementsByTag(XcNamedText::lib,
+			              "lib" to XcLib::class,
+			              "text" to XcNamedText::class,
+			              "scene" to XcScene::class
+			)
 			attribute(XcNamedText::name)
 			afterLoad { parent ->
 				owner = parent as ModDataNode?

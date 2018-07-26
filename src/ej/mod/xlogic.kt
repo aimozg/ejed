@@ -1,5 +1,6 @@
 package ej.mod
 
+import ej.editor.expr.Expression
 import ej.editor.expr.ExpressionProperty
 import ej.editor.utils.ObservableSingletonList
 import ej.editor.utils.observableConcatenation
@@ -60,6 +61,7 @@ class XlIf(): XStatement,XmlAutoSerializable {
 	val testProperty = ExpressionProperty("")
 	@Attribute
 	var test:String by testProperty
+	var testExpression: Expression by testProperty.expressionProperty
 	
 	@Element("then")
 	val thenGroup = XlThen()
@@ -92,6 +94,7 @@ class XlElseIf(): PartOfIf() {
 		this.test = test
 	}
 	val testProperty = ExpressionProperty("")
+	var testExpression: Expression by testProperty.expressionProperty
 	@Attribute
 	var test: String by testProperty
 	override fun toString() = defaultToString("elseif","test=$test")

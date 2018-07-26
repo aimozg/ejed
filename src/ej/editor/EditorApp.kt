@@ -40,11 +40,7 @@ class EditorView : AModView() {
 						}
 					}
 					item("Open...").action {
-						if (center.uiComponent<ModListView>() != null) {
-							controller.openMod()
-						} else {
-							center = find<ModListView>().root
-						}
+						controller.openMod()
 					}
 					item("Save", KeyCombination.valueOf("Ctrl+S")) {
 						enableWhen(controller.modProperty.isNotNull)
@@ -94,7 +90,6 @@ class EditorView : AModView() {
 				root.center = find<ModView>().root
 			} else {
 				root.center = find<ModListView>().root
-				
 			}
 		}
 	}
@@ -104,6 +99,7 @@ class EditorApp : App(EditorView::class) {
 	
 	init {
 		importStylesheet(Styles::class)
+		FX.stylesheets += Styles.THEME_COMMON
 		FX.stylesheets += Styles.THEME_DARK
 	}
 	

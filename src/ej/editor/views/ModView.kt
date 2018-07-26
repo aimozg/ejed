@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.AModView
+import ej.editor.player.ModPreview
 import ej.editor.utils.onChangeAndNow
 import ej.editor.utils.select
 import ej.editor.utils.textInputDialog
@@ -72,6 +73,22 @@ class ModView: AModView() {
 					button("Validate").action {
 						mod.validate()
 					}
+					button("Play") {
+						action {
+							val story = (tree.selectedValue as? ModTreeNode.StoryNode)?.story
+							if (story != null) find<ModPreview>().apply {
+								openWindow()
+								clearOutput()
+								play(story)
+							}
+						}
+						
+						disableWhen {
+							tree.selectionModel.selectedItemProperty().booleanBinding {
+								(it?.value as? ModTreeNode.StoryNode)?.story !is XContentContainer
+							}
+						}
+					}
 				}
 				tree.attachTo(this) {
 					onUserSelect {
@@ -130,7 +147,7 @@ class ModView: AModView() {
 		when(value) {
 			is ModTreeNode.MonsterNode -> mod.monsters.remove(value.monster)
 			is ModTreeNode.StoryNode -> when (parent) {
-				is ModTreeNode.StoryListNode -> mod.content.remove(value.story)
+				is ModTreeNode.StoryListNode -> mod.lib.remove(value.story)
 				is ModTreeNode.StoryNode -> parent.story.lib.remove(value.story)
 				else -> kotlin.error("Cannot remove")
 			}
@@ -164,7 +181,7 @@ class ModView: AModView() {
 	}
 	
 	fun addScene(parent: StoryStmt?, s: StoryStmt) {
-		(parent?.lib?:mod.content).add(s)
+		(parent?.lib?:mod.lib).add(s)
 		tree.select { (it as? ModTreeNode.StoryNode)?.story == s }
 	}
 	

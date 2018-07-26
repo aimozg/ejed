@@ -67,7 +67,7 @@ sealed class ModTreeNode(
 			hasName = true
 	) {
 		override val population = listOf(MonsterListNode(mod),
-		                                 StoryListNode(mod.content)).observable()
+		                                 StoryListNode(mod.lib)).observable()
 		override val textProperty = mod.nameProperty
 	}
 }

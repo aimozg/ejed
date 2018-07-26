@@ -1,7 +1,6 @@
 package ej.editor.views
 
 import ej.editor.AModView
-import ej.editor.Styles
 import ej.editor.utils.NullableStringConverter
 import ej.editor.utils.colspan
 import ej.editor.utils.smartRow
@@ -64,7 +63,7 @@ class MonsterBasicView:AMonsterView("Basic") {
 				}
 			}
 			form {
-				addClass(Styles.monsterCombat)
+				addClass("monster-combat")
 				gridpane {
 					row {
 						label("Combat") {

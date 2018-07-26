@@ -1,0 +1,190 @@
+/* Editor window */
+.root.editor-view {
+    -fx-pref-width: 1200px;
+    -fx-pref-height: 800px;
+}
+/* Mod player window */
+.root.player-view {
+    -fx-pref-width: 800px;
+    -fx-pref-height: 600px;
+}
+/* System log */
+.text-area.consola {
+    -fx-font-family: "Consolas";
+}
+
+/* Mod player: Main text */
+.main-text {
+    -fx-font-family: "Lucida Console";
+    -fx-background-color: #eee;
+    -fx-text-fill: #222;
+    -fx-padding: 1em;
+}
+.main-text .content-text {
+    -fx-text-fill: #222;
+}
+.main-text .content-text-skipped {
+    -fx-text-fill: #888;
+}
+.main-text .content-code {
+    -fx-text-fill: #228;
+}
+.main-text .content-code-skipped {
+    -fx-text-fill: #88b;
+}
+.main-text .content-comment {
+    -fx-text-fill: #282;
+}
+.main-text .content-code-skipped {
+    -fx-text-fill: #8b8;
+}
+
+/* Restyling forms */
+.form {
+    -fx-spacing: 10px;
+}
+.form GridPane {
+    -fx-hgap: 2px;
+    -fx-vgap: 5px;
+}
+.form .label.legend {
+    -fx-font-weight: bold;
+    -fx-font-size: 1.2em;
+    -fx-padding: 0 0 5px 0;
+}
+.form.monster-combat .label {
+    -fx-alignment: center;
+}
+.small-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+    -fx-min-width: 16px;
+    -fx-max-width: 16px;
+    -fx-min-height: 16px;
+    -fx-max-height: 16px;
+    -fx-alignment: center;
+    -fx-font-size: 0.8em;
+    -fx-focus-traversable: false;
+}
+.small-button:hover {
+    -fx-background-color: #d3d3d3;
+}
+.small-button:focused {
+    -fx-background-color: #d3d3d3;
+}
+.small-button:armed {
+    -fx-background-color: #a9a9a9;
+}
+.small-button-space {
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+}
+.toggle-switch.nogap {
+    -fx-padding: 0 1.333333em 0 0;
+}
+.toggle-switch.nogap .label {
+    -fx-padding: 0 -1.333333em 0 0;
+}
+
+/* Scene statement tree node */
+.statement-tree .tree-graphic {
+    -fx-font-family: "Lucida Console";
+}
+
+/* Node type: text */
+.xtext {
+    -fx-font-family: "Lucida Fax";
+}
+
+/* Expression editor: link */
+.xexpr-link {
+    -fx-cursor: hand;
+    -fx-underline: true;
+}
+
+/* tag nesting depth; not used right now */
+.depth-0 {
+    -fx-border-color: #ffffff;
+}
+.depth-1 {
+    -fx-border-color: #222288;
+}
+.depth-2 {
+    -fx-border-color: #882288;
+}
+.depth-3 {
+    -fx-border-color: #882222;
+}
+.depth-4 {
+    -fx-border-color: #886622;
+}
+.depth-5 {
+    -fx-border-color: #888822;
+}
+.depth-6 {
+    -fx-border-color: #228822;
+}
+.depth-7 {
+    -fx-border-color: #228888;
+}
+.depth-8 {
+    -fx-border-color: #222222;
+}
+.depth-9 {
+    -fx-border-color: #888888;
+}
+
+/* Statement editor */
+.xstmt-editor {
+    -fx-spacing: 5px;
+    -fx-padding: 5px;
+}
+.xstmt-editorHBox {
+    -fx-alignment: baseline-left;
+}
+.xtextTextFlow {
+    -fx-padding: 0 0 15px 0;
+}
+.toolbar-grid .button {
+    -fx-pref-width: 80px;
+    -fx-padding: 4px;
+}
+
+.tree-cell .tree-graphic.glyph-font {
+    -fx-padding: 0;
+}
+
+.tree-cell.dragover .tree-graphic {
+    -fx-border-color: #0f0;
+}
+.tree-cell.dragover.dragover-from-top .tree-graphic {
+    -fx-border-width: 2 0 0 0;
+}
+
+.tree-cell.dragover.dragover-from-bottom .tree-graphic {
+    -fx-border-width: 0 0 2 0;
+}
+
+.tree-cell {
+    -fx-indent: 1.375em;
+}
+
+.tree-cell > .tree-disclosure-node.folder,
+.tree-table-row-cell > .tree-disclosure-node.folder {
+    -fx-padding: 2 3 2 7;
+}
+
+.tree-cell > .tree-disclosure-node.folder > .arrow,
+.tree-table-row-cell > .tree-disclosure-node.folder > .arrow {
+    -fx-padding: 0.5em 0.5625em; /* h = 12px = 1em, w = 9/8 h = 1.125em = 13.5px */
+    -fx-background-color: -fx-text-background-color;
+    -fx-shape: "M464 128H272l-64-64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48zm-6 272H54c-3.314 0-6-2.678-6-5.992V117.992A5.993 5.993 0 0 1 54 112h134.118l64 64H458a6 6 0 0 1 6 6v212a6 6 0 0 1-6 6z";
+}
+
+.tree-cell:expanded > .tree-disclosure-node.folder > .arrow,
+.tree-table-row-cell:expanded > .tree-disclosure-node.folder > .arrow {
+    -fx-shape: "M527.943 224H480v-48c0-26.51-21.49-48-48-48H272l-64-64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h400a48.001 48.001 0 0 0 40.704-22.56l79.942-128c19.948-31.917-3.038-73.44-40.703-73.44zM54 112h134.118l64 64H426a6 6 0 0 1 6 6v42H152a48 48 0 0 0-41.098 23.202L48 351.449V117.993A5.993 5.993 0 0 1 54 112zm394 288H72l77.234-128H528l-80 128z";
+    -fx-rotate: 0;
+}

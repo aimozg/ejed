@@ -1,8 +1,5 @@
 package ej.editor
 
-import javafx.geometry.Pos
-import javafx.scene.paint.Color
-import javafx.scene.text.FontWeight
 import tornadofx.*
 import java.io.File
 
@@ -21,31 +18,39 @@ class Styles : Stylesheet() {
 		val THEME_LIGHT =
 				File("theme-light.css").takeIf { it.exists() }?.toURI()?.toURL()?.toExternalForm() ?:
 				Styles::class.java.getResource("/ej/editor/theme-light.css").toExternalForm()
+		val THEME_COMMON =
+				File("common.css").takeIf { it.exists() }?.toURI()?.toURL()?.toExternalForm() ?:
+				Styles::class.java.getResource("/ej/editor/common.css").toExternalForm()
+		val PREVIEW_STYLE by lazy {
+			(
+					File("preview.css").takeIf{it.exists()}?.inputStream() ?:
+					Styles::class.java.getResourceAsStream("/ej/editor/preview.css")
+			).reader().readText()
+		}
 
-		val wrapper by cssclass()
-		val consola by cssclass()
-		val monsterCombat by cssclass()
+//		val wrapper by cssclass()
+//		val consola by cssclass()
+//		val monsterCombat by cssclass()
 		
 		val statementTree by cssclass()
 		val treeCell by cssclass()
 		val treeGraphic by cssclass()
 
 		val editorView by cssclass()
+		val playerView by cssclass()
 		
 		val xexpr by cssclass()
 		val xexprLink by cssclass()
 		val xexprBadLink by cssclass()
 		
-		val xstmt by cssclass()
 		val xstmtEditor by cssclass()
-		val xstmtSelected by cssclass()
 		val xtext by cssclass()
 		val xlogic by cssclass()
 		val xcommand by cssclass()
 		val xcomment by cssclass()
 		val xnext by cssclass()
-		val smallButton by cssclass()
-		val smallButtonSpace by cssclass()
+//		val smallButton by cssclass()
+//		val smallButtonSpace by cssclass()
 		
 		val dragover by cssclass()
 		val dragoverFromTop by cssclass()
@@ -57,6 +62,7 @@ class Styles : Stylesheet() {
 	}
 	
 	init {
+		/*
 		root and editorView {
 			prefWidth = 1200.px
 			prefHeight = 800.px
@@ -173,5 +179,6 @@ class Styles : Stylesheet() {
 			prefWidth = 80.px
 			padding = box(4.px)
 		}
+		*/
 	}
 }

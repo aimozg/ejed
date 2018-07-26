@@ -5,6 +5,8 @@ package ej.utils
  * Confidential until published on GitHub
  */
 
+fun String.appendIf(condition:Boolean,ifTrue:String,ifFalse:String=""):String =
+		if (condition) this+ifTrue else this+ifFalse
 fun String?.affix(prefix:String,suffix:String=""):String =
 		if (this == null) "" else prefix+this+suffix
 fun String?.affixNonEmpty(prefix:String,suffix:String=""):String =
