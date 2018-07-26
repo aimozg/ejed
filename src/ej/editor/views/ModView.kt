@@ -1,70 +1,19 @@
 package ej.editor.views
 
-import com.sun.javafx.binding.StringConstant
 import ej.editor.AModView
-import ej.editor.Styles
-import ej.editor.utils.*
+import ej.editor.utils.onChangeAndNow
+import ej.editor.utils.select
+import ej.editor.utils.textInputDialog
 import ej.mod.*
-import javafx.beans.value.ObservableValue
-import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
-import org.controlsfx.glyphfont.FontAwesome
+import javafx.util.Callback
 import tornadofx.*
 
-sealed class ModTreeNode(
-		val acceptsMonsters: Boolean = false,
-		val acceptsScenes: Boolean = false,
-		val hasName: Boolean = false,
-		val removable: Boolean = false
-) {
-	open val population:ObservableList<out ModTreeNode> = emptyList<ModTreeNode>().observable()
-	abstract val textProperty: ObservableValue<String>
-	
-	class MonsterListNode(val mod:ModData): ModTreeNode(
-			acceptsMonsters = true
-	) {
-		override val population = mod.monsters.transformed { MonsterNode(mod,it) }
-		override val textProperty = StringConstant.valueOf("Monsters")
-	}
-	class MonsterNode(val mod:ModData, val monster:MonsterData): ModTreeNode(
-			acceptsMonsters = true,
-			hasName = true,
-			removable = true
-	) {
-		override val textProperty = monster.idProperty.stringBinding(monster.nameProperty) {
-			if (monster.id == monster.name || monster.name.isNullOrBlank()) monster.id
-			else "${monster.id} (${monster.name})"
-		}
-	}
-	class StoryNode(val story:StoryStmt): ModTreeNode(
-			acceptsScenes = true,
-			hasName = true,
-			removable = true
-	) {
-		override val textProperty = story.nameProperty
-		override val population = story.lib.transformed { StoryNode(it) }
-	}
-	class StoryListNode(val stories:ObservableList<StoryStmt>): ModTreeNode(
-			acceptsScenes = true
-	) {
-		override val textProperty = StringConstant.valueOf("Scenes")
-		override val population = stories.transformed { StoryNode(it) }
-	}
-	class RootNode(val mod:ModData): ModTreeNode(
-			acceptsScenes = true,
-			acceptsMonsters = true,
-			hasName = true
-	) {
-		override val population = listOf(MonsterListNode(mod),
-		                                 StoryListNode(mod.content)).observable()
-		override val textProperty = mod.nameProperty
-	}
-}
 
 class ModView: AModView() {
 	
@@ -128,7 +77,8 @@ class ModView: AModView() {
 					onUserSelect {
 						selectModEntry(it)
 					}
-					cellFormat {_ ->
+					cellFactory = Callback { ModTreeCell() }
+					/*cellFormat {_ ->
 						graphicProperty().bind(
 								itemProperty().objectBinding {
 									when (it) {
@@ -153,9 +103,10 @@ class ModView: AModView() {
 												}
 												else -> null
 											}
-											g?.addClass(Styles.treeGraphic)?.bindClass(bindingN(it.story.isValidProperty) { status  ->
-												CssRule.c("validation-"+(status?:ValidationStatus.UNKNOWN).name.toLowerCase())
-											})?.saveIntoPropertiesOf(g)
+											g?.addClass(Styles.treeGraphic)
+											bindClass(nonNullObjectBinding(it.story.isValidProperty) {
+												CssRule.c("validation-"+value.name.toLowerCase())
+											}).saveIntoPropertiesOf(this)
 											disclosureNode?.addClass("folder")?.replaceChildren {
 												stackpane { addClass("glyph") }
 											}
@@ -170,7 +121,7 @@ class ModView: AModView() {
 								}
 						)
 						textProperty().bind(itemProperty().select { it.textProperty })
-					}
+					}*/
 					vgrow = Priority.ALWAYS
 					contextmenu {
 						menu("Add") {
