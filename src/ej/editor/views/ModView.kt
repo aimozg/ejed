@@ -78,50 +78,6 @@ class ModView: AModView() {
 						selectModEntry(it)
 					}
 					cellFactory = Callback { ModTreeCell() }
-					/*cellFormat {_ ->
-						graphicProperty().bind(
-								itemProperty().objectBinding {
-									when (it) {
-										is ModTreeNode.StoryNode -> {
-											//disclosureNode = null
-											val g = when (it.story) {
-												is XcScene ->
-													boundFaGlyph(it.story.triggerProperty.stringBinding { trigger ->
-														when (trigger) {
-															is EncounterTrigger -> FontAwesome.Glyph.MAP_MARKER.char.toString()
-															is TimedTrigger -> FontAwesome.Glyph.CLOCK_ALT.char.toString()
-															null -> FontAwesome.Glyph.SHARE_ALT.char.toString()
-														}
-													})
-												is XcNamedText ->
-													FontAwesome.Glyph.FILE_TEXT_ALT.node()
-												is XcLib -> {
-													boundFaGlyph(it.story.lib.listBinding { lib ->
-														if (lib.isEmpty()) FontAwesome.Glyph.FOLDER_OPEN_ALT.char.toString()
-														else ""
-													})
-												}
-												else -> null
-											}
-											g?.addClass(Styles.treeGraphic)
-											bindClass(nonNullObjectBinding(it.story.isValidProperty) {
-												CssRule.c("validation-"+value.name.toLowerCase())
-											}).saveIntoPropertiesOf(this)
-											disclosureNode?.addClass("folder")?.replaceChildren {
-												stackpane { addClass("glyph") }
-											}
-											g
-										}
-										is ModTreeNode.MonsterNode,
-										is ModTreeNode.StoryListNode,
-										is ModTreeNode.MonsterListNode,
-										is ModTreeNode.RootNode,
-										null -> null
-									}
-								}
-						)
-						textProperty().bind(itemProperty().select { it.textProperty })
-					}*/
 					vgrow = Priority.ALWAYS
 					contextmenu {
 						menu("Add") {

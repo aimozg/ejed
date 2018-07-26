@@ -37,6 +37,7 @@ class ValidatingVisitor : ModVisitor() {
 			else allGroups.fold(ValidationStatus.UNKNOWN) { a, b -> a * b.hasSceneEnder() }
 		is XsBattle,
 		is XsNext,
+		is XsButton,
 		is XsForward ->
 			ValidationStatus.VALID
 		else -> ValidationStatus.INVALID

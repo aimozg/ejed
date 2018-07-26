@@ -75,21 +75,18 @@ sealed class ModTreeNode(
 class ModTreeCell : TreeCell<ModTreeNode>() {
 	val classBindingProperty = SimpleStringProperty("")
 	
-	
-	
-	init {
-		classBindingProperty.addListener { _, oldValue, newValue ->
-			if (!oldValue.isNullOrBlank() && oldValue != newValue) removeClass(oldValue)
-			if (!newValue.isNullOrBlank() && newValue != oldValue) addClass(newValue)
-		}
-		textProperty().bind(treeItemProperty().select { it.value.textProperty })
-		treeItemProperty().onChange { treeItem ->
-			val item = treeItem?.value
-			val g = (graphic as? Glyph) ?: fontAwesome.create("").addClass(Styles.treeGraphic).also {graphic = it }
+	override fun updateItem(item: ModTreeNode?, empty: Boolean) {
+		super.updateItem(item, empty)
+		if (treeItem == null || item == null) {
+			graphic = null
+			classBindingProperty.unbind()
+			classBindingProperty.value = null
+		} else {
+			val g = (graphic as? Glyph) ?: fontAwesome.create("").addClass(Styles.treeGraphic).also { graphic = it }
 			var textBinding: ObservableValue<String>? = null
 			var classBinding: ObservableValue<String>? = null
 			if (item is ModTreeNode.StoryNode) {
-				when(item.story) {
+				when (item.story) {
 					is XcScene -> {
 						textBinding = item.story.triggerProperty.stringBinding { trigger ->
 							when (trigger) {
@@ -103,23 +100,23 @@ class ModTreeCell : TreeCell<ModTreeNode>() {
 						textBinding = StringConstant.valueOf(FontAwesome.Glyph.FILE_TEXT_ALT.char.toString())
 					}
 					is XcLib -> {
-						/*textBinding = treeItem.expandedProperty().stringBinding {
-							if (it == true) FontAwesome.Glyph.FOLDER_OPEN_ALT.char.toString()
-							else FontAwesome.Glyph.FOLDER_ALT.char.toString()
-						}*/
 						textBinding = StringConstant.valueOf(FontAwesome.Glyph.FOLDER_ALT.char.toString())
 					}
 				}
-				/*disclosureNode?.toggleClass("folder",item.story is XcLib)
-				disclosureNode?.getChildList()?.withEach {
-					toggleClass("folder",item.story is XcLib)
-					toggleClass("arrow",item.story !is XcLib)
-				}*/
 				
 				classBinding = item.story.isValidProperty.stringBinding { "validation-${it?.name?.toLowerCase()}" }
 			}
-			 g.textProperty().bind(textBinding ?: StringConstant.valueOf(""))
+			g.textProperty().bind(textBinding ?: StringConstant.valueOf(""))
 			classBindingProperty.bind(classBinding ?: StringConstant.valueOf(null))
 		}
+	}
+	
+	init {
+		
+		classBindingProperty.addListener { _, oldValue, newValue ->
+			if (!oldValue.isNullOrBlank() && oldValue != newValue) removeClass(oldValue)
+			if (!newValue.isNullOrBlank() && newValue != oldValue) addClass(newValue)
+		}
+		textProperty().bind(treeItemProperty().select { it.value.textProperty })
 	}
 }
