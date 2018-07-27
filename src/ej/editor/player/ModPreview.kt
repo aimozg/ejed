@@ -6,6 +6,7 @@ import ej.editor.Styles
 import ej.editor.expr.Evaluated
 import ej.editor.expr.Evaluator
 import ej.editor.utils.escapeXml
+import ej.editor.utils.onChangeAndNow
 import ej.editor.views.ManagedWebView
 import ej.mod.*
 import ej.utils.appendIf
@@ -101,14 +102,14 @@ class ModPreview : AModView(), PlayerInterface {
 				}
 			}
 		}
-		showSkippedProperty.onChange { show ->
-			mainText.toggleMainElementClass("noskip",!show)
+		showSkippedProperty.onChangeAndNow { show ->
+			mainText.toggleMainElementClass("noskip",show == false)
 		}
-		showCodeProperty.onChange { show ->
-			mainText.toggleMainElementClass("nocode",!show)
+		showCodeProperty.onChangeAndNow { show ->
+			mainText.toggleMainElementClass("nocode",show == false)
 		}
-		showCommentsProperty.onChange { show ->
-			mainText.toggleMainElementClass("nocomment",!show)
+		showCommentsProperty.onChangeAndNow { show ->
+			mainText.toggleMainElementClass("nocomment",show == false)
 		}
 	}
 	
