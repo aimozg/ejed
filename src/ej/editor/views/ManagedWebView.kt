@@ -38,16 +38,19 @@ open class ManagedWebView : VBox() {
 	protected fun mainElementIn(document: Document?): HTMLElementImpl? =
 		document?.getElementById("mainElement") as? HTMLElementImpl
 	protected open fun documentPropertyChanged(doc: Document?) {
-		mainElementIn(doc)?.innerHTML = htmlContent
+		val mainElement = mainElementIn(doc)
+		mainElement?.innerHTML = htmlContent
+		mainElement?.className = mainElementClassAttr
 	}
 	protected open fun templatePartStyle() = "#mainElement{" +
 			/**/"min-height:calc(99vh - 16px - 1em);" + // 8px body padding 1em p margin top
 			"}"
-	protected open fun templatePartMainElement() = "<div id='mainElement'></div>"
+	protected open fun templatePartMainElement() = "<div id='mainElement' class='$mainElementClassAttr'></div>"
 	protected open fun template() = "<!DOCTYPE html><html><head>" +
 			"<style type='text/css'>${templatePartStyle()}</style>" +
 			"</head><body>${templatePartMainElement()}</body></html>"
 	
+	val mainElementClasses = HashSet<String>().observable()
 	val webView = WebView().attachTo(this) {
 		engine.documentProperty().onChange { documentPropertyChanged(it) }
 		hgrow = Priority.ALWAYS
@@ -64,7 +67,7 @@ open class ManagedWebView : VBox() {
 		mainElement.innerHTML = it
 	}
 	
-	val mainElementClasses = HashSet<String>().observable()
+	val mainElementClassAttr get() = mainElementClasses.joinToString(" ")
 	fun toggleMainElementClass(className:String,toggle:Boolean) {
 		if (toggle) mainElementClasses += className
 		else mainElementClasses -= className

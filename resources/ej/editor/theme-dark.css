@@ -58,11 +58,11 @@
     -fx-text-background-color: #a8f;
 }
 
-.statement-tree .tree-graphic:selected .xtext,
-.statement-tree .tree-graphic:selected .xlogic,
-.statement-tree .tree-graphic:selected .xcomment,
-.statement-tree .tree-graphic:selected .xcommand,
-.statement-tree .tree-graphic:selected .xnext {
+.statement-tree .tree-cell:focused .xtext,
+.statement-tree .tree-cell:focused .xlogic,
+.statement-tree .tree-cell:focused .xcomment,
+.statement-tree .tree-cell:focused .xcommand,
+.statement-tree .tree-cell:focused .xnext {
     -fx-text-background-color: #222;
 }
 

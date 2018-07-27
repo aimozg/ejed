@@ -31,7 +31,7 @@ open class HtmlEditorLite : ManagedWebView() {
 	}
 	
 	override fun templatePartMainElement(): String {
-		return "<div contentEditable='true' id='mainElement'></div>"
+		return "<div contentEditable='true' id='mainElement' class='$mainElementClassAttr'></div>"
 	}
 	
 }

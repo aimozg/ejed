@@ -8,7 +8,10 @@ import ej.editor.expr.Evaluator
 import ej.editor.utils.escapeXml
 import ej.editor.utils.onChangeAndNow
 import ej.editor.views.ManagedWebView
-import ej.mod.*
+import ej.mod.ModDataNode
+import ej.mod.StoryStmt
+import ej.mod.locate
+import ej.mod.visit
 import ej.utils.appendIf
 import ej.utils.crop
 import javafx.beans.property.SimpleBooleanProperty
@@ -22,7 +25,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-class ModPreview : AModView(), PlayerInterface {
+class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	class MainText : ManagedWebView() {
 		override fun templatePartStyle(): String {
 			return super.templatePartStyle()+"\n"+Styles.PREVIEW_STYLE
@@ -51,7 +54,8 @@ class ModPreview : AModView(), PlayerInterface {
 	}
 	
 	
-	fun play(stmt:StoryContainer) {
+	fun play(stmt:StoryStmt) {
+		outputContent("[scene: ${stmt.path}]",ContentType.CODE,false)
 		stmt.visit(playingVisitor)
 	}
 	
@@ -121,9 +125,11 @@ class ModPreview : AModView(), PlayerInterface {
 	private var skipMax:Int = 200
 	override fun outputContent(t: String, type: ContentType, skipped: Boolean) {
 		if (t.isEmpty()) return
-		val cc = "content-$type".appendIf(skipped," skipped").toLowerCase()
+		var cc = "content-$type".appendIf(skipped," skipped").toLowerCase()
 		val remaining = skipMax - skipCounter
 		if (!skipped) {
+			if (t.startsWith("[forward:")) cc += " forward"
+			if (t.startsWith("[scene:")) cc += " scene"
 			skipCounter = 0
 			val s = "<span class='$cc'>$t</span>"
 			mainText.htmlContent += s

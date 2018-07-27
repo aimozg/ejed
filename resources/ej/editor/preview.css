@@ -9,3 +9,12 @@
 #mainElement.noskip .skipped {display:none}
 #mainElement.nocode .content-code {display:none}
 #mainElement.nocomment .content-comment {display:none}
+
+#mainElement .content-code.forward {
+    display:block;
+    border-bottom:1px solid #228;
+}
+#mainElement .content-code.scene {
+    display:block;
+    border-top:1px solid #228;
+}
