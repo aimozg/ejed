@@ -29,8 +29,8 @@ data class BooleanOr(
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression) =
 				if (expr.op != BinaryOperator.OR) null
 				else BooleanOr().apply {
-					expr1 = converter.convert(expr.left)
-					expr2 = converter.convert(expr.right)
+					expr1 = converter.convert(expr.left,"boolean")
+					expr2 = converter.convert(expr.right,"boolean")
 				}
 		
 	}

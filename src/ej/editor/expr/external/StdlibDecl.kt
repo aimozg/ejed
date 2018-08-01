@@ -2,6 +2,8 @@ package ej.editor.expr.external
 
 import ej.editor.expr.*
 import ej.mod.ModData
+import ej.utils.Validable
+import ej.utils.ValidationReport
 import ej.xml.*
 import java.io.File
 import java.io.InputStream
@@ -11,7 +13,7 @@ import java.io.InputStream
  * Confidential unless published on GitHub
  */
 @RootElement("stdlib")
-class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression> {
+class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression>, Validable {
 	@Elements("function")
 	val functions = ArrayList<FunctionDecl>()
 
@@ -40,21 +42,37 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression> 
 		val function = functionByName(id) ?: return null
 		if (function.arity != arity) return null
 		val efb = ExternalFunctionBuilder(function)
-		for ((argument,param) in expr.arguments.zip(efb.params)) {
-			param.value = converter.convert(argument)
+		for ((i, param) in function.params.withIndex()) {
+			efb.params[i].value = converter.convert(expr.arguments[i], param.type)
 		}
 		return efb
 	}
+	
+	override fun validate() = ValidationReport.build {
+		validateAll(functions,"functions")
+	}
+	fun removeInvalidElements() {
+		functions.removeAll { !it.validate().isValid }
+	}
 }
 
-val Stdlib:StdlibDecl by lazy {
+val Stdlib:StdlibDecl by lazy<StdlibDecl> {
+	var sd:StdlibDecl? = null
 	try {
 		val f = File("stdlib.xml")
-		if (f.exists() && f.canRead()) return@lazy loadStdlib(f.inputStream())
+		if (f.exists() && f.canRead()) sd = loadStdlib(f.inputStream())
 	} catch (e:Exception) {
 		e.printStackTrace()
 	}
-	loadStdlib(ModData::class.java.getResourceAsStream("stdlib.xml"))
+	if (sd == null) sd = loadStdlib(ModData::class.java.getResourceAsStream("stdlib.xml"))
+	val vr = sd.validate()
+	if (!vr.isValid) {
+		vr.validationErrors().forEach {
+			System.err.println(it)
+		}
+		sd.removeInvalidElements()
+	}
+	sd
 }
 
 fun loadStdlib(input: InputStream):StdlibDecl {

@@ -19,6 +19,17 @@ class Identifier(val value:String):Expression() {
 	override val parts get() = emptyList<Expression>()
 	override val source get() = value
 	override fun copy() = Identifier(value)
+	
+	companion object {
+		fun valueOf(source: String): Identifier =
+				RESERVED_LITERALS.find { it.value == source } ?: Identifier(source)
+		
+		val True = Identifier("true")
+		val False = Identifier("false")
+		val Null = Identifier("null")
+		
+		val RESERVED_LITERALS = listOf(True,False,Null)
+	}
 }
 sealed class ConstLiteral<T:Any?>(val value:T):Expression()
 class IntLiteral(value:Int):ConstLiteral<Int>(value) {

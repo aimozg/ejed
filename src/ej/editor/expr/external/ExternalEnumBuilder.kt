@@ -7,9 +7,12 @@ import ej.editor.stmts.defaultEditorBody
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 
-class ExternalEnumBuilder(val enumDecl: EnumDecl): ExpressionBuilder() {
+class ExternalEnumBuilder(val enumDecl: EnumDecl,initial:EnumDecl.EnumConstDecl?=null): ExpressionBuilder() {
+	init {
+		if (initial != null && initial !in enumDecl.values) kotlin.error("$initial not in $enumDecl")
+	}
 	
-	val valueProperty = SimpleObjectProperty<EnumDecl.EnumConstDecl?>()
+	val valueProperty = SimpleObjectProperty(initial)
 	var value by valueProperty
 	
 	override fun text() = value?.text()?:"<???>"

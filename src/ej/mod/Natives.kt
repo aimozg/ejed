@@ -29,6 +29,12 @@ class NativeItem : XmlAutoSerializable {
 	@Element var desc:String? = null
 }
 
+class NativePerk : XmlAutoSerializable {
+	@Attribute var id:String = ""
+	@Attribute var name:String = ""
+	@Element var desc:String? = null
+}
+
 @RootElement("gamedata")
 class NativesClass : XmlAutoSerializable {
 	@Elements("pool", true, "encounter-pools")
@@ -39,6 +45,8 @@ class NativesClass : XmlAutoSerializable {
 	val scenes = ArrayList<NativeScene>()
 	@Elements("item",true)
 	val items = ArrayList<NativeItem>()
+	@Elements("perk",true)
+	val perks = ArrayList<NativePerk>()
 }
 
 val Natives:NativesClass by lazy {

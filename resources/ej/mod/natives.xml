@@ -21,6 +21,9 @@
         <monster id="goblin"/>
         <monster id="imp"/>
     </monsters>
+    <perks>
+        <perk id="Counter Stance" name="Counter Stance"/>
+    </perks>
     <items>
 
     </items>

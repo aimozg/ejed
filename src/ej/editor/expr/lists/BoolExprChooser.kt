@@ -13,7 +13,6 @@ object BoolExprChooser : ExpressionChooser() {
 		return pickFromList(title,initial,
 		                    Stdlib.buildersReturning("boolean") + listOf(
 				// specifics
-//				CreatureSexTest(),
 				// generics
 				BooleanAnd(),
 				BooleanOr(),

@@ -18,6 +18,8 @@ class EnumDecl : XmlAutoSerializable {
 
 	@Elements("value")
 	val values = ArrayList<EnumConstDecl>().observable()
+	
+	fun valueByImpl(impl:String) = values.find { it.impl == impl }
 
 	class EnumConstDecl : WithReadableText, XmlAutoSerializable {
 		override fun text(): String = name
@@ -27,9 +29,16 @@ class EnumDecl : XmlAutoSerializable {
 
 		@Attribute
 		var impl:String = ""
+			set(value) {
+				field = parseExpressionSafe(value).source
+			}
 		val implExpr get() = parseExpressionSafe(impl)
 
 		@Element
 		var description: String? = null
+		
+		override fun toString() = "EnumConstDecl($name)"
 	}
+	
+	override fun toString() = "EnumDecl($name)"
 }

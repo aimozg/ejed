@@ -33,8 +33,8 @@ data class BooleanAnd(
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression) =
 				if (expr.op != BinaryOperator.AND) null
 				else BooleanAnd().apply {
-					expr1 = converter.convert(expr.left)
-					expr2 = converter.convert(expr.right)
+					expr1 = converter.convert(expr.left,"boolean")
+					expr2 = converter.convert(expr.right,"boolean")
 				}
 		
 	}

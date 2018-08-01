@@ -6,19 +6,33 @@
         <value name="male" impl="1"/>
         <value name="female" impl="2"/>
         <value name="herm" impl="3"/>
+        <value name="male or herm (has penis)" impl="[1,3]"/>
+        <value name="female or herm (has vagina)" impl="[2,3]"/>
+        <value name="male or sexless (no vagina)" impl="[0,1]"/>
+        <value name="female or sexless (no penis)" impl="[0,2]"/>
         <value name="male or female" impl="[1,2]"/>
-        <value name="male or herm" impl="[1,3]"/>
-        <value name="female or herm" impl="[2,3]"/>
+        <value name="sexless or herm" impl="[0,3]"/>
         <value name="not sexless" impl="[1,2,3]"/>
         <value name="not male" impl="[0,2,3]"/>
         <value name="not female" impl="[0,1,3]"/>
         <value name="not herm" impl="[0,1,2]"/>
     </enum>
+    <enum name="HasOrNot">
+        <value name="has" impl="true"/>
+        <value name="doesn't have" impl="false"/>
+    </enum>
     <function name="CreatureSexTest" return="boolean">
         <listname>Creature: Test Sex</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="SexTest" type="SexTest"/>
-        <editor><param name="Creature"/> is <param name="SexTest"/></editor>
+        <editor><param name="Creature"/> is <param name="SexTest" type="SELECT"/></editor>
+    </function>
+    <function name="CreaturePerkTest" return="boolean">
+        <listname>Creature: Has Perk</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Has" type="HasOrNot" default="true"/>
+        <param name="Perk" type="PerkType"/>
+        <editor><param name="Creature"/> <param name="Has" type="SELECT"/> perk <param name="Perk" type="SELECT"/></editor>
     </function>
     <command name="DynStats">
         <listname>Creature: Change stats</listname>

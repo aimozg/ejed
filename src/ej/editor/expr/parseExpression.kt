@@ -3,7 +3,6 @@ package ej.editor.expr
 import ej.editor.utils.AbstractParser
 import ej.editor.utils.ParserException
 import ej.utils.affixNonEmpty
-import ej.utils.toJsString
 
 private val RX_FLOAT= Regex("""^[+\-]?(\d+(\.\d++)?|\.\d++)(e[+\-]?\d++)?$""")
 private val RX_INT= Regex("""^[+\-]?(0x)?\d++$""")
@@ -21,7 +20,7 @@ class ExpressionParser : AbstractParser<Expression>() {
 		return when {
 			eat(RX_INT) -> IntLiteral(source.toInt())
 			eat(RX_FLOAT) -> FloatLiteral(source.toDouble())
-			eat(RX_ID) -> Identifier(source)
+			eat(RX_ID) -> Identifier.valueOf(source)
 			else -> evalUntil("")
 		}
 	}
@@ -73,9 +72,9 @@ class ExpressionParser : AbstractParser<Expression>() {
 			}
 			eat(LA_INT) -> x = IntLiteral(eaten.toInt())
 			eat(LA_FLOAT) -> x = FloatLiteral(eaten.toDouble())
-			eat(LA_ID) -> x = Identifier(eaten)
+			eat(LA_ID) -> x = Identifier.valueOf(eaten)
 			eat("'") || eat("\"") -> {
-				x = StringLiteral(evalStringLiteral(eaten).toJsString())
+				x = StringLiteral(evalStringLiteral(eaten))
 			}
 			else -> parserError("Not a start of expression: '${str[0]}'")
 		}
