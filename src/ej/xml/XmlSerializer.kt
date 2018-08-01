@@ -5,15 +5,6 @@ package ej.xml
  * Confidential until published on GitHub
  */
 
-fun <T : Any> XmlSerializationInfo<T>.deserialize(input: XmlExplorerController,
-                                                  myAttrs: Map<String, String>,
-                                                  parent: Any?): T {
-	val obj = createInstance?.invoke()
-			?: error("Class $klass has no no-arg constructor")
-	deserializeInto(obj,input, myAttrs, parent)
-	return obj
-}
-
 fun <T : Any> XmlSerializationInfo<T>.deserializeInto(obj: T,
                                                       input: XmlExplorerController,
                                                       myAttrs: Map<String, String>,
@@ -51,24 +42,7 @@ fun <T : Any> XmlSerializationInfo<T>.deserializeDocument(input: XmlExplorer): T
 	}
 }
 
-fun <T : Any> XmlSerializationInfo<T>.serialize(
-		obj: T,
-		tag: String,
-		output: XmlBuilder,
-		attrModifier: (Map<String,String>)->Map<String,String> ={it}
-) {
-	beforeSave?.invoke(obj)
-	output.element(tag,
-	               attrModifier(attro.mapNotNull { it.produce(obj) }.toMap())
-	) {
-		for (producer in producers) {
-			producer.produce(this, obj)
-		}
-	}
-	afterSave?.invoke(obj)
-}
-
-fun <T : Any> XmlSerializationInfo<T>.serializeDocument(obj: T, output: XmlBuilder) {
+fun <T : Any> AXmlSerializationInfo<T>.serializeDocument(obj: T, output: XmlBuilder) {
 	output.startDocument()
 	serialize(obj, name ?: error("$obj serialization info has no name"), output)
 	output.endDocument()

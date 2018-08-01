@@ -1,8 +1,11 @@
 package ej.xml
 
+import java.lang.reflect.GenericArrayType
+import java.lang.reflect.ParameterizedType
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaType
 import java.lang.reflect.Array as JArray
@@ -11,23 +14,54 @@ import java.lang.reflect.Array as JArray
  * Created by aimozg on 20.07.2018.
  * Confidential until published on GitHub
  */
-class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>) {
-	fun accepts(e: Any) = klass.isInstance(e)
+abstract class AXmlSerializationInfo<T : Any>internal constructor() {
+	abstract val name:String?
+	abstract fun accepts(e: Any): Boolean
 	@Suppress("UNCHECKED_CAST")
 	fun serializeIfAccepts(
 			e: Any,
 			tag: String,
 			output: XmlBuilder,
-			attrModifier: (Map<String,String>)->Map<String,String> ={it}
-	): Boolean {
+			attrModifier: (Map<String, String>) -> Map<String, String> ={it}
+	): Boolean{
 		if (accepts(e)) {
 			serialize((e as T), tag, output,attrModifier)
 			return true
 		}
 		return false
 	}
+	abstract fun deserialize(input:XmlExplorerController,myAttrs:Map<String,String>,parent:Any?):T
+	abstract fun serialize(obj: T,
+	                       tag: String,
+	                       output: XmlBuilder,
+	                       attrModifier: (Map<String,String>)->Map<String,String> ={it})
+}
+class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>):AXmlSerializationInfo<T>() {
+	override fun accepts(e: Any) = klass.isInstance(e)
 	
-	internal var name: String? = null
+	override fun deserialize(input: XmlExplorerController, myAttrs: Map<String, String>, parent: Any?): T {
+		val obj = createInstanceInParent(parent) ?: error("$this has no no-arg constructor")
+		deserializeInto(obj,input, myAttrs, parent)
+		return obj
+	}
+	
+	override fun serialize(obj: T,
+	                       tag: String,
+	                       output: XmlBuilder,
+	                       attrModifier: (Map<String, String>) -> Map<String, String>) {
+		beforeSave?.invoke(obj)
+		output.element(tag,
+		               attrModifier(attro.mapNotNull { it.produce(obj) }.toMap())
+		) {
+			for (producer in producers) {
+				producer.produce(this, obj)
+			}
+		}
+		afterSave?.invoke(obj)
+	}
+	
+	override var name:String? = null
+		internal set
 	val nameOrClass: String get() = name ?: klass.simpleName ?: klass.toString()
 	internal val attri = HashMap<String, AttrConsumer<T>>()
 	internal var texti: TextConsumer<T>? = null
@@ -38,24 +72,48 @@ class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>) {
 	internal var afterSave: (T.() -> Unit)? = null
 	internal var beforeLoad: (T.(Any?) -> Unit)? = null
 	internal var afterLoad: (T.(Any?) -> Unit)? = null
-	internal val constructor = klass.constructors
-			.find { it.parameters.none { p -> !p.isOptional && !p.isVararg } }
-			?.apply { isAccessible = true }
-	internal val createInstance: (() -> T)?
+	internal val createInstanceInParent: ((Any?) -> T?)
 	
 	init {
-		createInstance = when {
-			constructor == null -> null
-			constructor.parameters.isEmpty() -> ({ constructor.call() })
-			else -> {
-				val varargParam = constructor.parameters.find { it.isVararg }
-				val argmap: Map<KParameter, Any?> = if (varargParam == null) {
-					emptyMap()
-				} else {
-					val javaClass = varargParam.type.javaType as Class<*>
-					mapOf(varargParam to JArray.newInstance(javaClass.componentType,0))
+		
+		if (klass.isInner) {
+			val primaryConstructor = klass.primaryConstructor
+			val param1 = primaryConstructor?.parameters?.singleOrNull()
+			val param1class = param1?.type?.javaType as? Class<*>
+			createInstanceInParent = if (param1class == null) {{ null }}
+			else {
+				{ arg1 ->
+					if (arg1 == null || !param1class.isInstance(arg1)) null
+					else primaryConstructor.call(arg1)
 				}
-				{ constructor.callBy(argmap) }
+			}
+		} else {
+			val constructor = klass.constructors
+					.find { it.parameters.none { p -> !p.isOptional && !p.isVararg } }
+					?.apply { isAccessible = true }
+			createInstanceInParent = when {
+				constructor == null -> {{ null }}
+				constructor.parameters.isEmpty() -> ({ constructor.call() })
+				else -> {
+					val varargParam = constructor.parameters.find { it.isVararg }
+					val argmap: Map<KParameter, Any?> = if (varargParam == null) {
+						emptyMap()
+					} else {
+						val javaType = varargParam.type.javaType
+						val componentType = when (javaType) {
+							is Class<*> -> javaType.componentType
+							is GenericArrayType -> javaType.genericComponentType
+							else -> kotlin.error("Cannot get component type from $javaType")
+						}
+						val componentClass = when(componentType) {
+							is Class<*> -> componentType
+							is ParameterizedType -> componentType.rawType as Class<*>
+							else -> kotlin.error("Cannot get as component class $componentType from $javaType")
+						}
+						mapOf(varargParam to JArray.newInstance(componentClass,0))
+					}
+					{ constructor.callBy(argmap) }
+				}
 			}
 		}
 	}

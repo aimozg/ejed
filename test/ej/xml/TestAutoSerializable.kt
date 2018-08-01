@@ -2,6 +2,7 @@
 
 package ej.xml
 
+import org.funktionale.either.Either
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Before
@@ -542,6 +543,50 @@ class TestAutoSerializable {
 				Gun("Railgun"),
 				Word("and"),
 				Gun("Trigun")),
+		          "mock") { rootAttrs ->
+			assertNoAttrs(rootAttrs)
+			assertEquals(
+					listOf("sword Excalibur", "vs", "gun Railgun", "and", "gun Trigun"),
+					collectNodes { node ->
+						node.fold(
+								{ it },
+								{ (tag, attrs) ->
+									
+									when (tag) {
+										"gun" -> {
+											assertEquals(setOf("name"), attrs.keys)
+											assertNoElements()
+											"gun ${attrs["name"]!!}"
+										}
+										"sword" -> {
+											assertNoAttrs(attrs)
+											"sword ${text()}"
+										}
+										else -> error("unexpected $tag")
+									}
+								}
+						)
+					}
+			)
+		}
+	}
+	@Test
+	fun testMixedBodyEither() {
+		abstract class Thing {}
+		class Gun(@Attribute var name: String = "") : Thing(),XmlAutoSerializable
+		class Sword(@TextBody var name: String = "") : Thing(),XmlAutoSerializable
+		@RootElement("mock")
+		class Mock(vararg init: Either<String, Thing>) : XmlAutoSerializable {
+			@MixedToEitherBody(Polymorphism("gun", Gun::class),
+			                   Polymorphism("sword", Sword::class))
+			val things = mutableListOf(*init)
+		}
+		assertXml(Mock(
+				Either.right(Sword("Excalibur")),
+				Either.left("vs"),
+				Either.right(Gun("Railgun")),
+				Either.left("and"),
+				Either.right(Gun("Trigun"))),
 		          "mock") { rootAttrs ->
 			assertNoAttrs(rootAttrs)
 			assertEquals(

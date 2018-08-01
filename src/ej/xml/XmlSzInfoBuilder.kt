@@ -188,7 +188,7 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	
 	@JvmName("elementSzOverwrite")
 	fun <R : XmlSerializable> elementOverwrite(prop: KProperty1<T, R>,
-	                                           szinfo: () -> XmlSerializationInfo<R>,
+	                                           szinfo: SzInfoMaker<R>,
 	                                           name: String = prop.name) {
 		registerElementIO(PropertyOverwritingEio(XmlOverwritingElementConverter(name, szinfo), prop), name)
 	}
@@ -256,7 +256,7 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	fun <R : Any> wrappedElements(wrapper: String,
 	                              name: String,
 	                              prop: KProperty1<T, MutableList<R>>,
-	                              szinfo: () -> XmlSerializationInfo<R>) {
+	                              szinfo: SzInfoMaker<R>) {
 		registerElementIO(WrappedListPropertyEio(wrapper, XmlElementConverter(name, szinfo), prop), wrapper)
 	}
 	
@@ -274,7 +274,7 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	}
 	
 	fun <R : Any> elementsByTag(prop: KProperty1<T, MutableList<R>>,
-	                            mappings: List<Pair<String, () -> XmlSerializationInfo<out R>>>) {
+	                            mappings: List<Pair<String, SzInfoMaker<out R>>>) {
 		val eio = ListPropertyEio(PolymorphicElementConverter(TagPolymorphicPicker(mappings)), prop)
 		registerElementIO(eio, mappings.map { it.first })
 	}
@@ -314,7 +314,7 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	@JvmName("mixedBodyListMapped")
 	fun <E : Any> mixedBody(prop: KProperty1<T, MutableList<E>>,
 	                        textConverter: TextConverter<E>,
-	                        mappings: List<Pair<String, () -> XmlSerializationInfo<out E>>>) {
+	                        mappings: List<Pair<String, SzInfoMaker<out E>>>) {
 		if (info.texti != null) error("textBody() already set")
 		if (nobody) error("Cannot have mixedBody() and emptyBody()")
 		val mcc = MixedContentConverter(textConverter, TagPolymorphicPicker(mappings))
@@ -326,7 +326,7 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	fun <E : Any> mixedBody(prop: KProperty1<T, MutableList<E>>,
 	                        toStr: (E?) -> String?,
 	                        fromStr: (String) -> E,
-	                        mappings: List<Pair<String, () -> XmlSerializationInfo<out E>>>) {
+	                        mappings: List<Pair<String, SzInfoMaker<out E>>>) {
 		mixedBody(prop,LambdaTextConverter(toStr, fromStr), mappings)
 	}
 	

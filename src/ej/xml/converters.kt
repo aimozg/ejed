@@ -1,5 +1,7 @@
 package ej.xml
 
+import org.funktionale.either.Either
+
 interface TextConverter<A : Any> {
 	fun convert(s: String): A
 	fun toString(a: A?): String?
@@ -47,6 +49,12 @@ class StringTextConverter : TextConverter<String> {
 	override fun convert(s: String) = s
 }
 
+class EitherLeftStringTextConverter<R> : TextConverter<Either<String, R>> {
+	override fun convert(s: String) = Either.left(s)
+	
+	override fun toString(a: Either<String, R>?): String? = a?.component1()
+}
+
 class IntTextConverter : TextConverter<Int> {
 	override fun toString(a: Int?) = a?.toString()
 	override fun convert(s: String) = s.toInt()
@@ -71,7 +79,7 @@ class MappedTextConverter<E : Any>(val to: Map<E, String>, val from:Map<String,E
 	override fun convert(s: String): E = from[s] ?: error("Enum value $s not found")
 }
 
-typealias SzInfoMaker<E> = ()->XmlSerializationInfo<E>
+typealias SzInfoMaker<E> = ()->AXmlSerializationInfo<E>
 
 open class XmlElementConverter<E: Any>(val tag:String, szinfoFactory: SzInfoMaker<E>) : ElementConverter<E> {
 	
@@ -95,7 +103,8 @@ class XmlOverwritingElementConverter<E: XmlSerializable>(val tag:String, szinfoF
 		szinfo.deserializeInto(obj, input,attrs,parent)
 	}
 	
-	val szinfo by lazy(szinfoFactory)
+	private val aszinfo by lazy(szinfoFactory)
+	val szinfo get() = aszinfo as XmlSerializationInfo<E>
 	override fun convert(tag: String,
 	                     attrs: Map<String, String>,
 	                     input: XmlExplorerController,

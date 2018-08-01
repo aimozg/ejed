@@ -1,6 +1,7 @@
 package ej.xml
 
 import ej.utils.ifEmpty
+import org.funktionale.either.Either
 import kotlin.coroutines.experimental.buildSequence
 import kotlin.reflect.*
 import kotlin.reflect.full.*
@@ -95,6 +96,12 @@ annotation class Polymorphism(val qualifier:String,val klass:KClass<out XmlSeria
 @Retention(AnnotationRetention.RUNTIME)
 annotation class MixedBody(
 		val stringConverter:KClass<out TextConverter<*>> = StringTextConverter::class,
+		vararg val polymorphisms:Polymorphism
+)
+
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MixedToEitherBody(
 		vararg val polymorphisms:Polymorphism
 )
 
@@ -275,6 +282,14 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 				mixedBody(property as KProperty1<T,MutableList<XmlSerializable>>,
 				          converter as TextConverter<XmlSerializable>,
 				          annotation.polymorphisms.map { it.qualifier to it.klass })
+			}
+			is MixedToEitherBody -> {
+				if (!pti.list) error("Cannot have @PolymorphicElements for non-list $property")
+				@Suppress("UNCHECKED_CAST")
+				mixedBody(property as KProperty1<T,MutableList<Either<String, XmlSerializable>>>,
+				          EitherLeftStringTextConverter(),
+				          annotation.polymorphisms.map {it.qualifier to {EitherRightSzInfo(it.klass)} }
+				          )
 			}
 			is TextBody -> {
 				if (pti.list) error("Cannot have @TextBody for list $property")

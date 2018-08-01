@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 abstract class PolymorphicPicker<E:Any>(
 		val mappings: List<Pair<String, SzInfoMaker<out E>>>
 ) {
-	abstract fun pick(tag: String, attrs: Map<String,String>): XmlSerializationInfo<out E>?
+	abstract fun pick(tag: String, attrs: Map<String,String>): AXmlSerializationInfo<out E>?
 	open fun pick(e:E) = mappings.find {
 		it.second().accepts(e)
 	}?.let {
@@ -19,7 +19,7 @@ abstract class PolymorphicPicker<E:Any>(
 		write(value, pick, builder)
 		return true
 	}
-	abstract fun write(value:E, pick:Pair<String, XmlSerializationInfo<out E>>, builder: XmlBuilder)
+	abstract fun write(value:E, pick: Pair<String, AXmlSerializationInfo<out E>>, builder: XmlBuilder)
 }
 
 class TagPolymorphicPicker<E:Any>(
@@ -29,7 +29,7 @@ class TagPolymorphicPicker<E:Any>(
 		it.first == tag
 	}?.second?.invoke()
 	
-	override fun write(value: E, pick: Pair<String, XmlSerializationInfo<out E>>, builder: XmlBuilder) {
+	override fun write(value: E, pick: Pair<String, AXmlSerializationInfo<out E>>, builder: XmlBuilder) {
 		pick.second.serializeIfAccepts(value, pick.first, builder)
 	}
 }
@@ -58,7 +58,7 @@ class AttrPolymorphicPicker<E:Any>(
 		return pick.deserialize(input,attrs - attrname,parent)
 	}
 	
-	override fun write(value: E, pick: Pair<String, XmlSerializationInfo<out E>>, builder: XmlBuilder) {
+	override fun write(value: E, pick: Pair<String, AXmlSerializationInfo<out E>>, builder: XmlBuilder) {
 		pick.second.serializeIfAccepts(value, tagname, builder) { it + mapOf(attrname to pick.first) }
 	}
 }
