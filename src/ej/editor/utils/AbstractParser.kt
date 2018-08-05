@@ -28,9 +28,18 @@ abstract class AbstractParser<O> {
 		fun eat(prefix:String):Boolean {
 			return eaten(prefix) != null
 		}
+		fun eat(prefix:Char):Boolean {
+			return eaten(prefix) != null
+		}
 		fun eaten(prefix:String):String? {
 			if (str.startsWith(prefix)) {
 				return eaten(prefix.length)
+			}
+			return null
+		}
+		fun eaten(prefix:Char):String? {
+			if (str.startsWith(prefix)) {
+				return eaten(1)
 			}
 			return null
 		}

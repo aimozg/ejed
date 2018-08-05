@@ -4,6 +4,12 @@ package ej.utils
  * Created by aimozg on 26.06.2018.
  * Confidential until published on GitHub
  */
+operator fun StringBuilder.plusAssign(str:CharSequence) {
+	append(str)
+}
+operator fun StringBuilder.plusAssign(c:Char) {
+	append(c)
+}
 
 fun String.appendIf(condition:Boolean,ifTrue:String,ifFalse:String=""):String =
 		if (condition) this+ifTrue else this+ifFalse
