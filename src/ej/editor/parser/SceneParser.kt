@@ -23,30 +23,47 @@ abstract class SceneParser : AbstractParser<String>() {
 		return s.replace(REX_SPACEBARS," ")
 	}
 	
-	fun Context.readUntil(until:CharArray):StringBuilder {
-		return until(false,until)
+	private fun Context.parseFunction(def:StringBuilder,rslt:StringBuilder) {
+		// '[' def '(' arguments ')' content1 { '|' content2 }* ']' -->
+		// --> function(def,arguments,content...)
+		// TODO complex expressions containing ( ) [ ] "" '' \\
+		val expr = eaten(LA_EXPRESSION)?.value ?: ""
+		if (!eat(')')) {
+			parserError("Bad expression/function construct")
+		}
+		val arguments = ArrayList<String>()
+		while (true) {
+			// push either source or evaluated
+			arguments += readUntil(!delayedEvaluation, charArrayOf(']', '|')).toString()
+			if (eaten == "]") {
+				break
+			} else if (eaten != "|") {
+				parserError("Expected | or ]")
+			}
+		}
+		rslt += evaluateFunction(def.toString(), expr, arguments)
 	}
-	fun Context.skipUntil(until:CharArray):StringBuilder {
-		return until(true,until)
-	}
-	fun Context.until(skip: Boolean, until: CharArray): StringBuilder {
-		val rslt = StringBuilder(if (skip) 0 else source.length * 2 / 3 + 1)
+	
+	/**
+	 * Parses content until end of content or `until` is encountered.
+	 * If eval = true, tags are evaluated, and parsed content is returned.
+	 * If eval = false, no evaluation happens, source substring is returned
+	 * In any case, `eaten` contains the `until` encountered or empty string
+	 */
+	fun Context.readUntil(eval: Boolean, until: CharArray): StringBuilder {
+		val rslt = StringBuilder(source.length * 2 / 3 + 1)
 		loop@ while (true) when {
 			isEmpty() -> {
 				eat(0)
 				break@loop
 			}
 			eat('\\') -> {
-				if (skip) {
-					eat(1)
-				} else {
-					rslt += '\\'
-					rslt += eaten(1)
-				}
+				if (!eval) rslt += '\\'
+				rslt += eaten(1)
 			}
 			eat('[') -> when {
 				eat("--") -> {
-					if (skip) {
+					if (eval) {
 						eat(LA_COMMENT)
 						eat("--]")
 					} else {
@@ -56,97 +73,35 @@ abstract class SceneParser : AbstractParser<String>() {
 					}
 				}
 				else -> {
-					if (skip) {
-						skipUntil(charArrayOf(']'))
-						eat(']')
+					if (eval) {
+						val def = StringBuilder(10)
+						while (true) {
+							def += eaten(LA_TAGSTART)?.value ?: ""
+							if (eat('\\')) def += eaten(1)
+							else break
+						}
+						when {
+							eat(']') -> {
+								rslt += evaluateTag(def.toString())
+							}
+							eat('(') -> {
+								parseFunction(def, rslt)
+							}
+							eat(':') -> {
+								// '[' def ':' content ']' --> formatter(def,content)
+								val content = readUntil(true, charArrayOf(']'))
+								rslt += evaluateFormatter(def.toString(), content.toString())
+							}
+							isEmpty() -> {
+								rslt += '['
+								rslt += def
+							}
+							else -> parserError("Expected ] ( or :")
+						}
 					} else {
 						rslt += '['
-						rslt += readUntil(charArrayOf(']'))
+						rslt += readUntil(eval, charArrayOf(']'))
 						rslt += eaten
-					}
-				}
-			}
-			eat(LA_TEXT) -> {
-				if (!skip) rslt += eaten
-			}
-			else -> {
-				for (c in until) {
-					if (eat(c)) break@loop
-				}
-				// Not a UNTIL-breaker, not a command-starter, but still, a text-delimiter => is a non-until text delimiter => text
-				eat(1)
-				if (!skip) rslt += eaten
-			}
-		}
-		return rslt
-	}
-	
-	/**
-	 * Parses content until end of content or `until` is encountered.
-	 * If skip = true, no evaluation happens, empty string is returned
-	 * If skip = false, tags are evaluated, and parsed content is returned.
-	 * In any case, `eaten` contains the `until` encountered or empty string
-	 */
-	fun Context.parseContent(until: CharArray): StringBuilder {
-		val rslt = StringBuilder(source.length * 2 / 3 + 1)
-		loop@ while (true) when {
-			isEmpty() -> {
-				eat(0)
-				break@loop
-			}
-			eat('\\') -> {
-				eat(1)
-				rslt.append(eaten)
-			}
-			eat('[') -> when {
-				eat("--") -> {
-					eat(LA_COMMENT)
-					eat("--]")
-				}
-				else -> {
-					val def = StringBuilder(10)
-					while (true) {
-						def += eaten(LA_TAGSTART)?.value ?: ""
-						if (eat('\\')) def += eaten(1)
-						else break
-					}
-					when {
-						eat(']') -> {
-							rslt += evaluateTag(def.toString())
-						}
-						eat('(') -> {
-							// '[' def '(' arguments ')' content1 { '|' content2 }* ']' -->
-							// --> function(def,arguments,content...)
-							// TODO complex expressions containing ( ) [ ] "" '' \\
-							val expr = eaten(LA_EXPRESSION)?.value ?: ""
-							if (!eat(')')) {
-								parserError("Bad expression/function construct")
-							}
-							val arguments = ArrayList<String>()
-							while (true) {
-								if (delayedEvaluation) {
-									arguments += readUntil(charArrayOf(']', '|')).toString()
-								} else {
-									arguments += parseContent(charArrayOf(']','|')).toString()
-								}
-								if (eaten == "]") {
-									break
-								} else if (eaten != "|") {
-									parserError("Expected | or ]")
-								}
-							}
-							rslt += evaluateFunction(def.toString(), expr, arguments)
-						}
-						eat(':') -> {
-							// '[' def ':' content ']' --> formatter(def,content)
-							val content = parseContent(charArrayOf(']'))
-							rslt += evaluateFormatter(def.toString(), content.toString())
-						}
-						isEmpty() -> {
-							rslt += '['
-							rslt += def
-						}
-						else -> parserError("Error")
 					}
 				}
 			}
@@ -158,14 +113,15 @@ abstract class SceneParser : AbstractParser<String>() {
 					if (eat(c)) break@loop
 				}
 				// Not a UNTIL-breaker, not a command-starter, but still, a text-delimiter => is a non-until text delimiter => text
-				rslt += eaten(1)
+				eat(1)
+				rslt += eaten
 			}
 		}
 		return rslt
 	}
 	
 	override fun Context.doParse(): String {
-		return postprocess(parseContent(charArrayOf()))
+		return postprocess(readUntil(true, charArrayOf()))
 	}
 	
 }
