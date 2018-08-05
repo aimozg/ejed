@@ -5,6 +5,7 @@ import org.funktionale.either.Either
 import kotlin.coroutines.experimental.buildSequence
 import kotlin.reflect.*
 import kotlin.reflect.full.*
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * ```
@@ -112,6 +113,22 @@ annotation class ParentElement
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class RootElement(val name: String)
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class BeforeSave
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class BeforeLoad
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class AfterSave
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class AfterLoad
 
 interface XmlAutoSerializable : XmlSerializable
 
@@ -303,6 +320,52 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 				} else {
 					@Suppress("UNCHECKED_CAST")
 					registerTextIO(PropertyTio(textConverter as TextConverter<Any>, property as KMutableProperty1<T, Any>))
+				}
+			}
+		}
+	}
+	for (function in clazz.declaredMemberFunctions) {
+		for (annotation in function.annotations) when (annotation) {
+			is BeforeSave -> {
+				if (function.parameters.size != 1) error("@BeforeSave $function must be no-arg")
+				val old = info.beforeSave
+				function.isAccessible = true
+				info.beforeSave = {
+					old?.invoke(this)
+					function.call(this)
+				}
+			}
+			is AfterSave -> {
+				if (function.parameters.size != 1) error("@AfterSave $function must be no-arg")
+				val old = info.afterSave
+				function.isAccessible = true
+				info.afterSave = {
+					old?.invoke(this)
+					function.call(this)
+				}
+			}
+			is BeforeLoad -> {
+				if (function.parameters.size !in 1..2) error("@BeforeLoad $function must be no more than 1-arg")
+				val old = info.beforeLoad
+				function.isAccessible = true
+				info.beforeLoad = {
+					old?.invoke(this, it)
+					when(function.parameters.size) {
+						1 -> function.call(this)
+						2 -> function.call(this, it)
+					}
+				}
+			}
+			is AfterLoad -> {
+				if (function.parameters.size !in 1..2) error("@AfterLoad $function must be no more than 1-arg")
+				val old = info.afterLoad
+				function.isAccessible = true
+				info.afterLoad = {
+					old?.invoke(this, it)
+					when(function.parameters.size) {
+						1 -> function.call(this)
+						2 -> function.call(this, it)
+					}
 				}
 			}
 		}

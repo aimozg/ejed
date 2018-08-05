@@ -11,6 +11,8 @@ import java.io.StringReader
 import java.io.StringWriter
 import kotlin.reflect.KClass
 import kotlin.test.assertFails
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /*
  * Created by aimozg on 22.07.2018.
@@ -572,7 +574,7 @@ class TestAutoSerializable {
 	}
 	@Test
 	fun testMixedBodyEither() {
-		abstract class Thing {}
+		abstract class Thing
 		class Gun(@Attribute var name: String = "") : Thing(),XmlAutoSerializable
 		class Sword(@TextBody var name: String = "") : Thing(),XmlAutoSerializable
 		@RootElement("mock")
@@ -614,4 +616,77 @@ class TestAutoSerializable {
 			)
 		}
 	}
+	@Test
+	fun testBeforeAfter() {
+		class Inner : XmlAutoSerializable {
+			@BeforeSave
+			private fun f1() {
+				log += "bsi"
+				c = "($c)"
+			}
+			@Attribute("c")
+			var c = "d"
+			@AfterSave
+			private fun f2() {
+				c = c.removeSurrounding("(",")")
+				log += "asi"
+			}
+			private var tmpParent:Any? = null
+			@BeforeLoad
+			private fun f3(parent:Any?) {
+				assertNotNull(parent)
+				assertTrue(parent!!.toString()=="mock")
+				tmpParent = parent
+				log += "bli"
+			}
+			@AfterLoad
+			private fun f4(parent:Any?) {
+				c = c.removeSurrounding("(",")")
+				assertEquals(tmpParent,parent)
+				log += "ali"
+			}
+		}
+		@RootElement("mock")
+		class Mock : XmlAutoSerializable {
+			override fun toString() = "mock"
+			@Attribute("a")
+			var a = "b"
+			@BeforeSave
+			private fun bso() {
+				log += "bso"
+			}
+			@AfterSave
+			private  fun aso() {
+				log += "aso"
+			}
+			@Element("inner")
+			var inner = Inner()
+			@BeforeLoad
+			private fun blo() {
+				log += "blo"
+			}
+			@AfterLoad
+			private fun alo() {
+				log += "alo"
+			}
+		}
+		assertXml(Mock(),"mock") { rootAttrs ->
+			assertAttrs(rootAttrs,"a" to "b")
+			collectOneElement { tag, attrs ->
+				assertAttrs(attrs,"c" to "(d)")
+				assertEquals("inner",tag)
+				assertNoElements()
+			}
+		}
+		assertEquals("bso" + "bsi" + "asi" + "aso" +
+				             "blo" + "bli" + "ali" + "alo" +
+				             // 2nd round of saving performed by assertXML to check serialized forms
+				             "bso" + "bsi" + "asi" + "aso",
+		             log)
+	}
+	@Before
+	fun clearLog() {
+		log = ""
+	}
 }
+var log = ""

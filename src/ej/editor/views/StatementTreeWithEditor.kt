@@ -195,7 +195,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		cell.setOnDragDetected { event ->
 			val db = cell.startDragAndDrop(TransferMode.MOVE)
 			dragContent = cell.treeItem
-			db.setContent(mapOf(DATAFORMAT_XSTATEMENT to cell.item.toString()))
+			db.setContent(mapOf(DATAFORMAT_XSTATEMENT to cell.item?.toString()))
 			event.consume()
 		}
 		cell.setOnDragOver { event ->
