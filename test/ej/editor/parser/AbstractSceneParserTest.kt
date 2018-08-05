@@ -14,12 +14,12 @@ private class ParserImpl(
 		val formatters: Map<String, Pair<String, String>>,
 		val functions: Map<String, ParserImpl.(String, List<String>) -> String>,
 		override var delayedEvaluation: Boolean
-) : SceneParser() {
+) : AbstractSceneParser() {
 	var tagCount = HashMap<String,Int>()
 	
-	override fun evaluateTag(s: String): String {
-		tagCount[s] = (tagCount[s]?:0)+1
-		return tags[s].toString()
+	override fun evaluateTag(tag: String): String {
+		tagCount[tag] = (tagCount[tag]?:0)+1
+		return tags[tag].toString()
 	}
 	
 	override fun evaluateFormatter(fmt: String, content: String): String {
@@ -34,7 +34,7 @@ private class ParserImpl(
 	
 }
 
-class SceneParserTest {
+class AbstractSceneParserTest {
 	
 	private lateinit var parser: ParserImpl
 	
@@ -62,7 +62,7 @@ class SceneParserTest {
 		)
 	}
 	
-	fun assertParser(input:String,output:String,parser:SceneParser=this.parser) {
+	fun assertParser(input:String,output:String,parser:AbstractSceneParser=this.parser) {
 		assertEquals(output,parser.parse(input))
 	}
 	

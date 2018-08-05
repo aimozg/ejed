@@ -14,8 +14,8 @@ private val LA_EXPRESSION = Regex("""^[^\\\])]+""")
 private val LA_COMMENT = Regex("""^([^-]|-[^-]|--[^]]|--?$)*+""")
 private val REX_SPACEBARS = Regex("""[ \t]{2}""")
 
-abstract class SceneParser : AbstractParser<String>() {
-	abstract fun evaluateTag(s: String): String
+abstract class AbstractSceneParser : AbstractParser<String>() {
+	abstract fun evaluateTag(tag: String): String
 	abstract fun evaluateFormatter(fmt: String, content: String): String
 	abstract fun evaluateFunction(name: String, rawArgument: String, rawContent:List<String>): String
 	abstract val delayedEvaluation:Boolean

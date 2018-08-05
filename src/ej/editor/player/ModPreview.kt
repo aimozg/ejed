@@ -62,6 +62,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	val showSkippedProperty = SimpleBooleanProperty(false)
 	val showCodeProperty = SimpleBooleanProperty(false)
 	val showCommentsProperty = SimpleBooleanProperty(false)
+	val evalTagsProperty = SimpleBooleanProperty(true)
 	
 	override val root = borderpane {
 		addClass(Styles.playerView)
@@ -78,6 +79,11 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 			ToggleSwitch("Comments").attachTo(this) {
 				addClass("nogap")
 				selectedProperty().bindBidirectional(showCommentsProperty)
+			}
+			spacer(Priority.NEVER) {prefWidth=10.0}
+			ToggleSwitch("Eval tags").attachTo(this) {
+				addClass("nogap")
+				selectedProperty().bindBidirectional(evalTagsProperty)
 			}
 			spacer(Priority.NEVER) {prefWidth=20.0}
 			button("Clear") {
@@ -115,11 +121,29 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 		showCommentsProperty.onChangeAndNow { show ->
 			mainText.toggleMainElementClass("nocomment",show == false)
 		}
+		evalTagsProperty.onChangeAndNow { show ->
+			mainText.toggleMainElementClass("rawtag", show == false)
+		}
 	}
 	
 	/***********
 	 * PlayerInterface impl
 	 **********/
+	
+	val parser = SceneParser().apply {
+		tagProcessor = { tag, output ->
+			"""<span class="tag-source">[$tag]</span><abbr title="[$tag]">$output</abbr>"""
+		}
+	}
+	
+	fun runParser(s:String):String {
+		return try {
+			parser.parse(s)
+		} catch (e:Throwable) {
+			runtimeError(e.message?:"")
+			""
+		}
+	}
 	
 	private var skipCounter:Int = 0
 	private var skipMax:Int = 200
@@ -127,15 +151,23 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 		if (t.isEmpty()) return
 		var cc = "content-$type".appendIf(skipped," skipped").toLowerCase()
 		val remaining = skipMax - skipCounter
+		val s: String
 		if (!skipped) {
 			if (t.startsWith("[forward:")) cc += " forward"
 			if (t.startsWith("[scene:")) cc += " scene"
 			skipCounter = 0
-			val s = "<span class='$cc'>$t</span>"
-			mainText.htmlContent += s
+			if (type == ContentType.TEXT) {
+				s = runParser(t)
+			} else {
+				s = t
+			}
 		} else if (remaining > 0) {
-			val s = t.crop(remaining,"…")
+			s = t.crop(remaining,"…")
 			skipCounter += s.length
+		} else {
+			s = ""
+		}
+		if (s.isNotEmpty()) {
 			mainText.htmlContent += "<span class='$cc'>$s</span>"
 		}
 	}

@@ -18,3 +18,16 @@
     display:block;
     border-top:1px solid #228;
 }
+
+#mainElement .tag-source {
+    color: #228;
+}
+#mainElement abbr {
+    border-bottom: 1px dashed #228;
+}
+#mainElement:not(.rawtag) .tag-source {
+    display:none;
+}
+#mainElement.rawtag abbr {
+    display: none;
+}
