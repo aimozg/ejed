@@ -134,6 +134,9 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 		tagProcessor = { tag, output ->
 			"""<span class="tag-source">[$tag]</span><abbr title="[$tag]">$output</abbr>"""
 		}
+		fnProcessor = { _, source, output ->
+			"""<abbr title="$source">$output</abbr>"""
+		}
 	}
 	
 	fun runParser(s:String):String {
