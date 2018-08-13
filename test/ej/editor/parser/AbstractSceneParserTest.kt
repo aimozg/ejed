@@ -11,24 +11,22 @@ import org.junit.Test
 
 private class ParserImpl(
 		val tags: Map<String, String>,
-		val formatters: Map<String, Pair<String, String>>,
 		val functions: Map<String, ParserImpl.(String, List<String>) -> String>,
 		override var delayedEvaluation: Boolean
 ) : AbstractSceneParser() {
 	var tagCount = HashMap<String,Int>()
 	
 	override fun evaluateTag(tag: String): String {
+		@Suppress("NAME_SHADOWING")
+		val tag = tag.trim()
 		tagCount[tag] = (tagCount[tag]?:0)+1
-		return tags[tag].toString()
-	}
-	
-	override fun evaluateFormatter(fmt: String, content: String): String {
-		val formatter = formatters[fmt] ?: return content
-		return formatter.first + content.trim() + formatter.second
+		return tags[tag]?:"Unknown tag [$tag]"
 	}
 	
 	override fun evaluateFunction(name: String, rawArgument: String, rawContent: List<String>): String {
-		val fn = functions[name] ?: return ""
+		@Suppress("NAME_SHADOWING")
+		val name = name.trim()
+		val fn = functions[name] ?: error("Unknown function [$name]")
 		return fn(rawArgument, rawContent)
 	}
 	
@@ -46,19 +44,25 @@ class AbstractSceneParserTest {
 						"he" to "she",
 						"his" to "her",
 						"weapon" to "railgun"
-				), formatters = mapOf(
-				"b" to ("<b>" to "</b>"),
-				"say" to ("<i>'" to "'</i>")
-		), functions = mapOf(
-				"if" to { expr, args ->
-					val s = when {
-						expr.contains("true") -> args[0]
-						args.size == 2 -> args[1]
-						else -> ""
-					}
-					if (delayedEvaluation) parse(s) else s
-				}
-		),delayedEvaluation = true
+				),
+				functions = mapOf(
+						"b" to { expr, args ->
+							if (expr.isNotBlank()) error("Expected no-arg in [b($expr)...]")
+							"<b>"+parseIfNeeded(args[0]).trim()+"</b>"
+						},
+						"say" to { expr, args ->
+							if (expr.isNotBlank()) error("Expected no-arg in [b($expr)...]")
+							"<i>'"+parseIfNeeded(args[0]).trim()+"'</i>"
+						},
+						"if" to { expr, args ->
+							parseIfNeeded(when {
+								expr.contains("true") -> args[0]
+								args.size == 2 -> args[1]
+								else -> ""
+							})
+						}
+				),
+				delayedEvaluation = true
 		)
 	}
 	
@@ -77,13 +81,22 @@ class AbstractSceneParserTest {
 		             "her237")
 		assertEquals(1, parser.tagCount["his"]?:0)
 		assertEquals(0, parser.tagCount["he"]?:0)
+		assertParser("[if (true) [if (false) [he] 1 | [his] 2 ] 3 | [if (true) [he] 4 | [his] 5 ] 6 ] 7",
+		             " her 2 3 7")
 	}
 	@Test
-	fun testIf2() {
+	fun testIfDE() {
 		parser.delayedEvaluation = false
 		assertParser("[if(true)[if(false)[he]1|[his]2]3|[if(true)[he]4|[his]5]6]7",
 		             "her237")
 		assertEquals(2, parser.tagCount["his"]?:0)
 		assertEquals(2, parser.tagCount["he"]?:0)
+	}
+	//@Test TODO implement short if
+	fun testShortIf() {
+		assertParser("[if true:[if false:[he]1|[his]2]3|[if true:[he]4|[his]5]6]7",
+		             "her237")
+		assertParser("[if true: [if false: [he]1 | [his]2 ]3 | [if true: [he]4 | [his]5]6]7",
+		             "her237")
 	}
 }

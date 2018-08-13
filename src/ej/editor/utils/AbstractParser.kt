@@ -1,5 +1,8 @@
 package ej.editor.utils
 
+import ej.utils.indexOfAnyOrNull
+import ej.utils.indexOfOrNull
+
 
 /*
  * Created by aimozg on 11.07.2018.
@@ -25,12 +28,17 @@ abstract class AbstractParser<O> {
 			eat(n)
 			return eaten
 		}
+		fun eatch():Char? {
+			return eaten(1).getOrNull(0)
+		}
 		fun eat(prefix:String):Boolean {
 			return eaten(prefix) != null
 		}
 		fun eat(prefix:Char):Boolean {
 			return eaten(prefix) != null
 		}
+		fun eatAll() = eat(str.length)
+		fun eatenAll() = eaten(str.length)
 		fun eaten(prefix:String):String? {
 			if (str.startsWith(prefix)) {
 				return eaten(prefix.length)
@@ -55,8 +63,41 @@ abstract class AbstractParser<O> {
 			return eatenUntil(sub) != null
 		}
 		fun eatenUntil(sub:String):String? {
-			val i = str.indexOf(sub)
-			return if (i >= 0) eaten(i) else null
+			val i = str.indexOfOrNull(sub) ?: return null
+			return eaten(i)
+		}
+		fun eatenUntilAny(vararg delimiters:Char):String? {
+			val i = str.indexOfAnyOrNull(delimiters) ?: return null
+			return eaten(i)
+		}
+		fun eatUntilAny(vararg delimiters:Char):Boolean {
+			return eatenUntilAny(*delimiters) != null
+		}
+		
+		/**
+		 * [delimiters] must contain the '\\' too
+		 * @return string until any of delimiters with \ preserved
+		 */
+		fun eatenUntilAnyBackslashEscaped(vararg delimiters:Char):String? {
+			val first = eatenUntilAny(*delimiters) ?: return null
+			val sb = StringBuilder(first)
+			while (eat('\\')) {
+				sb.append('\\')
+				val escaped = eatch() ?: break
+				sb.append(escaped)
+				val next = eatenUntilAny(*delimiters) ?: break
+				sb.append(next)
+			}
+			eaten = sb.toString()
+			return eaten
+		}
+
+		/**
+		 * [delimiters] must contain the '\\' too
+		 * [eaten] contains \ preserved
+		 */
+		fun eatUntilAnyBackslashEscaped(vararg delimiters:Char):Boolean {
+			return eatenUntilAnyBackslashEscaped(*delimiters) != null
 		}
 		fun uneat(what:String = eaten) {
 			str = what + str

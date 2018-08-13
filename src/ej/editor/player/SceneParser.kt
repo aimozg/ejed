@@ -8,7 +8,7 @@ import java.util.*
  * Created by aimozg on 06.08.2018.
  * Confidential until published on GitHub
  */
-class SceneParser : AbstractSceneParser() {
+open class SceneParser : AbstractSceneParser() {
 	val rng = Random()
 	var tagProcessor: (tag: String, output: String) -> String = { _, output -> output }
 	var fnProcessor: (fn: String, source: String, output: String) -> String = { _, _, output -> output }
@@ -19,28 +19,29 @@ class SceneParser : AbstractSceneParser() {
 		return tagProcessor(tag, out)
 	}
 	
-	override fun evaluateFormatter(fmt: String, content: String): String = when (fmt) {
+	open fun maybeWrap(fmt: String, content: String): String? = when (fmt) {
 		"i" -> "<i>" to "</i>"
 		"b" -> "<b>" to "</b>"
 		"u" -> "<u>" to "</u>"
 		"say" -> "<i>&laquo;" to "&raquo;</i>"
-		else -> error("Unknown formatter $fmt")
-	}.let { (op, cl) -> op + content.trim() + cl }
+		else -> null
+	}?.let { (op, cl) -> op + parseIfNeeded(content).trim() + cl }
 	
 	override fun evaluateFunction(name: String, rawArgument: String, rawContent: List<String>): String =
-			fnProcessor(
-					name,
-					"[$name($rawArgument)]",
-					when (name) {
-						"if" -> if (rawContent.size !in 0..2) {
-							error("if block has wrong number of arguments")
-						} else {
-							parse(rawContent.getOrNull(
-									if (expressionEvaluator(rawArgument)) 0 else 1
-							) ?: "")
-						}
-						else -> error("Unknown function $name")
-					})
+			maybeWrap(name, rawContent.firstOrNull()?:"")
+					?: fnProcessor(
+						name,
+						"[$name($rawArgument)]",
+						when (name) {
+							"if" -> if (rawContent.size !in 0..2) {
+								error("if block has wrong number of arguments")
+							} else {
+								parse(rawContent.getOrNull(
+										if (expressionEvaluator(rawArgument)) 0 else 1
+								) ?: "")
+							}
+							else -> error("Unknown function $name")
+						})
 	
 	override val delayedEvaluation: Boolean = true
 	
