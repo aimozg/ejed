@@ -88,7 +88,7 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		println("[INFO] Removed $me")
 		posForInsertionInvalidator.value++
 	}
-	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int, focus:Boolean) {
+	fun insertStmt(me: XStatement, dest: TreeItem<XStatement>?, destIndex:Int, focus:Boolean, expand: Boolean = true) {
 		if (dest == null || dest.parent == null) {
 			rootStatement.content.add(destIndex, me)
 		} else {
@@ -112,7 +112,9 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 		}
 		println("[INFO] Inserted $me")
 		posForInsertionInvalidator.value++
-		if (focus) tree.focusOnStatement(me, true)
+		if (focus) {
+			tree.focusOnStatement(me, expand)
+		}
 	}
 	fun canInsert(me: XStatement, dest: TreeItem<XStatement>?):Boolean {
 		val target = dest?.value
@@ -159,13 +161,12 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				}
 			} else {
 				removeStmt(item)
-				insertStmt(me, dest, destIndex, false)
+				insertStmt(me, dest, destIndex, focus, wasExpanded)
 			}
 		} else {
 			removeStmt(item)
-			insertStmt(me, dest, destIndex, false)
+			insertStmt(me, dest, destIndex, focus, wasExpanded)
 		}
-		if (focus) tree.focusOnStatement(me, wasExpanded)
 	}
 	
 	private val posForInsertionInvalidator = SimpleIntegerProperty(0)

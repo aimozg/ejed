@@ -40,6 +40,7 @@ open class StatementTree : TreeView<XStatement>() {
 				item2.expandAll()
 			}
 			selectionModel.select(item2)
+			runLater { selectionModel.select(item2) }
 		}
 	}
 	
