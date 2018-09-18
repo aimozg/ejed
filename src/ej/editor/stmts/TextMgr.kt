@@ -51,4 +51,12 @@ object TextMgr: StatementManager<XcText>() {
 			managedWhen(fnCollapsed)
 		}
 	}
+	
+	override fun listBody(stmt: XcText) = defaultListBody {
+		textarea(stmt.textProperty()) {
+			isWrapText = true
+			hgrow = Priority.ALWAYS
+			prefRowCount = 1
+		}
+	}
 }

@@ -20,6 +20,9 @@ import tornadofx.*
 abstract class StatementManager<T:XStatement> {
 	protected val controller: EditorController by lazy { find<EditorController>() }
 	abstract fun editorBody(stmt: T, tree: StatementTree):Pane
+	open fun listBody(stmt: T): Region = defaultListBody {
+		text("TODO not implemented for ${stmt.javaClass} $stmt")
+	}
 	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
 }
 
@@ -27,6 +30,15 @@ inline fun defaultEditorBody(init:HBox.()->Unit):HBox = defaultEditorBody(HBox()
 inline fun<T:Pane> defaultEditorBody(pane:T, init:T.()->Unit):T =
 		pane.apply {
 			addClass(Styles.xstmtEditor)
+			hgrow = Priority.ALWAYS
+			vgrow = Priority.ALWAYS
+			init()
+		}
+
+inline fun defaultListBody(init: HBox.() -> Unit): HBox = defaultListBody(HBox(), init)
+inline fun <T : Pane> defaultListBody(pane: T, init: T.() -> Unit): T =
+		pane.apply {
+			//			addClass(Styles.xstmtEditor)
 			hgrow = Priority.ALWAYS
 			vgrow = Priority.ALWAYS
 			init()

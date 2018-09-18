@@ -36,6 +36,10 @@ class ModView: AModView() {
 						tree.root.expandAll()
 						vgrow = Priority.ALWAYS
 					}
+					is XContentContainer -> SceneEditor(mod).apply {
+						rootStatement = story
+						vgrow = Priority.ALWAYS
+					}
 					else -> VBox().apply { text("Unknown $story") }
 				}
 			}
