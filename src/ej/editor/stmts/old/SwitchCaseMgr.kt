@@ -1,6 +1,9 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.Styles
+import ej.editor.stmts.StatementManager
+import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.bindingN
 import ej.editor.utils.colspan
 import ej.editor.utils.isNullOrEmpty
@@ -25,43 +28,43 @@ object SwitchCaseMgr : StatementManager<XlSwitchCase>() {
 			}
 		}
 		row {
-			checkbox("condition is true:", stringValueToggler(stmt.testProperty,"true"))
+			checkbox("condition is true:", stringValueToggler(stmt.testProperty, "true"))
 			textfield(stmt.testProperty) {
 				disableWhen(stmt.testProperty.isNullOrEmpty())
 			}
 		}
 		row {
-			checkbox("selector = ", stringValueToggler(stmt.valueProperty,"0"))
+			checkbox("selector = ", stringValueToggler(stmt.valueProperty, "0"))
 			textfield(stmt.valueProperty) {
 				disableWhen(stmt.valueProperty.isNullOrEmpty())
 			}
 		}
 		row {
-			checkbox("selector ≠ ", stringValueToggler(stmt.neProperty,"0"))
+			checkbox("selector ≠ ", stringValueToggler(stmt.neProperty, "0"))
 			textfield(stmt.neProperty) {
 				disableWhen(stmt.neProperty.isNullOrEmpty())
 			}
 		}
 		row {
-			checkbox("selector > ", stringValueToggler(stmt.gtProperty,"50"))
+			checkbox("selector > ", stringValueToggler(stmt.gtProperty, "50"))
 			textfield(stmt.gtProperty) {
 				disableWhen(stmt.gtProperty.isNullOrEmpty())
 			}
 		}
 		row {
-			checkbox("selector ≥ ", stringValueToggler(stmt.gteProperty,"50"))
+			checkbox("selector ≥ ", stringValueToggler(stmt.gteProperty, "50"))
 			textfield(stmt.gteProperty) {
 				disableWhen(stmt.gteProperty.isNullOrEmpty())
 			}
 		}
 		row {
-			checkbox("selector < ", stringValueToggler(stmt.ltProperty,"50"))
+			checkbox("selector < ", stringValueToggler(stmt.ltProperty, "50"))
 			textfield(stmt.ltProperty) {
 				disableWhen(stmt.ltProperty.isNullOrEmpty())
 			}
 		}
 		row {
-			checkbox("select value ≤ ", stringValueToggler(stmt.lteProperty,"50"))
+			checkbox("select value ≤ ", stringValueToggler(stmt.lteProperty, "50"))
 			textfield(stmt.lteProperty) {
 				disableWhen(stmt.lteProperty.isNullOrEmpty())
 			}
@@ -70,13 +73,12 @@ object SwitchCaseMgr : StatementManager<XlSwitchCase>() {
 	
 	override fun treeGraphic(stmt: XlSwitchCase, tree: StatementTree) = simpleTreeLabel(bindingN(
 			stmt.testProperty,
-			stmt.valueProperty,stmt.neProperty,
-			stmt.gtProperty,stmt.gteProperty,
-			stmt.ltProperty,stmt.lteProperty
-	) {
-		test, value, ne, gt, gte, lt, lte ->
+			stmt.valueProperty, stmt.neProperty,
+			stmt.gtProperty, stmt.gteProperty,
+			stmt.ltProperty, stmt.lteProperty
+	) { test, value, ne, gt, gte, lt, lte ->
 		"Branch when " + listOf(
-				test?:"",
+				test ?: "",
 				value.affixNonEmpty("selector = "),
 				ne.affixNonEmpty("selector ≠ "),
 				gt.affixNonEmpty("selector > "),

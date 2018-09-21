@@ -2,6 +2,7 @@ package ej.editor.stmts
 
 import ej.editor.EditorController
 import ej.editor.Styles
+import ej.editor.stmts.old.*
 import ej.editor.views.StatementTree
 import ej.mod.*
 import javafx.beans.value.ObservableValue

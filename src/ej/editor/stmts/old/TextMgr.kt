@@ -1,6 +1,9 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.Styles
+import ej.editor.stmts.StatementManager
+import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.defaultListBody
 import ej.editor.utils.autoStretch
 import ej.editor.views.FlashTextProcessor
 import ej.editor.views.HtmlEditorLite

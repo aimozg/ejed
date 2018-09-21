@@ -1,8 +1,11 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.Styles
 import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
+import ej.editor.stmts.SceneChooser
+import ej.editor.stmts.StatementManager
+import ej.editor.stmts.simpleTreeLabel
 import ej.editor.views.StatementTree
 import ej.mod.Natives
 import ej.mod.XsForward
@@ -12,7 +15,7 @@ import tornadofx.*
 object ForwardMgr : StatementManager<XsForward>() {
 	override fun treeGraphic(stmt: XsForward, tree: StatementTree) =
 			simpleTreeLabel(
-					stmt.refProperty.stringBinding{"Forward => $it"}
+					stmt.refProperty.stringBinding { "Forward => $it" }
 			) {
 				addClass(Styles.xnext)
 			}
@@ -24,8 +27,8 @@ object ForwardMgr : StatementManager<XsForward>() {
 		valueLink(stmt.refProperty,
 		          "Scene",
 		          SceneChooser(tree.rootStatement,
-		                       controller.mod ?: return@defaultEditorTextFlow,
-		                       Natives.scenes.map { it.ref }) { it.acceptsMenu })
+		                                       controller.mod ?: return@defaultEditorTextFlow,
+		                                       Natives.scenes.map { it.ref }) { it.acceptsMenu })
 	}
 	
 }

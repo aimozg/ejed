@@ -1,10 +1,13 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.Styles
 import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.valueLink
+import ej.editor.stmts.StatementManager
+import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.simpleTreeLabel
 import ej.editor.views.StatementTree
 import ej.mod.XlElseIf
 import javafx.scene.layout.VBox
@@ -13,10 +16,10 @@ import tornadofx.*
 object ElseIfMgr : StatementManager<XlElseIf>() {
 	override fun editorBody(stmt: XlElseIf,
 	                        tree: StatementTree
-	) = defaultEditorBody(VBox()){
+	) = defaultEditorBody(VBox()) {
 		defaultEditorTextFlow {
 			text("Else if condition ")
-			valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter={
+			valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 				if (it != null) stmt.testProperty.fromBuilder(it)
 			})
 			text(" is true")

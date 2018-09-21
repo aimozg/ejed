@@ -1,8 +1,11 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.Styles
 import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
+import ej.editor.stmts.MonsterChooser
+import ej.editor.stmts.StatementManager
+import ej.editor.stmts.simpleTreeLabel
 import ej.editor.views.StatementTree
 import ej.mod.XsBattle
 import tornadofx.*
@@ -22,7 +25,7 @@ object BattleMgr : StatementManager<XsBattle>() {
 	}
 	
 	override fun treeGraphic(stmt: XsBattle, tree: StatementTree) = simpleTreeLabel(
-			stmt.monsterProperty.stringBinding{"Battle with $it"}
+			stmt.monsterProperty.stringBinding { "Battle with $it" }
 	) {
 		addClass(Styles.xnext)
 	}

@@ -1,7 +1,10 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.Styles
 import ej.editor.expr.lists.AnyExprChooser
+import ej.editor.stmts.StatementManager
+import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.NullableStringConverter
 import ej.editor.utils.bindingN
 import ej.editor.utils.isNullOrEmpty
@@ -30,7 +33,7 @@ object SetMgr : StatementManager<XsSet>() {
 		textfield(stmt.valueProperty)
 		button("...") {
 			action {
-				AnyExprChooser.pickValue("Value",stmt.valueProperty.toBuilder())?.let { v ->
+				AnyExprChooser.pickValue("Value", stmt.valueProperty.toBuilder())?.let { v ->
 					stmt.valueProperty.fromBuilder(v)
 				}
 			}
@@ -47,7 +50,7 @@ object SetMgr : StatementManager<XsSet>() {
 		textfield(stmt.varnameProperty) {
 			prefColumnCount = 6
 		}
-		checkbox("of object", stringValueToggler(stmt.inobjProperty,"mod"))
+		checkbox("of object", stringValueToggler(stmt.inobjProperty, "mod"))
 		textfield(stmt.inobjProperty, NullableStringConverter) {
 			disableWhen { stmt.inobjProperty.isNullOrEmpty() }
 			prefColumnCount = 6
@@ -59,18 +62,18 @@ object SetMgr : StatementManager<XsSet>() {
 					bindingN(stmt.inobjProperty,
 					         stmt.varnameProperty,
 					         stmt.opProperty,
-					         stmt.valueProperty){inobj,varname,op,_ ->
-				val s: String = if (inobj != null) {
-					"property '$varname' of $inobj"
-				} else {
-					"variable '$varname'"
-				}
-				val (prefix,suffix) = when (op) {
-					"add", "+", "+=" -> "Add " to " to $s"
-					null, "set", "=" -> "Set $s to " to ""
-					else -> "Apply $op" to " to $s"
-				}
-				"$prefix${stmt.valueProperty.toBuilder().text()}$suffix"
-			}).addClass(Styles.xcommand)
+					         stmt.valueProperty) { inobj, varname, op, _ ->
+						val s: String = if (inobj != null) {
+							"property '$varname' of $inobj"
+						} else {
+							"variable '$varname'"
+						}
+						val (prefix, suffix) = when (op) {
+							"add", "+", "+=" -> "Add " to " to $s"
+							null, "set", "=" -> "Set $s to " to ""
+							else -> "Apply $op" to " to $s"
+						}
+						"$prefix${stmt.valueProperty.toBuilder().text()}$suffix"
+					}).addClass(Styles.xcommand)
 	
 }
