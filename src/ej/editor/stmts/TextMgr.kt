@@ -1,6 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.utils.autoStretch
 import ej.editor.views.FlashTextProcessor
 import ej.editor.views.HtmlEditorLite
 import ej.editor.views.StatementTree
@@ -54,9 +55,11 @@ object TextMgr: StatementManager<XcText>() {
 	
 	override fun listBody(stmt: XcText) = defaultListBody {
 		textarea(stmt.textProperty()) {
+			addClass(Styles.xtext)
 			isWrapText = true
 			hgrow = Priority.ALWAYS
-			prefRowCount = 1
+			vgrow = Priority.ALWAYS
+			autoStretch()
 		}
 	}
 }

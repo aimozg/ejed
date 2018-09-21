@@ -44,23 +44,42 @@ fun <T:Fragment> T.initialized():T {
 	init()
 	return this
 }
-
-fun TextArea.stretchOnFocus(max:Int=1) {
-	var rc = maxOf(1, minOf(max, text.count { it=='\n' }+1))
-	fun fit(focused:Boolean):Int {
-		val text = lookup(".text") as? Text
-		return if (text == null) max else {
-			val th = text.boundsInLocal.height
-			val fm = PrismFontLoader.getInstance().getFontMetrics(text.font)
-			val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
-			rc = Math.ceil(th / fsz).toInt()
-			if (!focused) minOf(max, rc) else rc
+fun TextArea.autoPrefRowCount():Int? {
+	val width = width
+	if (width == 0.0) return null
+	val fm = PrismFontLoader.getInstance().getFontMetrics(font)
+	val textNode = lookup(".text") as? Text
+	val th = textNode?.boundsInLocal?.height ?: Math.ceil(fm.computeStringWidth(this.text)/width)
+	if (!th.isFinite()) return null
+	val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
+	val rc = Math.ceil(th / fsz)
+	if (!rc.isFinite()) return null
+	return rc.toInt()
+}
+fun TextArea.autoStretch() {
+	minHeight = Control.USE_PREF_SIZE
+	maxHeight = Control.USE_PREF_SIZE
+	textProperty().onChangeAndNow {
+		val rc = autoPrefRowCount()
+		if (rc != null) {
+			prefRowCount = rc
+		} else {
+			runLater {
+				prefRowCount = autoPrefRowCount() ?: prefRowCount
+			}
 		}
 	}
-	prefRowCount = rc
+}
+fun TextArea.stretchOnFocus(max:Int=1) {
+	//prefRowCount = maxOf(1, minOf(max, text.count { it=='\n' }+1))
 	prefRowCountProperty().bind(
 			focusedProperty().integerBinding(textProperty()) {
-				if (it != null) fit(it) else rc
+				if (it == null) 1
+				else {
+					val rc = autoPrefRowCount() ?: 1
+					if (!it) minOf(max, rc)
+					else rc
+				}
 			}
 	)
 }

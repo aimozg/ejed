@@ -1,14 +1,14 @@
 package ej.editor.views
 
 import ej.editor.Styles
-import ej.editor.stmts.manager
-import ej.editor.utils.onChangeAndNow
+import ej.editor.stmts.StatementListView
+import ej.editor.utils.bindingN
+import ej.editor.utils.observableUnique
 import ej.mod.ModData
 import ej.mod.XComplexStatement
 import ej.mod.XStatement
 import ej.mod.XcScene
 import javafx.beans.property.SimpleObjectProperty
-import javafx.scene.control.ListView
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
 import tornadofx.*
@@ -22,8 +22,12 @@ class SceneEditor(val mod: ModData) : VBox() {
 	var rootStatement: XComplexStatement by rootStatementProperty
 	
 	private val toolBar = GridPane()
-	private val stmtList = ListView<XStatement>()
-	
+	private val stmtList = StatementListView(
+			bindingN(rootStatementProperty) {
+				it?.content ?: emptyList<XStatement>().observableUnique()
+			}
+	)
+
 	init {
 		spacing = 5.0
 		
@@ -33,16 +37,7 @@ class SceneEditor(val mod: ModData) : VBox() {
 			addClass(Styles.toolbarGrid)
 			// TODO trigger controls and scene names
 		}.attachTo(this)
-		
-		stmtList.apply {
-			cellFormat {
-				val item = item
-				graphic = item?.manager()?.listBody(item) ?: text("-")
-			}
-		}.attachTo(this)
-		
-		rootStatementProperty.onChangeAndNow {
-			stmtList.items = it?.content ?: emptyList<XStatement>().observable()
-		}
+
+		stmtList.attachTo(this)
 	}
 }

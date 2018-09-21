@@ -31,11 +31,6 @@ class ModView: AModView() {
 			is ModTreeNode.StoryNode -> e.story.let { story ->
 				when(story) {
 					is XcLib -> VBox().apply { text("TODO") } // TODO
-					is XContentContainer -> StatementTreeWithEditor(mod).apply {
-						rootStatement = story
-						tree.root.expandAll()
-						vgrow = Priority.ALWAYS
-					}
 					is XContentContainer -> SceneEditor(mod).apply {
 						rootStatement = story
 						vgrow = Priority.ALWAYS
