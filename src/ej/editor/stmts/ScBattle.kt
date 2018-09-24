@@ -14,7 +14,7 @@ class ScBattle(stmt: XsBattle) : StatementControl<XsBattle>(stmt) {
 			scFlow(Styles.xnext) {
 				text("Battle with ")
 				valueLink(stmt.monsterProperty, "Monster",
-				          MonsterChooser(mod ?: return@scFlow))
+				          MonsterChooser(mod() ?: return@scFlow))
 			}
 		}
 	}

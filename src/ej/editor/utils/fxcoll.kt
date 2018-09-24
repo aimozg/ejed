@@ -28,6 +28,8 @@ import kotlin.reflect.KProperty1
 
 fun ObservableValue<out String?>.isNullOrEmpty(): BooleanBinding =
 		booleanBinding { it.isNullOrEmpty() }
+//fun ObservableValue<out String?>.isNotEmpty(): BooleanBinding =
+//		booleanBinding { it.isNullOrEmpty() }
 
 fun <T> ObservableValue<T>.addWeakListener(fn:(observale:ObservableValue<out T>, oldValue:T?, newValue:T?)->Unit): ChangeListener<T>{
 	val listener = ChangeListener(fn)

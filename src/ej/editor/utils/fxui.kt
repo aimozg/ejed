@@ -184,3 +184,7 @@ fun <T : Node> T.presentWhen(predicate: ObservableValue<Boolean>) = apply {
 	visibleProperty().cleanBind(predicate)
 	managedProperty().cleanBind(predicate)
 }
+
+inline fun <reified T : Node> Node.ancestor(): T? = generateSequence(this) {
+	it.parent
+}.filterIsInstance<T>().firstOrNull()

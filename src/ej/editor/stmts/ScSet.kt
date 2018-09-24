@@ -17,7 +17,7 @@ class ScSet(stmt: XsSet) : StatementControl<XsSet>(stmt) {
 			addClass(Styles.xcommand)
 			scFlow {
 				addClass(Styles.xcommand)
-				label(stmt.opProperty.stringBinding {
+				text(stmt.opProperty.stringBinding {
 					when (it) {
 						null, "=", "assign" -> "Set to "
 						"+", "+=", "add" -> "Add "
@@ -35,19 +35,19 @@ class ScSet(stmt: XsSet) : StatementControl<XsSet>(stmt) {
 						}
 					}
 				}
-				label(stmt.opProperty.stringBinding {
+				text(stmt.opProperty.stringBinding {
 					when (it) {
-						null, "=", "assign",
-						"*", "/" -> "property"
-						"+", "+=", "add" -> "to property"
-						"-" -> "from property "
-						else -> "property"
+						null, "=", " assign ",
+						"*", "/" -> " property "
+						"+", "+=", "add" -> " to property "
+						"-" -> " from property "
+						else -> " property "
 					}
 				})
 				textfield(stmt.varnameProperty) {
 					prefColumnCount = 6
 				}
-				checkbox("of object", stringValueToggler(stmt.inobjProperty, "mod"))
+				checkbox("of object ", stringValueToggler(stmt.inobjProperty, "state"))
 				textfield(stmt.inobjProperty, NullableStringConverter) {
 					disableWhen { stmt.inobjProperty.isNullOrEmpty() }
 					prefColumnCount = 6

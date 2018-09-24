@@ -30,7 +30,7 @@ class SceneEditor(val mod: ModData) : VBox() {
 	private val stmtList = StatementListView(
 			bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
-			}, mod
+			}
 	)
 
 	init {

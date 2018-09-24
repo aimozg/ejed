@@ -64,7 +64,7 @@ object SwitchCaseMgr : StatementManager<XlSwitchCase>() {
 			}
 		}
 		row {
-			checkbox("select value ≤ ", stringValueToggler(stmt.lteProperty, "50"))
+			checkbox("selector ≤ ", stringValueToggler(stmt.lteProperty, "50"))
 			textfield(stmt.lteProperty) {
 				disableWhen(stmt.lteProperty.isNullOrEmpty())
 			}

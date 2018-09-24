@@ -2,6 +2,8 @@ package ej.editor.stmts
 
 import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.utils.SingleElementSkinBase
+import ej.editor.utils.ancestor
+import ej.editor.views.SceneEditor
 import ej.mod.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
@@ -22,11 +24,17 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
-	var mod: ModData? = null
 	override fun getContentBias(): Orientation {
 		return Orientation.HORIZONTAL
 	}
 	
+	fun rootStatement(): XComplexStatement? {
+		return ancestor<SceneEditor>()?.rootStatement
+	}
+	
+	fun mod(): ModData? {
+		return ancestor<SceneEditor>()?.mod
+	}
 	abstract override fun createDefaultSkin(): Skin<*>
 	abstract class ScSkin<S : XStatement, C : StatementControl<S>>(control: C) : SingleElementSkinBase<C>(control) {
 		final override val main: Node
@@ -41,7 +49,7 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 			}
 		}
 		
-		inline fun VBox.scRow(init: HBox.() -> Unit) = HBox().apply {
+		inline fun Parent.scRow(init: HBox.() -> Unit) = HBox().apply {
 			hgrow = Priority.ALWAYS
 			alignment = Pos.BASELINE_LEFT
 			spacing = 2.0
@@ -56,33 +64,53 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		}
 		
 		inline fun Parent.stmtList(items: ObservableList<XStatement>,
-		                           init: StatementListView.() -> Unit) = StatementListView(items, skinnable.mod).apply {
+		                           init: StatementListView.() -> Unit) = StatementListView(items).apply {
 			init()
 			this@stmtList.add(this)
 		}
 		
 		inline fun Parent.stmtList(items: ObservableValue<ObservableList<XStatement>>,
-		                           init: StatementListView.() -> Unit) = StatementListView(items, skinnable.mod).apply {
+		                           init: StatementListView.() -> Unit) = StatementListView(items).apply {
 			init()
 			this@stmtList.add(this)
 		}
 		
+		fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Node) = SimpleListView<T>().apply {
+			graphicFactory {
+				VBox().apply {
+					isFillWidth = true
+					spacing = 2.0
+					cellDecorator(it)
+				}
+			}
+			this@simpleList.add(this)
+		}
+		
+		fun <T : Any> Parent.simpleList(pItems: ObservableList<T>, cellDecorator: VBox.(T) -> Node) = simpleList(
+				cellDecorator).apply {
+			this.items = pItems
+		}
+		
+		fun <T : Any> Parent.simpleList(pItems: ObservableValue<ObservableList<T>>,
+		                                cellDecorator: VBox.(T) -> Node) = simpleList(cellDecorator).apply {
+			this.itemsProperty.bind(pItems)
+		}
 	}
 }
 
 @Suppress("UNCHECKED_CAST")
 fun <T : XStatement> T.createControl(): StatementControl<T>? = when (this) {
 	is XsBattle -> ScBattle(this)
-//	is XsDisplay -> ScDisplay(this)
-//	is XsForward -> ScForward(this)
-//	is XsOutput -> ScOutput(this)
+	is XsDisplay -> ScDisplay(this)
+	is XsForward -> ScForward(this)
+	is XsOutput -> ScOutput(this)
 	is XsSet -> ScSet(this)
-//	is XsMenu -> ScMenu(this)
-//	is XsNext -> ScNext(this)
-//	is XsButton -> ScButton(this)
+	is XsMenu -> ScMenu(this)
+	is XsNext -> ScNext(this)
+	is XsButton -> ScButton(this)
 	is XlIf -> ScIf(this)
-//	is XlComment -> ScComment(this)
-//	is XlSwitch -> ScSwitch(this)
+	is XlComment -> ScComment(this)
+	is XlSwitch -> ScSwitch(this)
 	is XcText -> ScText(this)
 	else -> null
 } as StatementControl<T>?
