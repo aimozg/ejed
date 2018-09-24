@@ -28,24 +28,18 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 				})
 				text(" is true")
 			}
-			stmtList(stmt.thenGroup.content) {
-				translateX = 12.0
-			}
+			stmtList(stmt.thenGroup.content)
 			simpleList(stmt.elseifGroups) { elseif ->
 				scFlow(Styles.xlogic) {
-					translateX = 6.0
 					text("Else if condition ")
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 						if (it != null) stmt.testProperty.fromBuilder(it)
 					})
 					text(" is true:")
 				}
-				stmtList(elseif.content) {
-					translateX = 12.0
-				}
+				stmtList(elseif.content)
 			}
 			text("Else:") {
-				translateX = 6.0
 				addClass(Styles.xlogic)
 				presentWhen(stmt.elseGroupProperty.isNotNull)
 			}
@@ -53,7 +47,6 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
 			}) {
 				presentWhen(stmt.elseGroupProperty.isNotNull)
-				translateX = 12.0
 			}
 		}
 	}

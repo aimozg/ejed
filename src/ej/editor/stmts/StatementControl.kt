@@ -8,7 +8,6 @@ import ej.mod.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.geometry.Orientation
-import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Control
@@ -42,17 +41,15 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		
 		init {
 			main = VBox().apply {
-				isFillWidth = true
-				spacing = 2.0
+				addClass("stmt-ctrl-main")
 				body()
 				this@ScSkin.children += this
 			}
 		}
 		
 		inline fun Parent.scRow(init: HBox.() -> Unit) = HBox().apply {
+			addClass("stmt-ctrl-row")
 			hgrow = Priority.ALWAYS
-			alignment = Pos.BASELINE_LEFT
-			spacing = 2.0
 			init()
 			this@scRow.add(this)
 		}
@@ -64,13 +61,13 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		}
 		
 		inline fun Parent.stmtList(items: ObservableList<XStatement>,
-		                           init: StatementListView.() -> Unit) = StatementListView(items).apply {
+		                           init: StatementListView.() -> Unit = {}) = StatementListView(items).apply {
 			init()
 			this@stmtList.add(this)
 		}
 		
 		inline fun Parent.stmtList(items: ObservableValue<ObservableList<XStatement>>,
-		                           init: StatementListView.() -> Unit) = StatementListView(items).apply {
+		                           init: StatementListView.() -> Unit = {}) = StatementListView(items).apply {
 			init()
 			this@stmtList.add(this)
 		}
@@ -78,8 +75,6 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Node) = SimpleListView<T>().apply {
 			graphicFactory {
 				VBox().apply {
-					isFillWidth = true
-					spacing = 2.0
 					cellDecorator(it)
 				}
 			}

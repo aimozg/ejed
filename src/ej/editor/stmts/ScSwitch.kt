@@ -21,7 +21,6 @@ class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
 				}
 			}
 			simpleList(stmt.branches) { stmt ->
-				translateX = 6.0
 				gridpane {
 					hgap = 2.0
 					vgap = 2.0
@@ -64,9 +63,7 @@ class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
 						}
 					}
 				}
-				stmtList(stmt.content) {
-					translateX = 12.0
-				}
+				stmtList(stmt.content)
 			}
 			
 		}

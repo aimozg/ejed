@@ -58,10 +58,7 @@ open class SimpleListView<T : Any>() : VBox() {
 	}
 	
 	init {
-		prefHeight = Control.USE_COMPUTED_SIZE
 		vgrow = Priority.SOMETIMES
-		isFillWidth = true
-		spacing = 4.0
 		
 		itemsProperty.onChangeAndNow { list ->
 			if (list == null) {

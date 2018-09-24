@@ -35,32 +35,27 @@
 /* Node type: text */
 .xtext {
     -fx-font-family: "Lucida Fax";
-    -fx-text-background-color: #eee;
+    -fx-text-base-color: #eee;
 }
 
 /* Node type: flow control (if, switch) */
-.xlogic Text {
-    /*-fx-text-background-color: #acf;*/
-    /*-fx-text-fill: #acf;*/
-    -fx-fill: #acf;
+.xlogic {
+    -fx-text-base-color: #acf;
 }
 
 /* Node type: comment */
-.xcomment Text {
-    /*-fx-text-background-color: #6a6;*/
-    -fx-fill: #6a6;
+.xcomment {
+    -fx-text-base-color: #6a6;
 }
 
 /* Node type: command */
-.xcommand Text {
-    /*-fx-text-background-color: #faa;*/
-    -fx-fill: #faa;
+.xcommand {
+    -fx-text-base-color: #faa;
 }
 
 /* Node type: scene transition (menu, next, battle, forward) */
-.xnext Text {
-    /*-fx-text-background-color: #a8f;*/
-    -fx-fill: #a8f;
+.xnext {
+    -fx-text-base-color: #a8f;
 }
 
 .statement-tree .tree-cell:focused .xtext,
@@ -68,7 +63,7 @@
 .statement-tree .tree-cell:focused .xcomment,
 .statement-tree .tree-cell:focused .xcommand,
 .statement-tree .tree-cell:focused .xnext {
-    -fx-text-background-color: #222;
+    -fx-text-base-color: #222;
 }
 
 /* Expression editor */

@@ -11,9 +11,7 @@ class ScMenu(stmt: XsMenu) : StatementControl<XsMenu>(stmt) {
 		override fun VBox.body() {
 			addClass(Styles.xcommand)
 			text("Menu:")
-			stmtList(stmt.content) {
-				translateX = 12.0
-			}
+			stmtList(stmt.content)
 		}
 	}
 }
