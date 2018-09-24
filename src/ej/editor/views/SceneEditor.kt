@@ -9,6 +9,7 @@ import ej.mod.XComplexStatement
 import ej.mod.XStatement
 import ej.mod.XcScene
 import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Orientation
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
 import tornadofx.*
@@ -21,11 +22,15 @@ class SceneEditor(val mod: ModData) : VBox() {
 	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>(XcScene())
 	var rootStatement: XComplexStatement by rootStatementProperty
 	
+	override fun getContentBias(): Orientation {
+		return Orientation.HORIZONTAL
+	}
+	
 	private val toolBar = GridPane()
 	private val stmtList = StatementListView(
 			bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
-			}
+			}, mod
 	)
 
 	init {

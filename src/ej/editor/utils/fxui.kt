@@ -44,42 +44,44 @@ fun <T:Fragment> T.initialized():T {
 	init()
 	return this
 }
+
+var TEXTAREA_HPAD = 16.0
 fun TextArea.autoPrefRowCount():Int? {
-	val width = width
-	if (width == 0.0) return null
+	val width = (width.takeIf { it != 0.0 } ?: return null) - TEXTAREA_HPAD
+	val text = text
 	val fm = PrismFontLoader.getInstance().getFontMetrics(font)
-	val textNode = lookup(".text") as? Text
-	val th = textNode?.boundsInLocal?.height ?: Math.ceil(fm.computeStringWidth(this.text)/width)
-	if (!th.isFinite()) return null
-	val fsz = (Math.ceil(fm.descent.toDouble()) + Math.ceil(fm.leading.toDouble()) + Math.ceil(fm.ascent.toDouble()))
+	val tb = (lookup(".text") as? Text)?.boundsInLocal
+	val fsz = Math.ceil(fm.lineHeight.toDouble())
+	val th = if (tb != null && tb.width <= width) {
+		tb.height
+	} else {
+		val tw = /*tb?.width ?:*/ fm.computeStringWidth(text).toDouble()
+		Math.ceil(Math.ceil(tw / width + text.count { it == '\n' }).times(fsz))
+	}
+	
 	val rc = Math.ceil(th / fsz)
 	if (!rc.isFinite()) return null
 	return rc.toInt()
 }
 fun TextArea.autoStretch() {
-	minHeight = Control.USE_PREF_SIZE
 	maxHeight = Control.USE_PREF_SIZE
-	textProperty().onChangeAndNow {
-		val rc = autoPrefRowCount()
-		if (rc != null) {
-			prefRowCount = rc
-		} else {
-			runLater {
-				prefRowCount = autoPrefRowCount() ?: prefRowCount
-			}
-		}
+	prefHeight = Control.USE_COMPUTED_SIZE
+	
+	prefRowCountProperty().bind(
+			bindingN(textProperty(), widthProperty(), fontProperty()) { _, _, _ ->
+				autoPrefRowCount() ?: 1
+			})
+	prefRowCountProperty().onChange {
+		runLater { requestLayout() }
 	}
 }
-fun TextArea.stretchOnFocus(max:Int=1) {
-	//prefRowCount = maxOf(1, minOf(max, text.count { it=='\n' }+1))
+
+fun TextArea.stretchOnFocus(unfocusedRowCount: Int = 1) {
+	//prefRowCount = maxOf(1, minOf(unfocusedRowCount, text.count { it=='\n' }+1))
 	prefRowCountProperty().bind(
-			focusedProperty().integerBinding(textProperty()) {
-				if (it == null) 1
-				else {
-					val rc = autoPrefRowCount() ?: 1
-					if (!it) minOf(max, rc)
-					else rc
-				}
+			bindingN(focusedProperty(), textProperty(), widthProperty()) { focused, _, _ ->
+				val rc = autoPrefRowCount() ?: 1
+				if (focused == true) rc else minOf(unfocusedRowCount, rc)
 			}
 	)
 }

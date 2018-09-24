@@ -3,8 +3,7 @@ package ej.editor.stmts.old
 import ej.editor.Styles
 import ej.editor.stmts.StatementManager
 import ej.editor.stmts.defaultEditorBody
-import ej.editor.stmts.defaultListBody
-import ej.editor.utils.autoStretch
+import ej.editor.utils.presentWhen
 import ej.editor.views.FlashTextProcessor
 import ej.editor.views.HtmlEditorLite
 import ej.editor.views.StatementTree
@@ -38,31 +37,18 @@ object TextMgr: StatementManager<XcText>() {
 	override fun treeGraphic(stmt: XcText, tree: StatementTree) = VBox().apply {
 		val g = this
 		val fnExpanded = tree.expandedNodesProperty.toBinding()
-		val fnCollapsed = fnExpanded.not()
 		textflow {
 			addClass(Styles.xtext)
 			prefWidthProperty().bind(g.widthProperty())
 			maxWidthProperty().bind(g.widthProperty())
 			text(stmt.textProperty())
-			hiddenWhen(fnCollapsed)
-			managedWhen(fnExpanded)
+			presentWhen(fnExpanded)
 		}
 		label(stmt.textProperty().stringBinding {
 			it?.replace("<br>","\\n")?.replace("\n"," ")
 		}) {
 			addClass(Styles.xtext)
-			hiddenWhen(fnExpanded)
-			managedWhen(fnCollapsed)
-		}
-	}
-	
-	override fun listBody(stmt: XcText) = defaultListBody {
-		textarea(stmt.textProperty()) {
-			addClass(Styles.xtext)
-			isWrapText = true
-			hgrow = Priority.ALWAYS
-			vgrow = Priority.ALWAYS
-			autoStretch()
+			presentWhen(fnExpanded.not())
 		}
 	}
 }

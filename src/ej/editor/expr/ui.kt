@@ -23,9 +23,9 @@ import kotlin.reflect.KMutableProperty0
  */
 
 
-inline fun defaultEditorTextFlow(init: TextFlow.()->Unit): TextFlow {
+inline fun defaultEditorTextFlow(cssClass: CssRule? = Styles.xexpr, init: TextFlow.() -> Unit): TextFlow {
 	return TextFlow().apply {
-		addClass(Styles.xexpr)
+		if (cssClass != null) addClass(cssClass)
 		prefWidthProperty().bind(parentProperty().select {
 			if (it is Region) {
 				it.widthProperty().minus(it.paddingHorizontalProperty)

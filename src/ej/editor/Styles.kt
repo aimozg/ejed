@@ -39,6 +39,7 @@ class Styles : Stylesheet() {
 		val editorView by cssclass()
 		val playerView by cssclass()
 		
+		val xstmt by cssclass()
 		val xexpr by cssclass()
 		val xexprLink by cssclass()
 		val xexprBadLink by cssclass()

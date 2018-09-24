@@ -39,23 +39,28 @@
 }
 
 /* Node type: flow control (if, switch) */
-.xlogic {
-    -fx-text-background-color: #acf;
+.xlogic Text {
+    /*-fx-text-background-color: #acf;*/
+    /*-fx-text-fill: #acf;*/
+    -fx-fill: #acf;
 }
 
 /* Node type: comment */
-.xcomment {
-    -fx-text-background-color: #6a6;
+.xcomment Text {
+    /*-fx-text-background-color: #6a6;*/
+    -fx-fill: #6a6;
 }
 
 /* Node type: command */
-.xcommand {
-    -fx-text-background-color: #faa;
+.xcommand Text {
+    /*-fx-text-background-color: #faa;*/
+    -fx-fill: #faa;
 }
 
 /* Node type: scene transition (menu, next, battle, forward) */
-.xnext {
-    -fx-text-background-color: #a8f;
+.xnext Text {
+    /*-fx-text-background-color: #a8f;*/
+    -fx-fill: #a8f;
 }
 
 .statement-tree .tree-cell:focused .xtext,
