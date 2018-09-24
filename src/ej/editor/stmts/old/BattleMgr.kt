@@ -4,9 +4,6 @@ import ej.editor.Styles
 import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
 import ej.editor.stmts.MonsterChooser
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.simpleTreeLabel
-import ej.editor.views.StatementTree
 import ej.mod.XsBattle
 import tornadofx.*
 

@@ -5,10 +5,6 @@ import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.valueLink
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.defaultEditorBody
-import ej.editor.stmts.simpleTreeLabel
-import ej.editor.views.StatementTree
 import ej.mod.XlElse
 import ej.mod.XlElseIf
 import ej.mod.XlIf
@@ -20,7 +16,8 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 object IfMgr : StatementManager<XlIf>() {
-	override fun editorBody(stmt: XlIf, tree: StatementTree) = defaultEditorBody(VBox()) {
+	override fun editorBody(stmt: XlIf, tree: StatementTree) = defaultEditorBody(
+			VBox()) {
 		defaultEditorTextFlow {
 			text("If condition ")
 			valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {

@@ -1,8 +1,6 @@
-package ej.editor.views
+package ej.editor.stmts.old
 
 import ej.editor.Styles
-import ej.editor.stmts.manager
-import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.findItem
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
@@ -18,7 +16,7 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-fun statementTreeGraphic(tree:StatementTree, stmt: XStatement): Region {
+fun statementTreeGraphic(tree: StatementTree, stmt: XStatement): Region {
 	return stmt.manager()?.treeGraphic(stmt,tree) ?:
 	simpleTreeLabel("TODO $stmt").addClass(Styles.xcommand)
 }
@@ -66,7 +64,7 @@ open class StatementTree : TreeView<XStatement>() {
 			cell.prefWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			cell.maxWidthProperty().bind(tree.widthProperty().minus(16)) // vscrollbar
 			alignment = Pos.TOP_LEFT
-			graphic = statementTreeGraphic(tree,it).also { g ->
+			graphic = statementTreeGraphic(tree, it).also { g ->
 				g.addClass(Styles.treeGraphic)
 				g.maxWidthProperty().bind(
 					cell.maxWidthProperty()

@@ -1,9 +1,7 @@
-package ej.editor.stmts
+package ej.editor.stmts.old
 
 import ej.editor.EditorController
 import ej.editor.Styles
-import ej.editor.stmts.old.*
-import ej.editor.views.StatementTree
 import ej.mod.*
 import javafx.beans.value.ObservableValue
 import javafx.scene.control.Label
@@ -24,7 +22,7 @@ abstract class StatementManager<T:XStatement> {
 	abstract fun treeGraphic(stmt:T, tree: StatementTree): Region
 }
 
-inline fun defaultEditorBody(init:HBox.()->Unit):HBox = defaultEditorBody(HBox(),init)
+inline fun defaultEditorBody(init:HBox.()->Unit):HBox = defaultEditorBody(HBox(), init)
 inline fun<T:Pane> defaultEditorBody(pane:T, init:T.()->Unit):T =
 		pane.apply {
 			addClass(Styles.xstmtEditor)
@@ -53,7 +51,7 @@ inline fun simpleTreeLabel(text:ObservableValue<String>,init: Label.()->Unit={})
 		}
 
 @Suppress("UNCHECKED_CAST")
-fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) {
+fun<T:XStatement> Class<T>.statementManager(): StatementManager<T>? = when(this) {
 	XsBattle::class.java -> BattleMgr
 	XsDisplay::class.java -> DisplayMgr
 	XsForward::class.java -> ForwardMgr
@@ -74,5 +72,5 @@ fun<T:XStatement> Class<T>.statementManager():StatementManager<T>? = when(this) 
 	else -> null
 } as StatementManager<T>?
 
-inline fun<reified T:XStatement> statementManager():StatementManager<T>? = T::class.java.statementManager()
-fun<T:XStatement> T.manager():StatementManager<T>? = javaClass.statementManager()
+inline fun<reified T:XStatement> statementManager(): StatementManager<T>? = T::class.java.statementManager()
+fun<T:XStatement> T.manager(): StatementManager<T>? = javaClass.statementManager()

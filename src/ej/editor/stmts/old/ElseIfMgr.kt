@@ -5,10 +5,6 @@ import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.expressionBuilderStringBinding
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.valueLink
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.defaultEditorBody
-import ej.editor.stmts.simpleTreeLabel
-import ej.editor.views.StatementTree
 import ej.mod.XlElseIf
 import javafx.scene.layout.VBox
 import tornadofx.*

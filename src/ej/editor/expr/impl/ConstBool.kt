@@ -1,7 +1,7 @@
 package ej.editor.expr.impl
 
 import ej.editor.expr.*
-import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.old.defaultEditorBody
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.scene.layout.Pane
 import tornadofx.*

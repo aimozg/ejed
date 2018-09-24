@@ -1,12 +1,8 @@
 package ej.editor.stmts.old
 
 import ej.editor.Styles
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.defaultEditorBody
-import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
-import ej.editor.views.StatementTree
 import ej.mod.XlSwitch
 import ej.mod.XlSwitchCase
 import ej.mod.XlSwitchDefault

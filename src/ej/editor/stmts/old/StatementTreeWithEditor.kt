@@ -1,8 +1,6 @@
-package ej.editor.views
+package ej.editor.stmts.old
 
 import ej.editor.Styles
-import ej.editor.stmts.defaultEditorBody
-import ej.editor.stmts.manager
 import ej.editor.utils.ContextualTreeSelection
 import ej.editor.utils.listBinding
 import ej.editor.utils.onChangeWeak

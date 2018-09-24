@@ -4,10 +4,7 @@ import ej.editor.Styles
 import ej.editor.expr.defaultEditorTextFlow
 import ej.editor.expr.valueLink
 import ej.editor.stmts.SceneChooser
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.bindingN
-import ej.editor.views.StatementTree
 import ej.mod.Natives
 import ej.mod.XsButton
 import ej.mod.acceptsMenu

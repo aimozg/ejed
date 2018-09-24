@@ -1,12 +1,9 @@
 package ej.editor.stmts.old
 
 import ej.editor.Styles
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.defaultEditorBody
 import ej.editor.utils.presentWhen
 import ej.editor.views.FlashTextProcessor
 import ej.editor.views.HtmlEditorLite
-import ej.editor.views.StatementTree
 import ej.mod.XcText
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox

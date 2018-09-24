@@ -3,7 +3,7 @@ package ej.editor.expr.external
 import ej.editor.expr.Expression
 import ej.editor.expr.ExpressionBuilder
 import ej.editor.expr.nop
-import ej.editor.stmts.defaultEditorBody
+import ej.editor.stmts.old.defaultEditorBody
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*
 

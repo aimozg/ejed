@@ -1,14 +1,10 @@
 package ej.editor.stmts.old
 
 import ej.editor.Styles
-import ej.editor.stmts.StatementManager
-import ej.editor.stmts.defaultEditorBody
-import ej.editor.stmts.simpleTreeLabel
 import ej.editor.utils.bindingN
 import ej.editor.utils.colspan
 import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.stringValueToggler
-import ej.editor.views.StatementTree
 import ej.mod.XlSwitchCase
 import ej.utils.affixNonEmpty
 import javafx.scene.layout.GridPane
@@ -71,21 +67,22 @@ object SwitchCaseMgr : StatementManager<XlSwitchCase>() {
 		}
 	}
 	
-	override fun treeGraphic(stmt: XlSwitchCase, tree: StatementTree) = simpleTreeLabel(bindingN(
-			stmt.testProperty,
-			stmt.valueProperty, stmt.neProperty,
-			stmt.gtProperty, stmt.gteProperty,
-			stmt.ltProperty, stmt.lteProperty
-	) { test, value, ne, gt, gte, lt, lte ->
-		"Branch when " + listOf(
-				test ?: "",
-				value.affixNonEmpty("selector = "),
-				ne.affixNonEmpty("selector ≠ "),
-				gt.affixNonEmpty("selector > "),
-				gte.affixNonEmpty("selector ≥ "),
-				lt.affixNonEmpty("selector < "),
-				lte.affixNonEmpty("selector ≤ ")
-		).filter { it.isNotEmpty() }.joinToString("; and ")
-	}).addClass(Styles.xlogic)
+	override fun treeGraphic(stmt: XlSwitchCase, tree: StatementTree) = simpleTreeLabel(
+			bindingN(
+					stmt.testProperty,
+					stmt.valueProperty, stmt.neProperty,
+					stmt.gtProperty, stmt.gteProperty,
+					stmt.ltProperty, stmt.lteProperty
+			) { test, value, ne, gt, gte, lt, lte ->
+				"Branch when " + listOf(
+						test ?: "",
+						value.affixNonEmpty("selector = "),
+						ne.affixNonEmpty("selector ≠ "),
+						gt.affixNonEmpty("selector > "),
+						gte.affixNonEmpty("selector ≥ "),
+						lt.affixNonEmpty("selector < "),
+						lte.affixNonEmpty("selector ≤ ")
+				).filter { it.isNotEmpty() }.joinToString("; and ")
+			}).addClass(Styles.xlogic)
 	
 }
