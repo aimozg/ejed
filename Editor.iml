@@ -21,7 +21,9 @@
             <array />
           </option>
           <option name="pluginClasspaths">
-            <array />
+            <array>
+              <option value="$APPLICATION_HOME_DIR$/plugins/Kotlin/lib/kotlinx-serialization-ide-plugin.jar" />
+            </array>
           </option>
           <option name="multiPlatform" value="true" />
           <option name="coroutinesState" value="enable" />

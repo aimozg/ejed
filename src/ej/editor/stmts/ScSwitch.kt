@@ -5,6 +5,7 @@ import ej.editor.utils.isNullOrEmpty
 import ej.editor.utils.presentWhen
 import ej.editor.utils.stringValueToggler
 import ej.mod.XlSwitch
+import ej.mod.XlSwitchCase
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -21,46 +22,52 @@ class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
 				}
 			}
 			simpleList(stmt.branches) { stmt ->
-				gridpane {
-					hgap = 2.0
-					vgap = 2.0
-					addClass(Styles.xlogic)
-					row {
-						text("Branch when: ")
-						checkbox(" ", stringValueToggler(stmt.testProperty, "true"))
-						text(" and selector ")
-						checkbox("= ", stringValueToggler(stmt.valueProperty, "0"))
-						checkbox("≠ ", stringValueToggler(stmt.neProperty, "0"))
-						checkbox("> ", stringValueToggler(stmt.gtProperty, "50"))
-						checkbox("≥ ", stringValueToggler(stmt.gteProperty, "50"))
-						checkbox("< ", stringValueToggler(stmt.ltProperty, "50"))
-						checkbox("≤ ", stringValueToggler(stmt.lteProperty, "50"))
-						
+				scFlow(Styles.xlogic) {
+					text("Branch when: ")
+					combobox(
+							stmt.conditionTypeProperty,
+							XlSwitchCase.ConditionType.values().asList()
+									- XlSwitchCase.ConditionType.OTHER
+					) {
+						cellFormat(DefaultScope) {
+							text = when (item) {
+								XlSwitchCase.ConditionType.NEVER, null ->
+									"(never)"
+								XlSwitchCase.ConditionType.TEST -> "condition is true:"
+								XlSwitchCase.ConditionType.X_EQ_A -> "selector = "
+								XlSwitchCase.ConditionType.X_NEQ_A -> "selector ≠ "
+								XlSwitchCase.ConditionType.X_GT_A -> "selector > "
+								XlSwitchCase.ConditionType.X_GTE_A -> "selector ≥ "
+								XlSwitchCase.ConditionType.X_LT_A -> "selector < "
+								XlSwitchCase.ConditionType.X_LTE_A -> "selector ≤ "
+								XlSwitchCase.ConditionType.X_LTE_A_X_GTE_B -> "≤ selector ≤"
+								XlSwitchCase.ConditionType.X_LT_A_X_GT_B -> "< selector <"
+								XlSwitchCase.ConditionType.X_LTE_A_X_GT_B -> "≤ selector <"
+								XlSwitchCase.ConditionType.X_LT_A_X_GTE_B -> "< selector ≤"
+								XlSwitchCase.ConditionType.OTHER -> "(too complex condition)"
+							}
+						}
 					}
-					row {
-						hbox {}
-						textfield(stmt.testProperty) {
-							presentWhen(stmt.testProperty.isNotBlank())
-						}
-						hbox {}
-						textfield(stmt.valueProperty) {
-							presentWhen(stmt.valueProperty.isNotBlank())
-						}
-						textfield(stmt.neProperty) {
-							presentWhen(stmt.neProperty.isNotBlank())
-						}
-						textfield(stmt.gtProperty) {
-							presentWhen(stmt.gtProperty.isNotBlank())
-						}
-						textfield(stmt.gteProperty) {
-							presentWhen(stmt.gteProperty.isNotBlank())
-						}
-						textfield(stmt.ltProperty) {
-							presentWhen(stmt.ltProperty.isNotBlank())
-						}
-						textfield(stmt.lteProperty) {
-							presentWhen(stmt.lteProperty.isNotBlank())
-						}
+					textfield(stmt.testProperty) {
+						presentWhen(stmt.testProperty.isNotNull)
+					}
+					textfield(stmt.valueProperty) {
+						presentWhen(stmt.valueProperty.isNotNull)
+					}
+					textfield(stmt.neProperty) {
+						presentWhen(stmt.neProperty.isNotNull)
+					}
+					textfield(stmt.gtProperty) {
+						presentWhen(stmt.gtProperty.isNotNull)
+					}
+					textfield(stmt.gteProperty) {
+						presentWhen(stmt.gteProperty.isNotNull)
+					}
+					textfield(stmt.ltProperty) {
+						presentWhen(stmt.ltProperty.isNotNull)
+					}
+					textfield(stmt.lteProperty) {
+						presentWhen(stmt.lteProperty.isNotNull)
 					}
 				}
 				stmtList(stmt.content)

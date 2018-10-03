@@ -218,6 +218,143 @@ class XlSwitch : XStatement {
 }
 sealed class PartOfSwitch: XContentContainer()
 class XlSwitchCase : PartOfSwitch() {
+	enum class ConditionType {
+		NEVER,
+		TEST,
+		X_EQ_A,
+		X_NEQ_A,
+		X_GT_A,
+		X_GTE_A,
+		X_LT_A,
+		X_LTE_A,
+		X_LTE_A_X_GTE_B,
+		X_LT_A_X_GT_B,
+		X_LTE_A_X_GT_B,
+		X_LT_A_X_GTE_B,
+		OTHER;
+		
+		open operator fun plus(other: ConditionType): ConditionType = when {
+			this == NEVER -> other
+			other == NEVER -> this
+			this == other -> this
+			this == OTHER || other == OTHER -> OTHER
+			this == X_LT_A && other == X_GT_A ||
+					other == X_LT_A && this == X_GT_A -> X_LT_A_X_GT_B
+			this == X_LTE_A && other == X_GT_A ||
+					other == X_LTE_A && this == X_GT_A -> X_LT_A_X_GT_B
+			this == X_LT_A && other == X_GTE_A ||
+					this == X_GTE_A && other == X_LT_A -> X_LT_A_X_GT_B
+			this == X_LTE_A && other == X_GTE_A ||
+					this == X_GTE_A && other == X_LTE_A -> X_LTE_A_X_GTE_B
+			else -> OTHER
+		}
+	}
+	
+	fun getConditionType(): ConditionType {
+		var ct: ConditionType = ConditionType.NEVER
+		if (test != null) ct += ConditionType.TEST
+		if (value != null) ct += ConditionType.X_EQ_A
+		if (ne != null) ct += ConditionType.X_NEQ_A
+		if (gt != null) ct += ConditionType.X_GT_A
+		if (gte != null) ct += ConditionType.X_GTE_A
+		if (lt != null) ct += ConditionType.X_LT_A
+		if (lte != null) ct += ConditionType.X_LTE_A
+		return ct
+	}
+	
+	fun setConditionType(ct: ConditionType) {
+		val properties = arrayListOf(
+				testProperty,
+				valueProperty,
+				neProperty,
+				gtProperty,
+				gteProperty,
+				ltProperty,
+				lteProperty)
+		val stub = ne ?: gt ?: gte ?: lt ?: lte ?: test ?: ""
+		when (ct) {
+			ConditionType.NEVER -> {
+			}
+			ConditionType.TEST -> properties -= testProperty
+			ConditionType.X_EQ_A -> {
+				if (value == null) value = stub
+				properties -= valueProperty
+			}
+			ConditionType.X_NEQ_A -> {
+				if (ne == null) ne = stub
+				properties -= neProperty
+			}
+			ConditionType.X_GT_A -> {
+				if (gt == null) gt = stub
+				properties -= gtProperty
+			}
+			ConditionType.X_GTE_A -> {
+				if (gte == null) gte = stub
+				properties -= gteProperty
+			}
+			ConditionType.X_LT_A -> {
+				if (lt == null) lt = stub
+				properties -= ltProperty
+			}
+			ConditionType.X_LTE_A -> {
+				if (lt == null) lte = stub
+				properties -= lteProperty
+			}
+			ConditionType.X_LTE_A_X_GTE_B -> {
+				if (lte == null) lte = lt ?: stub
+				if (gte == null) gte = gt ?: stub
+				properties -= lteProperty
+				properties -= gteProperty
+			}
+			ConditionType.X_LT_A_X_GT_B -> {
+				if (lt == null) lt = lte ?: stub
+				if (gt == null) gt = gte ?: stub
+				properties -= ltProperty
+				properties -= gtProperty
+			}
+			ConditionType.X_LTE_A_X_GT_B -> {
+				if (lte == null) lte = lt ?: stub
+				if (gt == null) gt = gte ?: stub
+				properties -= lteProperty
+				properties -= gtProperty
+			}
+			ConditionType.X_LT_A_X_GTE_B -> {
+				if (lt == null) lt = lte ?: stub
+				if (gte == null) gte = gt ?: stub
+				properties -= ltProperty
+				properties -= gteProperty
+			}
+			ConditionType.OTHER -> properties.clear()
+		}
+		for (property in properties) {
+			property.set(null)
+		}
+	}
+	
+	val conditionTypeProperty = object : SimpleObjectProperty<ConditionType>(ConditionType.NEVER) {
+		private var updating = 0
+		
+		override fun setValue(v: ConditionType?) {
+			super.setValue(v ?: ConditionType.NEVER)
+			if (updating == 0) {
+				setConditionType(v ?: ConditionType.NEVER)
+			}
+		}
+		
+		override fun getValue(): ConditionType {
+			val stored = super.getValue() ?: ConditionType.NEVER
+			val actual = getConditionType()
+			if (stored != actual) runLater {
+				try {
+					updating++
+					value = actual
+				} finally {
+					updating--
+				}
+			}
+			return stored
+		}
+	}
 	
 	val testProperty = SimpleStringProperty(null)
 	var test:String? by testProperty
