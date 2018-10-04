@@ -43,3 +43,17 @@ class EncounterTrigger : SceneTrigger(), XmlAutoSerializable {
 	@Attribute
 	var chance: String by chanceProperty
 }
+
+class CampTrigger : SceneTrigger(), XmlAutoSerializable {
+	val conditionProperty = ExpressionProperty("true")
+	@Attribute
+	var condition: String by conditionProperty
+	
+	val categoryProperty = SimpleStringProperty("Followers")
+	@Attribute
+	var category: String by categoryProperty
+	
+	val nameProperty = SimpleStringProperty("")
+	@Attribute
+	var name: String by nameProperty
+}

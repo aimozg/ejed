@@ -139,9 +139,10 @@ class XcScene : XContentContainer(), StoryStmt {
 			              "scene" to XcScene::class
 			)
 			attribute(XcScene::name)
-			elementByAttr(XcScene::trigger,"trigger","triggerType",
+			elementByAttr(XcScene::trigger, "trigger", "triggerType",
 			              "encounter" to EncounterTrigger::class,
-			              "timed" to TimedTrigger::class)
+			              "timed" to TimedTrigger::class,
+			              "camp" to CampTrigger::class)
 			afterLoad { parent ->
 				owner = parent as ModDataNode?
 			}
