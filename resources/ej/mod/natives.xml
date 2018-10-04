@@ -27,6 +27,11 @@
     <items>
 
     </items>
+    <places>
+        <place id="camp/followers" desc="Camp - Followers"/>
+        <place id="camp/lovers" desc="Camp - Lovers"/>
+        <place id="camp/slaves" desc="Camp - Slaves"/>
+    </places>
     <scenes>
         <scene ref="/camp/return">
             <desc>Return to camp, advance 1 hours</desc>

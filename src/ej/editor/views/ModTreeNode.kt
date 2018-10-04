@@ -92,6 +92,7 @@ class ModTreeCell : TreeCell<ModTreeNode>() {
 							when (trigger) {
 								is EncounterTrigger -> FontAwesome.Glyph.MAP_MARKER.char.toString()
 								is TimedTrigger -> FontAwesome.Glyph.CLOCK_ALT.char.toString()
+								is PlaceTrigger -> FontAwesome.Glyph.BANK.char.toString()
 								null -> FontAwesome.Glyph.SHARE_ALT.char.toString()
 							}
 						}

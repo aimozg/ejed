@@ -14,6 +14,13 @@ class NativePool : XmlAutoSerializable {
 	@Attribute var desc:String? = null
 }
 
+class NativePlace : XmlAutoSerializable {
+	@Attribute
+	var id: String = ""
+	@Attribute
+	var desc: String? = null
+}
+
 class NativeMonster : XmlAutoSerializable {
 	@Attribute var id:String = ""
 	@Element var desc:String? = null
@@ -47,6 +54,8 @@ class NativesClass : XmlAutoSerializable {
 	val items = ArrayList<NativeItem>()
 	@Elements("perk",true)
 	val perks = ArrayList<NativePerk>()
+	@Elements("places", true)
+	val places = ArrayList<NativePlace>()
 }
 
 val Natives:NativesClass by lazy {

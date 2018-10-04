@@ -1,8 +1,10 @@
 package ej.editor.views
 
 import ej.editor.Styles
+import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
 import ej.editor.utils.bindingN
+import ej.editor.utils.nodeBinding
 import ej.editor.utils.observableUnique
 import ej.mod.ModData
 import ej.mod.XComplexStatement
@@ -40,7 +42,11 @@ class SceneEditor(val mod: ModData) : VBox() {
 			hgap = 5.0
 			vgap = 5.0
 			addClass(Styles.toolbarGrid)
-			// TODO trigger controls and scene names
+			nodeBinding(rootStatementProperty) { it ->
+				(it as? XcScene)?.let {
+					SceneTriggerEditor(it)
+				}
+			}
 		}.attachTo(this)
 
 		stmtList.attachTo(this)
