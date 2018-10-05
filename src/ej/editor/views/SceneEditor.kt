@@ -3,12 +3,10 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
-import ej.editor.utils.bindingN
 import ej.editor.utils.nodeBinding
 import ej.editor.utils.observableUnique
 import ej.mod.ModData
 import ej.mod.XComplexStatement
-import ej.mod.XStatement
 import ej.mod.XcScene
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
@@ -28,17 +26,13 @@ class SceneEditor(val mod: ModData) : VBox() {
 		return Orientation.HORIZONTAL
 	}
 	
-	private val toolBar = GridPane()
-	private val stmtList = StatementListView(
-			bindingN(rootStatementProperty) {
-				it?.content ?: emptyList<XStatement>().observableUnique()
-			}
-	)
+	private val toolBar: GridPane
+	private val stmtList: StatementListView
 
 	init {
 		spacing = 5.0
 		
-		toolBar.apply {
+		toolBar = gridpane {
 			hgap = 5.0
 			vgap = 5.0
 			addClass(Styles.toolbarGrid)
@@ -47,8 +41,13 @@ class SceneEditor(val mod: ModData) : VBox() {
 					SceneTriggerEditor(it)
 				}
 			}
-		}.attachTo(this)
-
-		stmtList.attachTo(this)
+		}
+		stmtList = StatementListView(
+				ej.editor.utils.bindingN(rootStatementProperty) {
+					it?.content ?: kotlin.collections.emptyList<ej.mod.XStatement>().observableUnique()
+				})
+		scrollpane(true, true) {
+			stmtList.attachTo(this)
+		}
 	}
 }

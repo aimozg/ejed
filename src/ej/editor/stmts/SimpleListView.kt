@@ -12,6 +12,7 @@ import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.Control
 import javafx.scene.control.Label
+import javafx.scene.control.Skin
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -97,17 +98,18 @@ open class SimpleListView<T : Any>() : VBox() {
 		}
 	}
 	
-	class SimpleListCell<T : Any>(val list: SimpleListView<T>, item: T) : Control() {
+	open class SimpleListCell<T : Any>(val list: SimpleListView<T>, item: T) : Control() {
 		val itemProperty = SimpleObjectProperty<T>(item)
 		var item: T by itemProperty
 		override fun getContentBias(): Orientation {
 			return Orientation.HORIZONTAL
 		}
 		
-		override fun createDefaultSkin() = SimpleListCellSkin(this)
+		override fun createDefaultSkin(): Skin<SimpleListCell<T>> = SimpleListCellSkin(this)
 	}
 	
-	class SimpleListCellSkin<T : Any>(control: SimpleListCell<T>) : SingleElementSkinBase<SimpleListCell<T>>(control) {
+	open class SimpleListCellSkin<T : Any>(control: SimpleListCell<T>) : SingleElementSkinBase<SimpleListCell<T>>(
+			control) {
 		override var main: Node = control.list.createGraphic(control.item)
 		
 		init {
