@@ -51,7 +51,7 @@ open class SimpleListView<T : Any>() : VBox() {
 	open val cells: MutableList<Node> = children
 	
 	init {
-		vgrow = Priority.SOMETIMES
+		vgrow = Priority.NEVER
 		alignment = Pos.TOP_LEFT
 		
 		itemsProperty.onChange { list ->

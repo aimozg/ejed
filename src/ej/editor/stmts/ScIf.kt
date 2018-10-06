@@ -19,8 +19,9 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 	
 	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
 		addClass(Styles.xlogic)
-		val ifNode = hbox {
+		val ifNode = group {
 			scFlow(Styles.xlogic) {
+				layoutX = 32.0
 				text("If condition ")
 				valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 					if (it != null) stmt.testProperty.fromBuilder(it)
@@ -31,8 +32,9 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 		val thenList = stmtList(stmt.thenGroup.content)
 		ifNode.children.add(0, thenList.detachListMenu())
 		simpleList(stmt.elseifGroups) { elseif ->
-			val elseNode = hbox {
+			val elseNode = group {
 				scFlow(Styles.xlogic) {
+					layoutX = 32.0
 					text("Else if condition ")
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 						if (it != null) stmt.testProperty.fromBuilder(it)
@@ -43,8 +45,9 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 			val elseList = stmtList(elseif.content)
 			elseNode.children.add(0, elseList.detachListMenu())
 		}
-		val elseNode = hbox {
+		val elseNode = group {
 			scFlow(Styles.xlogic) {
+				layoutX = 32.0
 				text("Else:") {
 					addClass(Styles.xlogic)
 				}

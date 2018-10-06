@@ -36,10 +36,12 @@ class SceneEditor(val mod: ModData) : VBox() {
 					SceneTriggerEditor(it)
 				}
 			}
-		stmtList = StatementListView()
-		stmtList.itemsProperty.bind(bindingN(rootStatementProperty) {
-			it?.content ?: emptyList<XStatement>().observableUnique()
-		})
+		stmtList = StatementListView().apply {
+			vgrow = Priority.SOMETIMES
+			itemsProperty.bind(bindingN(rootStatementProperty) {
+				it?.content ?: emptyList<XStatement>().observableUnique()
+			})
+		}
 		scrollpane(true, false) {
 			hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
 			vgrow = Priority.ALWAYS
