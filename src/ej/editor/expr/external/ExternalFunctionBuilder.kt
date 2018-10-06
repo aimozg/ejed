@@ -84,17 +84,17 @@ class ExternalFunctionBuilder(
 	fun TextFlow.linkFor(decl: ParamDecl,
 	                     prop: SimpleObjectProperty<ExpressionBuilder?>) {
 		val chooser: ExpressionChooser = when (decl.type) {
-			"boolean" -> BoolExprChooser
-	//					"int" -> IntExprChooser
-	//					"float" -> FloatExprChooser
-	//					"string" -> TextExprChooser
-			"Creature" -> CreatureChooser
+			ExpressionTypes.BOOLEAN -> BoolExprChooser
+			//					ExpressionTypes.INT -> IntExprChooser
+			//					ExpressionTypes.FLOAT -> FloatExprChooser
+			//					ExpressionTypes.STRING -> TextExprChooser
+			ExpressionTypes.CREATURE -> CreatureChooser
 			// "Perk" -> TODO() // PerkChooser
 			/* TODO pick proper chooser*/
 			else -> {
 				val list = Stdlib.buildersReturning(decl.type)
 				if (list.isNotEmpty()) {
-					SimpleExpressionChooser(list)
+					SimpleExpressionChooser(list, decl.type)
 				} else {
 					AnyExprChooser
 				}

@@ -85,6 +85,9 @@ class EditorView : AModView() {
 	}
 	
 	override fun onDock() {
+		currentStage?.scene?.focusOwnerProperty()?.onChange {
+			println("focusOwner = $it")
+		}
 		this.controller.modProperty.onChangeAndNow {
 			if (it != null) {
 				root.center = find<ModView>().root

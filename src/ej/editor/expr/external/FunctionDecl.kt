@@ -1,5 +1,6 @@
 package ej.editor.expr.external
 
+import ej.editor.expr.ExpressionTypes
 import ej.xml.Attribute
 
 /*
@@ -9,7 +10,7 @@ import ej.xml.Attribute
 
 class FunctionDecl : ExpressionDecl() {
 	@Attribute("return")
-	var returnTypeRaw=""
+	var returnTypeRaw = ExpressionTypes.ANY
 	
 	// TODO editor
 	// TODO impl

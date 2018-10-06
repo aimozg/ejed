@@ -57,7 +57,7 @@ class CreatureStat : ExpressionBuilder() {
 		override fun tryConvert(converter: BuilderConverter, expr: DotExpression): ExpressionBuilder? {
 			val stat = Stat.byImpl(expr.key) ?: return null
 			return CreatureStat().apply {
-				creature.value = converter.convert(expr.obj,"Creature")
+				creature.value = converter.convert(expr.obj, ExpressionTypes.CREATURE)
 				this.stat.value = stat
 			}
 		}

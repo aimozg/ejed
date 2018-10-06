@@ -9,7 +9,6 @@ import ej.mod.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.geometry.Orientation
-import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Control
 import javafx.scene.control.Skin
@@ -36,6 +35,11 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		return ancestor<SceneEditor>()?.mod
 	}
 	abstract override fun createDefaultSkin(): Skin<*>
+	
+	init {
+		isFocusTraversable = false
+	}
+	
 	open class ScSkin<S : XStatement, C : StatementControl<S>>(control: C,
 	                                                           mainBody: VBox.() -> Unit) : SingleElementSkinBase<C>(
 			control,
@@ -69,7 +73,7 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		init()
 	}.attachTo(this)
 	
-	fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Node) = SimpleListView<T>().apply {
+	fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Unit) = SimpleListView<T>().apply {
 		graphicFactory {
 			VBox().apply {
 				cellDecorator(it)
@@ -79,13 +83,13 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 	
 	fun <T : Any> Parent.simpleList(
 			pItems: ObservableList<T>,
-			cellDecorator: VBox.(T) -> Node
+			cellDecorator: VBox.(T) -> Unit
 	) = simpleList(cellDecorator).apply {
 		this.items = pItems
 	}
 	
 	fun <T : Any> Parent.simpleList(pItems: ObservableValue<ObservableList<T>>,
-	                                cellDecorator: VBox.(T) -> Node) = simpleList(cellDecorator).apply {
+	                                cellDecorator: VBox.(T) -> Unit) = simpleList(cellDecorator).apply {
 		this.itemsProperty.bind(pItems)
 	}
 }

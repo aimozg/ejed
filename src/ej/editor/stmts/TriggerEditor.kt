@@ -1,10 +1,12 @@
 package ej.editor.stmts
 
+import ej.editor.expr.lists.AnyExprChooser
+import ej.editor.expr.lists.BoolExprChooser
+import ej.editor.expr.valueLink
 import ej.editor.utils.nodeBinding
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.Node
-import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -13,68 +15,74 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 
-class TimedTriggerEditor(val trigger: TimedTrigger) : HBox() {
+class TimedTriggerEditor(val trigger: TimedTrigger) : VBox() {
 	init {
-		fieldset {
-			field("Type") {
-				combobox(trigger.typeProperty, TimedTrigger.Type.values().asList()) {
-					cellFormat(DefaultScope) { type -> type?.name?.toLowerCase() }
-				}
+		field("Type") {
+			combobox(trigger.typeProperty, TimedTrigger.Type.values().asList()) {
+				cellFormat(DefaultScope) { type -> type?.name?.toLowerCase() }
 			}
-			field("Condition") {
-				textfield(trigger.conditionProperty)
+		}
+		field("Condition") {
+			textflow {
+				valueLink(trigger.conditionProperty.builderProperty,
+				          "Condition",
+				          BoolExprChooser)
 			}
 		}
 	}
 }
 
-class EncounterTriggerEditor(val trigger: EncounterTrigger) : Form() {
+class EncounterTriggerEditor(val trigger: EncounterTrigger) : VBox() {
 	init {
-		fieldset {
-			field("Pool") {
-				combobox(trigger.poolProperty,
-				         Natives.encounterPools.map { it.id }) {
-					cellFormat(DefaultScope) { poolId ->
-						text = Natives.encounterPools.find { it.id == poolId }?.desc ?: poolId
-					}
+		field("Pool") {
+			combobox(trigger.poolProperty,
+			         Natives.encounterPools.map { it.id }) {
+				cellFormat(DefaultScope) { poolId ->
+					text = Natives.encounterPools.find { it.id == poolId }?.desc ?: poolId
 				}
 			}
-			field("Chance") {
-				textfield(trigger.chanceProperty) {
-					promptText = "(default '1' - as often as other encounters)"
-				}
+		}
+		field("Chance") {
+			textflow {
+				valueLink(trigger.chanceProperty.builderProperty,
+				          "Chance",
+				          AnyExprChooser)
 			}
-			field("Condition") {
-				textfield(trigger.conditionProperty) {
-					promptText = "(default 'true')"
-				}
+		}
+		field("Condition") {
+			textflow {
+				valueLink(trigger.conditionProperty.builderProperty,
+				          "Condition",
+				          BoolExprChooser)
 			}
 		}
 	}
 }
 
-class PlaceTriggerEditor(val trigger: PlaceTrigger) : Form() {
+class PlaceTriggerEditor(val trigger: PlaceTrigger) : VBox() {
 	init {
-		fieldset {
-			field("Location") {
-				combobox(trigger.placeProperty,
-				         Natives.places.map { it.id }) {
-					cellFormat(DefaultScope) { placeId ->
-						text = Natives.places.find { it.id == placeId }?.desc ?: placeId
-					}
+		field("Location") {
+			combobox(trigger.placeProperty,
+			         Natives.places.map { it.id }) {
+				cellFormat(DefaultScope) { placeId ->
+					text = Natives.places.find { it.id == placeId }?.desc ?: placeId
 				}
 			}
-			field("Name") {
-				textfield(trigger.nameProperty)
-			}
-			field("Condition") {
-				textfield(trigger.conditionProperty)
+		}
+		field("Name") {
+			textfield(trigger.nameProperty)
+		}
+		field("Condition") {
+			textflow {
+				valueLink(trigger.conditionProperty.builderProperty,
+				          "Condition",
+				          BoolExprChooser)
 			}
 		}
 	}
 }
 
-class SceneTriggerEditor(val scene: XcScene) : VBox() {
+class SceneTriggerEditor(val scene: XcScene) : Form() {
 	
 	enum class TriggerType(
 			val displayName: String,
@@ -106,22 +114,21 @@ class SceneTriggerEditor(val scene: XcScene) : VBox() {
 	val triggerTypeProperty = SimpleObjectProperty<TriggerType>(getTriggerType(scene.trigger))
 	
 	init {
+		addClass("trigger-editor")
 		triggerTypeProperty.onChange {
 			if (it != null) scene.setTriggerType(it)
 		}
-		form {
-			fieldset {
-				field("Trigger type") {
-					combobox(triggerTypeProperty, TriggerType.values().asList()) {
-						cellFormat(DefaultScope) {
-							text = item.displayName
-						}
+		fieldset {
+			field("Trigger type") {
+				combobox(triggerTypeProperty, TriggerType.values().asList()) {
+					cellFormat(DefaultScope) {
+						text = item.displayName
 					}
 				}
 			}
-		}
-		nodeBinding(this@SceneTriggerEditor.scene.triggerProperty) { t ->
-			getTriggerType(t).newEditor(t)
+			nodeBinding(this@SceneTriggerEditor.scene.triggerProperty) { t ->
+				getTriggerType(t).newEditor(t)
+			}
 		}
 	}
 }

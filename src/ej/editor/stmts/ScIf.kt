@@ -19,33 +19,44 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 	
 	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
 		addClass(Styles.xlogic)
-		scFlow(Styles.xlogic) {
-			text("If condition ")
-			valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
-				if (it != null) stmt.testProperty.fromBuilder(it)
-			})
-			text(" is true")
-		}
-		stmtList(stmt.thenGroup.content)
-		simpleList(stmt.elseifGroups) { elseif ->
+		val ifNode = hbox {
 			scFlow(Styles.xlogic) {
-				text("Else if condition ")
+				text("If condition ")
 				valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 					if (it != null) stmt.testProperty.fromBuilder(it)
 				})
-				text(" is true:")
+				text(" is true")
 			}
-			stmtList(elseif.content)
 		}
-		text("Else:") {
-			addClass(Styles.xlogic)
-			presentWhen(stmt.elseGroupProperty.isNotNull)
+		val thenList = stmtList(stmt.thenGroup.content)
+		ifNode.children.add(0, thenList.detachListMenu())
+		simpleList(stmt.elseifGroups) { elseif ->
+			val elseNode = hbox {
+				scFlow(Styles.xlogic) {
+					text("Else if condition ")
+					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
+						if (it != null) stmt.testProperty.fromBuilder(it)
+					})
+					text(" is true:")
+				}
+			}
+			val elseList = stmtList(elseif.content)
+			elseNode.children.add(0, elseList.detachListMenu())
 		}
-		stmtList(bindingN(stmt.elseGroupProperty) {
+		val elseNode = hbox {
+			scFlow(Styles.xlogic) {
+				text("Else:") {
+					addClass(Styles.xlogic)
+				}
+				presentWhen(stmt.elseGroupProperty.isNotNull)
+			}
+		}
+		val elseList = stmtList(bindingN(stmt.elseGroupProperty) {
 			it?.content ?: emptyList<XStatement>().observableUnique()
 		}) {
 			presentWhen(stmt.elseGroupProperty.isNotNull)
 		}
+		elseNode.children.add(0, elseList.detachListMenu())
 	})
 }
 

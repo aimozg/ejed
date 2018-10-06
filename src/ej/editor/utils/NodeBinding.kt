@@ -3,6 +3,7 @@ package ej.editor.utils
 import javafx.beans.Observable
 import javafx.beans.binding.Bindings
 import javafx.beans.value.ObservableValue
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.layout.StackPane
@@ -16,6 +17,12 @@ import java.util.concurrent.Callable
 class NodeBinding(
 		val observable: ObservableValue<Node?>) : StackPane() {
 	private var body: Node? = null
+	
+	init {
+		alignment = Pos.TOP_LEFT
+		isFocusTraversable = false
+	}
+	
 	private val listener = observable.onChangeAndNowWeak { newBody ->
 		val oldBody = children.indexOf(body).takeIf { it >= 0 }
 		body = newBody
@@ -25,6 +32,7 @@ class NodeBinding(
 		} else {
 			if (oldBody != null) children.removeAt(oldBody)
 		}
+		requestLayout()
 	}
 }
 

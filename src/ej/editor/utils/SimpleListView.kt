@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.geometry.Orientation
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Control
 import javafx.scene.control.Label
@@ -51,6 +52,7 @@ open class SimpleListView<T : Any>() : VBox() {
 	
 	init {
 		vgrow = Priority.SOMETIMES
+		alignment = Pos.TOP_LEFT
 		
 		itemsProperty.onChange { list ->
 			if (list == null) {
@@ -83,15 +85,25 @@ open class SimpleListView<T : Any>() : VBox() {
 						cells.addAll(from, added)
 					}
 				}
+				if (list.isEmpty()) addPseudoClass("empty")
+				else removePseudoClass("empty")
+				requestLayout()
 			}
 			cells.clear()
 			cells.addAll(list.map(::cellFactory))
+			if (list.isEmpty()) addPseudoClass("empty")
+			else removePseudoClass("empty")
+			requestLayout()
 		}
 	}
 	
 	open class SimpleListCell<T : Any>(open val list: SimpleListView<T>, item: T) : Control() {
 		val itemProperty = SimpleObjectProperty<T>(item)
 		var item: T by itemProperty
+		
+		init {
+			isFocusTraversable = false
+		}
 		override fun getContentBias(): Orientation {
 			return Orientation.HORIZONTAL
 		}

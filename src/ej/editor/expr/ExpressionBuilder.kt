@@ -63,8 +63,23 @@ open class ListValueChooser<T:Any>(items: List<T>,
 	
 }
 abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){
-	fun pickFromList(title:String,initial:ExpressionBuilder?,items:List<ExpressionBuilder>):ExpressionBuilder? {
+	abstract fun list(): List<ExpressionBuilder>
+	/*fun pickFromList(title:String,initial:ExpressionBuilder?,items:List<ExpressionBuilder>):ExpressionBuilder? {
 		return find<ExpressionChooserDialog>().showModal(title,initial?.copyMe(),items)
+	}*/
+	
+	override fun pickValue(title: String, initial: ExpressionBuilder?): ExpressionBuilder? {
+		return find<ExpressionChooserDialog>().showModal(title, initial?.copyMe(), list())
+	}
+	
+	open val expressionType: String = ExpressionTypes.ANY
+	val noBuilder: ValueChooser<Expression> by lazy {
+		object : ValueChooser<Expression>() {
+			override fun pickValue(title: String, initial: Expression?): Expression? {
+				val initialBuilder = initial?.let { DefaultBuilderConverter.convert(it, expressionType) }
+				return pickValue(title, initialBuilder)?.build()
+			}
+		}
 	}
 }
 

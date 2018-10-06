@@ -25,6 +25,7 @@ open class ValueLink<T:Any> : Text() {
 	var textMaker: (T?) -> String by textMakerProperty
 	
 	init {
+		isFocusTraversable = true
 		textProperty().bind(valueProperty.stringBinding(textMakerProperty) {
 			val s = textMaker(it)
 			if (s.isEmpty()) "<$title>" else s

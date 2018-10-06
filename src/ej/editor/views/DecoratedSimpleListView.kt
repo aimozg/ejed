@@ -5,8 +5,10 @@ import ej.editor.utils.SingleElementSkinBase
 import ej.editor.utils.nodeBinding
 import ej.editor.utils.nodeBindingNonNull
 import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Skin
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -36,7 +38,7 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 	val afterListProperty = SimpleObjectProperty<Node?>()
 	var afterList: Node? by afterListProperty
 	
-	private val cellContainer = VBox()
+	val cellContainer = VBox()
 	override val cells: MutableList<Node> = cellContainer.children
 	
 	init {
@@ -49,6 +51,8 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 	                                                                                                             item) {
 		override fun createDefaultSkin(): Skin<DecoratedListCell<T>> {
 			return SingleElementSkinBase<DecoratedListCell<T>>(this, VBox().apply {
+				vgrow = Priority.SOMETIMES
+				alignment = Pos.TOP_LEFT
 				nodeBindingNonNull(itemProperty, list.nodeBeforeCell)
 				nodeBindingNonNull(itemProperty, list.graphicFactory)
 				nodeBindingNonNull(itemProperty, list.nodeAfterCell)

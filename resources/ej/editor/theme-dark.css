@@ -28,6 +28,18 @@
     -fx-font-weight: bold;
 }
 
+.small-button:hover {
+    -fx-background-color: #5d7580;
+}
+
+.small-button:focused {
+    -fx-background-color: #5d7580;
+}
+
+.small-button:armed {
+    -fx-background-color: #5d7580;
+}
+
 /* Scene statement tree node */
 .statement-tree .tree-graphic {
 }

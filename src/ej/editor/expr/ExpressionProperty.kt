@@ -2,8 +2,10 @@ package ej.editor.expr
 
 import ej.editor.utils.callAtZero
 import ej.editor.utils.callDepthTracking
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import tornadofx.*
 import java.util.concurrent.atomic.AtomicInteger
 
 open class ExpressionProperty(initialValue:String = "") : SimpleStringProperty(initialValue) {
@@ -13,6 +15,14 @@ open class ExpressionProperty(initialValue:String = "") : SimpleStringProperty(i
 				this@ExpressionProperty.value = v.source
 			}
 			super.set(v)
+		}
+	}
+	val builderProperty: Property<ExpressionBuilder?> by lazy {
+		SimpleObjectProperty<ExpressionBuilder>(
+				toBuilder()
+		).apply {
+			expressionProperty.onChange { set(toBuilder()) }
+			onChange { if (it != null) fromBuilder(it) }
 		}
 	}
 	fun fromBuilder(v: ExpressionBuilder) {

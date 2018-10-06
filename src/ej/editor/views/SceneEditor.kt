@@ -1,6 +1,5 @@
 package ej.editor.views
 
-import ej.editor.Styles
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
 import ej.editor.utils.bindingN
@@ -13,7 +12,7 @@ import ej.mod.XcScene
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
 import javafx.scene.control.ScrollPane
-import javafx.scene.layout.GridPane
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
 
@@ -29,28 +28,21 @@ class SceneEditor(val mod: ModData) : VBox() {
 		return Orientation.HORIZONTAL
 	}
 	
-	private val toolBar: GridPane
 	private val stmtList: StatementListView
 
 	init {
-		spacing = 5.0
-		
-		toolBar = gridpane {
-			hgap = 5.0
-			vgap = 5.0
-			addClass(Styles.toolbarGrid)
-			nodeBinding(rootStatementProperty) { it ->
+		nodeBinding(rootStatementProperty) { it ->
 				(it as? XcScene)?.let {
 					SceneTriggerEditor(it)
 				}
 			}
-		}
 		stmtList = StatementListView()
 		stmtList.itemsProperty.bind(bindingN(rootStatementProperty) {
 			it?.content ?: emptyList<XStatement>().observableUnique()
 		})
 		scrollpane(true, false) {
 			hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+			vgrow = Priority.ALWAYS
 			stmtList.attachTo(this)
 		}
 	}

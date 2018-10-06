@@ -59,6 +59,10 @@
 .form.monster-combat .label {
     -fx-alignment: center;
 }
+
+.trigger-editor .fieldset {
+    -fx-padding: 0;
+}
 .small-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
@@ -69,8 +73,9 @@
     -fx-min-height: 16px;
     -fx-max-height: 16px;
     -fx-alignment: center;
+    -fx-text-alignment: center;
     -fx-font-size: 0.8em;
-    -fx-focus-traversable: false;
+    /*-fx-focus-traversable: false;*/
 }
 .small-button:hover {
     -fx-background-color: #d3d3d3;
@@ -197,7 +202,17 @@ SimpleListView, StatementListView {
     -fx-fill-width: true;
     -fx-pref-height: -1;
     -fx-spacing: 8.0;
-    -fx-padding: 2.0 2.0 2.0 12.0;
+    /*-fx-padding: 2.0 2.0 2.0 12.0;*/
+    -fx-padding: 2.0 2.0 2.0 2.0;
+}
+
+SimpleListView:empty, StatementListView:empty {
+    -fx-padding: 0.0;
+}
+
+.stmt-ctrl-menu {
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
 }
 
 .stmt-ctrl-main StatementListView {
