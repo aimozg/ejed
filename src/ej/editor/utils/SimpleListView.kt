@@ -1,6 +1,7 @@
 package ej.editor.utils
 
 import ej.utils.remove
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -20,7 +21,12 @@ import tornadofx.*
  * Confidential until published on GitHub
  */
 open class SimpleListView<T : Any>() : VBox() {
-	val itemsProperty = SimpleObjectProperty<ObservableList<T>>(emptyList<T>().observableUnique())
+	val itemsProperty: Property<ObservableList<T>> = object : SimpleObjectProperty<ObservableList<T>>() {
+		override fun invalidated() {
+			super.invalidated()
+			rebind(value)
+		}
+	}
 	var items: ObservableList<T> by itemsProperty
 	private var itemsListener: ListChangeListener<T>? = null
 	
@@ -53,45 +59,47 @@ open class SimpleListView<T : Any>() : VBox() {
 		alignment = Pos.TOP_LEFT
 		addClass("simple-list-view")
 		
-		itemsProperty.onChange { list ->
-			if (list == null) {
-				itemsListener = null
-				return@onChange
-			}
-			itemsListener = list.onChangeWeak { change ->
-				if (items != change.list) return@onChangeWeak
-				while (change.next()) {
-					val from = change.from
-					val to = change.to
-					if (change.wasPermutated()) {
-						val copy = cells.subList(from, to)
-						for (oldIndex in from until to) {
-							val newIndex = change.getPermutation(oldIndex)
-							copy[newIndex - from] = cells[oldIndex]
-						}
-						cells.subList(from, to).clear()
-						cells.addAll(from, copy)
+		itemsProperty.onChange(::rebind)
+	}
+	
+	private fun rebind(list: ObservableList<T>?) {
+		if (list == null) {
+			itemsListener = null
+			return
+		}
+		itemsListener = list.onChangeWeak { change ->
+			if (items != change.list) return@onChangeWeak
+			while (change.next()) {
+				val from = change.from
+				val to = change.to
+				if (change.wasPermutated()) {
+					val copy = cells.subList(from, to)
+					for (oldIndex in from until to) {
+						val newIndex = change.getPermutation(oldIndex)
+						copy[newIndex - from] = cells[oldIndex]
 					}
-					if (change.wasUpdated()) {
-						// do nothing
-					}
-					if (change.wasRemoved()) {
-						val removed = change.removedSize
-						cells.remove(from, from + removed)
-					}
-					if (change.wasAdded()) {
-						val added = change.addedSubList.map(::cellFactory)
-						cells.addAll(from, added)
-					}
+					cells.subList(from, to).clear()
+					cells.addAll(from, copy)
 				}
-				togglePseudoClass("empty", list.isEmpty())
-				requestLayout()
+				if (change.wasUpdated()) {
+					// do nothing
+				}
+				if (change.wasRemoved()) {
+					val removed = change.removedSize
+					cells.remove(from, from + removed)
+				}
+				if (change.wasAdded()) {
+					val added = change.addedSubList.map(::cellFactory)
+					cells.addAll(from, added)
+				}
 			}
-			cells.clear()
-			cells.addAll(list.map(::cellFactory))
 			togglePseudoClass("empty", list.isEmpty())
 			requestLayout()
 		}
+		cells.clear()
+		cells.addAll(list.map(::cellFactory))
+		togglePseudoClass("empty", list.isEmpty())
+		requestLayout()
 	}
 	
 	open class SimpleListCell<T : Any>(open val list: SimpleListView<T>, item: T) : Control() {
@@ -109,7 +117,7 @@ open class SimpleListView<T : Any>() : VBox() {
 				SingleElementSkinBase(
 						this,
 						NodeBinding(
-								itemProperty.objectBinding { item ->
+								itemProperty.objectBinding {
 									list.graphicFactory(this)
 								}
 						)
