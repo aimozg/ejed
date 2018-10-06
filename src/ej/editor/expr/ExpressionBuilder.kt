@@ -39,6 +39,10 @@ abstract class ExpressionBuilder : WithReadableText {
 	abstract fun editorBody():Pane
 	abstract fun name():String
 	abstract fun copyMe():ExpressionBuilder
+	
+	override fun toString(): String {
+		return "<${name()}: ${build()}>"
+	}
 }
 
 abstract class ValueChooser<T:Any> {

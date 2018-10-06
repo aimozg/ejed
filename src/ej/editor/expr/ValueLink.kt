@@ -30,6 +30,11 @@ open class ValueLink<T:Any> : Text() {
 		if (v != null) onPick?.invoke(v)
 	}
 	
+	override fun toString(): String {
+		return "ValueLink[title=\"$title\", value=$value, " +
+				super.toString().removePrefix("Text[")
+	}
+	
 	init {
 		isFocusTraversable = true
 		focusedProperty().onChange {
