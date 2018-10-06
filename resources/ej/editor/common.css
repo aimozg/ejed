@@ -113,6 +113,11 @@
     -fx-underline: true;
 }
 
+.xexpr-link:focused {
+    /*-fx-font-weight: bold;*/
+    -fx-effect: dropshadow(one-pass-box, rgba(50, 100, 255, 0.5), 10, 1, 0, 0);
+}
+
 /* tag nesting depth; not used right now */
 .depth-0 {
     -fx-border-color: #ffffff;
@@ -198,15 +203,15 @@
     -fx-rotate: 0;
 }
 
-SimpleListView, StatementListView {
+.simple-list-view {
     -fx-fill-width: true;
     -fx-pref-height: -1;
-    -fx-spacing: 8.0;
+    -fx-spacing: 4.0;
     /*-fx-padding: 2.0 2.0 2.0 12.0;*/
-    -fx-padding: 2.0 2.0 2.0 2.0;
+    /*-fx-padding: 2.0 2.0 2.0 2.0;*/
 }
 
-SimpleListView:empty, StatementListView:empty {
+.simple-list-view:empty {
     -fx-padding: 0.0;
 }
 
@@ -215,13 +220,12 @@ SimpleListView:empty, StatementListView:empty {
     -fx-pref-height: 16px;
 }
 
-.stmt-ctrl-main StatementListView {
+.stmt-ctrl-main .simple-list-view {
     -fx-spacing: 4.0;
 }
 
 .stmt-ctrl-main {
     -fx-fill-width: true;
-    -fx-spacing: 2.0;
 }
 
 .stmt-ctrl-main Text {

@@ -8,7 +8,13 @@ class ScMenu(stmt: XsMenu) : StatementControl<XsMenu>(stmt) {
 	override fun createDefaultSkin() = MenuSkin()
 	inner class MenuSkin : ScSkin<XsMenu, ScMenu>(this, {
 		addClass(Styles.xcommand)
-		text("Menu:")
-		stmtList(stmt.content)
+		stmtList(stmt.content) {
+			beforeList = hbox {
+				children += detachListMenu()
+				scFlow {
+					text("Menu:")
+				}
+			}
+		}
 	})
 }

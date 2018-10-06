@@ -3,6 +3,7 @@ package ej.editor.expr
 import ej.editor.Styles
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.scene.input.KeyCode
 import javafx.scene.text.Text
 import tornadofx.*
 
@@ -24,8 +25,16 @@ open class ValueLink<T:Any> : Text() {
 	val textMakerProperty = SimpleObjectProperty<(T?)->String>({ it.toString() })
 	var textMaker: (T?) -> String by textMakerProperty
 	
+	fun action() {
+		val v = chooser?.pickValueFor(title, valueProperty)
+		if (v != null) onPick?.invoke(v)
+	}
+	
 	init {
 		isFocusTraversable = true
+		focusedProperty().onChange {
+			togglePseudoClass("focused", it)
+		}
 		textProperty().bind(valueProperty.stringBinding(textMakerProperty) {
 			val s = textMaker(it)
 			if (s.isEmpty()) "<$title>" else s
@@ -37,8 +46,10 @@ open class ValueLink<T:Any> : Text() {
 		)
 		addClass(Styles.xexprLink)
 		setOnMouseClicked {
-			val v = chooser?.pickValueFor(title, valueProperty)
-			if (v != null) onPick?.invoke(v)
+			action()
+		}
+		setOnKeyReleased {
+			if (it.code == KeyCode.ENTER || it.code == KeyCode.SPACE) action()
 		}
 	}
 }

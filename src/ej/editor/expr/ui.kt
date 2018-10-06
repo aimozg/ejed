@@ -25,6 +25,7 @@ import kotlin.reflect.KMutableProperty0
 
 inline fun defaultEditorTextFlow(cssClass: CssRule? = Styles.xexpr, init: TextFlow.() -> Unit): TextFlow {
 	return TextFlow().apply {
+		hgrow = Priority.ALWAYS
 		if (cssClass != null) addClass(cssClass)
 		prefWidthProperty().bind(parentProperty().select {
 			if (it is Region) {

@@ -19,47 +19,46 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 	
 	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
 		addClass(Styles.xlogic)
-		val ifNode = group {
-			scFlow(Styles.xlogic) {
-				layoutX = 32.0
-				text("If condition ")
-				valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
-					if (it != null) stmt.testProperty.fromBuilder(it)
-				})
-				text(" is true")
-			}
-		}
-		val thenList = stmtList(stmt.thenGroup.content)
-		ifNode.children.add(0, thenList.detachListMenu())
-		simpleList(stmt.elseifGroups) { elseif ->
-			val elseNode = group {
+		stmtList(stmt.thenGroup.content) {
+			beforeList = hbox {
+				children += detachListMenu()
 				scFlow(Styles.xlogic) {
-					layoutX = 32.0
-					text("Else if condition ")
+					text("If condition ")
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 						if (it != null) stmt.testProperty.fromBuilder(it)
 					})
-					text(" is true:")
+					text(" is true")
 				}
 			}
-			val elseList = stmtList(elseif.content)
-			elseNode.children.add(0, elseList.detachListMenu())
 		}
-		val elseNode = group {
-			scFlow(Styles.xlogic) {
-				layoutX = 32.0
-				text("Else:") {
-					addClass(Styles.xlogic)
+		simpleList(stmt.elseifGroups) { elseif ->
+			stmtList(elseif.content) {
+				beforeList = hbox {
+					children += detachListMenu()
+					scFlow(Styles.xlogic) {
+						text("Else if condition ")
+						valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
+							if (it != null) stmt.testProperty.fromBuilder(it)
+						})
+						text(" is true:")
+					}
 				}
-				presentWhen(stmt.elseGroupProperty.isNotNull)
 			}
 		}
-		val elseList = stmtList(bindingN(stmt.elseGroupProperty) {
+		stmtList(bindingN(stmt.elseGroupProperty) {
 			it?.content ?: emptyList<XStatement>().observableUnique()
 		}) {
+			beforeList = hbox {
+				children += detachListMenu()
+				scFlow(Styles.xlogic) {
+					text("Else:") {
+						addClass(Styles.xlogic)
+					}
+					presentWhen(stmt.elseGroupProperty.isNotNull)
+				}
+			}
 			presentWhen(stmt.elseGroupProperty.isNotNull)
 		}
-		elseNode.children.add(0, elseList.detachListMenu())
 	})
 }
 

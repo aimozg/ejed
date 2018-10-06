@@ -38,6 +38,7 @@ class SceneEditor(val mod: ModData) : VBox() {
 			}
 		stmtList = StatementListView().apply {
 			vgrow = Priority.SOMETIMES
+			expandButton.removeFromParent()
 			itemsProperty.bind(bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
 			})

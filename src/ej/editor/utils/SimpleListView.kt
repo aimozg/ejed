@@ -53,6 +53,7 @@ open class SimpleListView<T : Any>() : VBox() {
 	init {
 		vgrow = Priority.NEVER
 		alignment = Pos.TOP_LEFT
+		addClass("simple-list-view")
 		
 		itemsProperty.onChange { list ->
 			if (list == null) {
@@ -85,14 +86,12 @@ open class SimpleListView<T : Any>() : VBox() {
 						cells.addAll(from, added)
 					}
 				}
-				if (list.isEmpty()) addPseudoClass("empty")
-				else removePseudoClass("empty")
+				togglePseudoClass("empty", list.isEmpty())
 				requestLayout()
 			}
 			cells.clear()
 			cells.addAll(list.map(::cellFactory))
-			if (list.isEmpty()) addPseudoClass("empty")
-			else removePseudoClass("empty")
+			togglePseudoClass("empty", list.isEmpty())
 			requestLayout()
 		}
 	}

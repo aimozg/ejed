@@ -7,6 +7,7 @@ import ej.mod.XStatement
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -21,6 +22,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	val expandedProperty = SimpleBooleanProperty(true)
 	var expanded by expandedProperty
 	
+	lateinit var expandButton: Button; private set
+	
 	fun detachListMenu(): Node {
 		beforeList = null
 		return listMenu
@@ -33,7 +36,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	
 	private val listMenu = HBox().apply {
 		addClass("stmt-ctrl-listmenu")
-		button {
+		expandButton = button {
 			addClass("small-button")
 			graphic = fontAwesome.create(FontAwesome.Glyph.CARET_DOWN).apply {
 				textProperty().bind(expandedProperty.stringBinding { expanded ->
