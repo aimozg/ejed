@@ -54,7 +54,7 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 				vgrow = Priority.SOMETIMES
 				alignment = Pos.TOP_LEFT
 				nodeBindingNonNull(itemProperty, list.nodeBeforeCell)
-				nodeBindingNonNull(itemProperty, list.graphicFactory)
+				nodeBindingNonNull(itemProperty) { list.graphicFactory(this@DecoratedListCell) }
 				nodeBindingNonNull(itemProperty, list.nodeAfterCell)
 			})
 		}

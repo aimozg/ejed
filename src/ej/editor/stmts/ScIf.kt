@@ -7,6 +7,8 @@ import ej.editor.utils.bindingN
 import ej.editor.utils.observableUnique
 import ej.editor.utils.presentWhen
 import ej.mod.XStatement
+import ej.mod.XlElse
+import ej.mod.XlElseIf
 import ej.mod.XlIf
 import tornadofx.*
 
@@ -18,6 +20,19 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 	override fun createDefaultSkin() = IfSkin()
 	
 	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
+		mergedContextMenu().apply {
+			item("Add Else-If") {
+				action {
+					stmt.elseifGroups.add(XlElseIf())
+				}
+			}
+			item("Add Else") {
+				action {
+					stmt.elseGroup = XlElse()
+				}
+				enableWhen(stmt.elseGroupProperty.isNull)
+			}
+		}
 		addClass(Styles.xlogic)
 		stmtList(stmt.thenGroup.content) {
 			beforeList = hbox {

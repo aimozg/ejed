@@ -10,6 +10,7 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.geometry.Orientation
 import javafx.scene.Parent
+import javafx.scene.control.ContextMenu
 import javafx.scene.control.Control
 import javafx.scene.control.Skin
 import javafx.scene.layout.HBox
@@ -29,6 +30,12 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 	
 	fun rootStatement(): XComplexStatement? {
 		return ancestor<SceneEditor>()?.rootStatement
+	}
+	
+	fun mergedContextMenu(): ContextMenu {
+		val cm = ancestor<SimpleListView.SimpleListCell<*>>()?.contextMenu
+		if (cm != null) return cm
+		return contextmenu { }
 	}
 	
 	fun mod(): ModData? {
@@ -74,9 +81,9 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 	}.attachTo(this)
 	
 	fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Unit) = SimpleListView<T>().apply {
-		graphicFactory {
+		graphicFactory { stmt ->
 			VBox().apply {
-				cellDecorator(it)
+				cellDecorator(stmt)
 			}
 		}
 	}.attachTo(this)
@@ -94,8 +101,7 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 	}
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T : XStatement> T.createControl(): StatementControl<T>? = when (this) {
+fun XStatement.createControl(): StatementControl<*>? = when (this) {
 	is XsBattle -> ScBattle(this)
 	is XsDisplay -> ScDisplay(this)
 	is XsForward -> ScForward(this)
@@ -109,5 +115,24 @@ fun <T : XStatement> T.createControl(): StatementControl<T>? = when (this) {
 	is XlSwitch -> ScSwitch(this)
 	is XcText -> ScText(this)
 	else -> null
-} as StatementControl<T>?
+}
 
+object StatementMetadata {
+	class Entry(val name: String, val hotkey: String, val factory: () -> XStatement)
+	
+	val entries: List<Entry?> = listOf(
+			Entry("Text", "X") { XcText() },
+			Entry("Display", "D") { XsDisplay() },
+			Entry("Output", "W") { XsOutput() },
+			Entry("Comment", "Z") { XlComment() },
+			null,
+			Entry("If-Then-Else", "C") { XlIf() },
+			Entry("Switch-Branches", "S") { XlSwitch() },
+			null,
+			Entry("Next", "N") { XsNext() },
+			Entry("Menu", "M") { XsMenu() },
+			Entry("Menu Option", "O") { XsButton() },
+			Entry("Forward", "F") { XsForward() },
+			Entry("Battle", "B") { XsBattle() }
+	)
+}

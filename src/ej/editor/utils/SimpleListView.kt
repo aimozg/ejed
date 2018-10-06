@@ -10,7 +10,6 @@ import javafx.scene.Node
 import javafx.scene.control.Control
 import javafx.scene.control.Label
 import javafx.scene.control.Skin
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextAlignment
@@ -29,19 +28,18 @@ open class SimpleListView<T : Any>() : VBox() {
 		return SimpleListCell(this, item)
 	}
 	
-	var graphicFactory: (T) -> Node = { item ->
-		Label(item.toString()).apply {
+	var graphicFactory: (SimpleListCell<T>) -> Node = { cell ->
+		Label(cell.item.toString()).apply {
 			textAlignment = TextAlignment.LEFT
 		}
 	}
 	
 	fun graphicFactory(gf: (T) -> Node) {
-		graphicFactory = gf
+		graphicFactory = { gf(it.item) }
 	}
 	
-	fun createGraphic(item: T?): Node {
-		if (item != null) return graphicFactory(item)
-		return HBox()
+	fun graphicFactory(gf: (SimpleListCell<T>, T) -> Node) {
+		graphicFactory = { gf(it, it.item) }
 	}
 	
 	override fun getContentBias(): Orientation {
@@ -112,7 +110,7 @@ open class SimpleListView<T : Any>() : VBox() {
 						this,
 						NodeBinding(
 								itemProperty.objectBinding { item ->
-									list.graphicFactory(item!!)
+									list.graphicFactory(this)
 								}
 						)
 				)
