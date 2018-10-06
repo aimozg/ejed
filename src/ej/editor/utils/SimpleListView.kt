@@ -1,11 +1,7 @@
-package ej.editor.stmts
+package ej.editor.utils
 
-import ej.editor.utils.SingleElementSkinBase
-import ej.editor.utils.observableUnique
-import ej.editor.utils.onChangeAndNow
-import ej.editor.utils.onChangeWeak
+import ej.utils.remove
 import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ObservableValue
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.geometry.Orientation
@@ -28,9 +24,10 @@ open class SimpleListView<T : Any>() : VBox() {
 	var items: ObservableList<T> by itemsProperty
 	private var itemsListener: ListChangeListener<T>? = null
 	
-	var cellFactory: (T) -> SimpleListCell<T> = { item ->
-		SimpleListCell(this, item)
+	protected open fun cellFactory(item: T): SimpleListCell<T> {
+		return SimpleListCell(this, item)
 	}
+	
 	var graphicFactory: (T) -> Node = { item ->
 		Label(item.toString()).apply {
 			textAlignment = TextAlignment.LEFT
@@ -46,25 +43,19 @@ open class SimpleListView<T : Any>() : VBox() {
 		return HBox()
 	}
 	
-	constructor(items: ObservableList<T>) : this() {
-		this.items = items
-	}
-	
-	constructor(itemsProperty: ObservableValue<out ObservableList<T>>) : this() {
-		this.itemsProperty.bind(itemsProperty)
-	}
-	
 	override fun getContentBias(): Orientation {
 		return Orientation.HORIZONTAL
 	}
 	
+	open val cells: MutableList<Node> = children
+	
 	init {
 		vgrow = Priority.SOMETIMES
 		
-		itemsProperty.onChangeAndNow { list ->
+		itemsProperty.onChange { list ->
 			if (list == null) {
 				itemsListener = null
-				return@onChangeAndNow
+				return@onChange
 			}
 			itemsListener = list.onChangeWeak { change ->
 				if (items != change.list) return@onChangeWeak
@@ -72,52 +63,47 @@ open class SimpleListView<T : Any>() : VBox() {
 					val from = change.from
 					val to = change.to
 					if (change.wasPermutated()) {
-						val copy = children.subList(from, to)
+						val copy = cells.subList(from, to)
 						for (oldIndex in from until to) {
 							val newIndex = change.getPermutation(oldIndex)
-							copy[newIndex - from] = children[oldIndex]
+							copy[newIndex - from] = cells[oldIndex]
 						}
-						children.subList(from, to).clear()
-						children.addAll(from, copy)
+						cells.subList(from, to).clear()
+						cells.addAll(from, copy)
 					}
 					if (change.wasUpdated()) {
 						// do nothing
 					}
 					if (change.wasRemoved()) {
 						val removed = change.removedSize
-						children.remove(from, from + removed)
+						cells.remove(from, from + removed)
 					}
 					if (change.wasAdded()) {
-						val added = change.addedSubList.map(cellFactory)
-						children.addAll(from, added)
+						val added = change.addedSubList.map(::cellFactory)
+						cells.addAll(from, added)
 					}
 				}
 			}
-			children.clear()
-			children.addAll(list.map(cellFactory))
+			cells.clear()
+			cells.addAll(list.map(::cellFactory))
 		}
 	}
 	
-	open class SimpleListCell<T : Any>(val list: SimpleListView<T>, item: T) : Control() {
+	open class SimpleListCell<T : Any>(open val list: SimpleListView<T>, item: T) : Control() {
 		val itemProperty = SimpleObjectProperty<T>(item)
 		var item: T by itemProperty
 		override fun getContentBias(): Orientation {
 			return Orientation.HORIZONTAL
 		}
 		
-		override fun createDefaultSkin(): Skin<SimpleListCell<T>> = SimpleListCellSkin(this)
-	}
-	
-	open class SimpleListCellSkin<T : Any>(control: SimpleListCell<T>) : SingleElementSkinBase<SimpleListCell<T>>(
-			control) {
-		override var main: Node = control.list.createGraphic(control.item)
-		
-		init {
-			control.itemProperty.onChangeAndNow {
-				children.remove(main)
-				main = skinnable.list.createGraphic(it)
-				children.add(main)
-			}
-		}
+		override fun createDefaultSkin(): Skin<out SimpleListCell<T>> =
+				SingleElementSkinBase(
+						this,
+						NodeBinding(
+								itemProperty.objectBinding { item ->
+									list.graphicFactory(item!!)
+								}
+						)
+				)
 	}
 }

@@ -42,6 +42,10 @@ fun<T> MutableList<T>.longSwap(i:Int, j:Int):Boolean {
 	return true
 }
 
+fun <T> MutableList<T>.remove(fromIndex: Int, toIndex: Int) {
+	subList(fromIndex, toIndex).clear()
+}
+
 /**
  * If [replace] returns non-null value, replace old value with it
  */

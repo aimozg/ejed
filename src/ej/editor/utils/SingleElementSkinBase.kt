@@ -8,8 +8,10 @@ import javafx.scene.control.SkinBase
  * Created by aimozg on 24.09.2018.
  * Confidential until published on GitHub
  */
-abstract class SingleElementSkinBase<C : Control>(control: C) : SkinBase<C>(control) {
-	protected abstract val main: Node
+open class SingleElementSkinBase<C : Control>(control: C, val main: Node) : SkinBase<C>(control) {
+	init {
+		children += main
+	}
 	
 	override fun computeMinWidth(height: Double,
 	                             topInset: Double,

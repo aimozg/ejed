@@ -1,6 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.expr.defaultEditorTextFlow
+import ej.editor.utils.SimpleListView
 import ej.editor.utils.SingleElementSkinBase
 import ej.editor.utils.ancestor
 import ej.editor.views.SceneEditor
@@ -35,61 +36,57 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 		return ancestor<SceneEditor>()?.mod
 	}
 	abstract override fun createDefaultSkin(): Skin<*>
-	abstract class ScSkin<S : XStatement, C : StatementControl<S>>(control: C) : SingleElementSkinBase<C>(control) {
-		final override val main: Node
-		abstract fun VBox.body()
+	open class ScSkin<S : XStatement, C : StatementControl<S>>(control: C,
+	                                                           mainBody: VBox.() -> Unit) : SingleElementSkinBase<C>(
+			control,
+			VBox().apply(mainBody)) {
 		
 		init {
-			main = VBox().apply {
-				addClass("stmt-ctrl-main")
-				body()
-				this@ScSkin.children += this
+			main.addClass("stmt-ctrl-main")
+		}
+	}
+	
+	inline fun Parent.scRow(init: HBox.() -> Unit) = HBox().apply {
+		addClass("stmt-ctrl-row")
+		hgrow = Priority.ALWAYS
+		init()
+	}.attachTo(this)
+	
+	inline fun Parent.scFlow(cssClass: CssRule? = null,
+	                         init: TextFlow.() -> Unit) = defaultEditorTextFlow(cssClass) {
+		init()
+	}.attachTo(this)
+	
+	inline fun Parent.stmtList(items: ObservableList<XStatement>,
+	                           init: StatementListView.() -> Unit = {}) = StatementListView().apply {
+		this.items = items
+		init()
+	}.attachTo(this)
+	
+	inline fun Parent.stmtList(items: ObservableValue<ObservableList<XStatement>>,
+	                           init: StatementListView.() -> Unit = {}) = StatementListView().apply {
+		this.itemsProperty.bind(items)
+		init()
+	}.attachTo(this)
+	
+	fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Node) = SimpleListView<T>().apply {
+		graphicFactory {
+			VBox().apply {
+				cellDecorator(it)
 			}
 		}
-		
-		inline fun Parent.scRow(init: HBox.() -> Unit) = HBox().apply {
-			addClass("stmt-ctrl-row")
-			hgrow = Priority.ALWAYS
-			init()
-			this@scRow.add(this)
-		}
-		
-		inline fun Parent.scFlow(cssClass: CssRule? = null,
-		                         init: TextFlow.() -> Unit) = defaultEditorTextFlow(cssClass) {
-			init()
-			this@scFlow.add(this)
-		}
-		
-		inline fun Parent.stmtList(items: ObservableList<XStatement>,
-		                           init: StatementListView.() -> Unit = {}) = StatementListView(items).apply {
-			init()
-			this@stmtList.add(this)
-		}
-		
-		inline fun Parent.stmtList(items: ObservableValue<ObservableList<XStatement>>,
-		                           init: StatementListView.() -> Unit = {}) = StatementListView(items).apply {
-			init()
-			this@stmtList.add(this)
-		}
-		
-		fun <T : Any> Parent.simpleList(cellDecorator: VBox.(T) -> Node) = SimpleListView<T>().apply {
-			graphicFactory {
-				VBox().apply {
-					cellDecorator(it)
-				}
-			}
-			this@simpleList.add(this)
-		}
-		
-		fun <T : Any> Parent.simpleList(pItems: ObservableList<T>, cellDecorator: VBox.(T) -> Node) = simpleList(
-				cellDecorator).apply {
-			this.items = pItems
-		}
-		
-		fun <T : Any> Parent.simpleList(pItems: ObservableValue<ObservableList<T>>,
-		                                cellDecorator: VBox.(T) -> Node) = simpleList(cellDecorator).apply {
-			this.itemsProperty.bind(pItems)
-		}
+	}.attachTo(this)
+	
+	fun <T : Any> Parent.simpleList(
+			pItems: ObservableList<T>,
+			cellDecorator: VBox.(T) -> Node
+	) = simpleList(cellDecorator).apply {
+		this.items = pItems
+	}
+	
+	fun <T : Any> Parent.simpleList(pItems: ObservableValue<ObservableList<T>>,
+	                                cellDecorator: VBox.(T) -> Node) = simpleList(cellDecorator).apply {
+		this.itemsProperty.bind(pItems)
 	}
 }
 

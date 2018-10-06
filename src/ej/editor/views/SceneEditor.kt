@@ -3,13 +3,16 @@ package ej.editor.views
 import ej.editor.Styles
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
+import ej.editor.utils.bindingN
 import ej.editor.utils.nodeBinding
 import ej.editor.utils.observableUnique
 import ej.mod.ModData
 import ej.mod.XComplexStatement
+import ej.mod.XStatement
 import ej.mod.XcScene
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
+import javafx.scene.control.ScrollPane
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
 import tornadofx.*
@@ -42,11 +45,12 @@ class SceneEditor(val mod: ModData) : VBox() {
 				}
 			}
 		}
-		stmtList = StatementListView(
-				ej.editor.utils.bindingN(rootStatementProperty) {
-					it?.content ?: kotlin.collections.emptyList<ej.mod.XStatement>().observableUnique()
-				})
-		scrollpane(true, true) {
+		stmtList = StatementListView()
+		stmtList.itemsProperty.bind(bindingN(rootStatementProperty) {
+			it?.content ?: emptyList<XStatement>().observableUnique()
+		})
+		scrollpane(true, false) {
+			hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
 			stmtList.attachTo(this)
 		}
 	}

@@ -32,8 +32,15 @@ fun Parent.nodeBinding(observable: Observable, _createGraphic: () -> Node?): Nod
 	return NodeBinding(Bindings.createObjectBinding(Callable(_createGraphic), observable)).attachTo(this)
 }
 
+fun Parent.nodeBinding(observable: ObservableValue<Node?>): NodeBinding {
+	return NodeBinding(observable).attachTo(this)
+}
 fun <T> Parent.nodeBinding(observable: ObservableValue<T>, _createGraphic: (T?) -> Node?): NodeBinding {
 	return NodeBinding(observable.objectBinding { _createGraphic(it) }).attachTo(this)
+}
+
+fun <T> Parent.nodeBindingNonNull(observable: ObservableValue<T>, _createGraphic: (T) -> Node?): NodeBinding {
+	return NodeBinding(Bindings.createObjectBinding(Callable { _createGraphic(observable.value) })).attachTo(this)
 }
 
 
