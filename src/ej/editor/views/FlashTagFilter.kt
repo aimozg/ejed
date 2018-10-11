@@ -1,8 +1,8 @@
 package ej.editor.views
 
-import ej.editor.utils.XmlTextProcessor
+import ej.editor.utils.XmlTagFilter
 
-class FlashTextProcessor : XmlTextProcessor() {
+class FlashTagFilter : XmlTagFilter() {
 	override fun testBegin(tag: String) = when(tag) {
 		"div" -> renameTag("br")
 		"p" -> renameTag("br")

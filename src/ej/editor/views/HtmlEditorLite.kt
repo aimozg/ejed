@@ -1,7 +1,7 @@
 package ej.editor.views
 
 import ej.editor.Styles
-import ej.editor.utils.XmlTextProcessor
+import ej.editor.utils.XmlTagFilter
 import org.w3c.dom.Document
 
 /*
@@ -10,7 +10,7 @@ import org.w3c.dom.Document
  */
 
 open class HtmlEditorLite : ManagedWebView() {
-	var processor:XmlTextProcessor? = null
+	var processor: XmlTagFilter? = null
 	
 	override fun documentPropertyChanged(doc: Document?) {
 		super.documentPropertyChanged(doc)

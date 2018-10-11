@@ -255,6 +255,6 @@
 .context-menu {
     -fx-text-fill: -fx-text-base-color;
     -fx-font-weight: normal;
-    -fx-background-color: -fx-background;
+    /*-fx-background-color: -fx-background;*/
     -fx-font-size: 14px;
 }

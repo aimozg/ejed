@@ -1,7 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
-import ej.editor.utils.autoStretch
+import ej.editor.views.FlashTextEditor
 import ej.mod.XcText
 import javafx.scene.layout.Priority
 import tornadofx.*
@@ -15,11 +15,12 @@ class ScText(stmt: XcText) : StatementControl<XcText>(stmt) {
 	
 	inner class TextSkin : ScSkin<XcText, ScText>(this, {
 		addClass(Styles.xtext)
-		textarea(stmt.textProperty()) {
+		val editor = FlashTextEditor(stmt.textProperty()).apply {
 			isWrapText = true
 			hgrow = Priority.ALWAYS
-			autoStretch()
+			isAutoStretch = true
 		}
+		children += editor
 	})
 }
 

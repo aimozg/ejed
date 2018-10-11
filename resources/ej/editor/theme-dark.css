@@ -19,6 +19,26 @@
     -fx-inner-border-vertical: derive(-fx-color, 30%);
 }
 
+.styled-text-area {
+    -fx-background-color: -fx-inner-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3, 2;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.styled-text-area:focused {
+    -fx-background-color: -fx-focus-color,
+    -fx-control-inner-background,
+    -fx-faint-focus-color,
+    -fx-control-inner-background;
+    -fx-background-insets: -0.2, 1, -1.4, 3;
+    -fx-background-radius: 3, 2, 4, 0;
+}
+
+.styled-text-area .text {
+    -fx-fill: -fx-text-fill;
+}
+
 .menu-bar {
     -fx-background-color: -fx-base;
 }

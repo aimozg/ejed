@@ -2,7 +2,7 @@ package ej.editor.stmts.old
 
 import ej.editor.Styles
 import ej.editor.utils.presentWhen
-import ej.editor.views.FlashTextProcessor
+import ej.editor.views.FlashTagFilter
 import ej.editor.views.HtmlEditorLite
 import ej.mod.XcText
 import javafx.scene.layout.Priority
@@ -23,7 +23,7 @@ object TextMgr: StatementManager<XcText>() {
 	) = defaultEditorBody(VBox()) {
 		(cachedEditor.getAndSet(null) ?: HtmlEditorLite().apply {
 			hgrow = Priority.ALWAYS
-			processor = FlashTextProcessor()
+			processor = FlashTagFilter()
 			sceneProperty().onChange {
 				if (it == null) cachedEditor.compareAndSet(null, this)
 			}

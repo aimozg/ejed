@@ -21,9 +21,7 @@
             <array />
           </option>
           <option name="pluginClasspaths">
-            <array>
-              <option value="$APPLICATION_HOME_DIR$/plugins/Kotlin/lib/kotlinx-serialization-ide-plugin.jar" />
-            </array>
+            <array />
           </option>
           <option name="multiPlatform" value="true" />
           <option name="coroutinesState" value="enable" />
@@ -43,7 +41,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/out" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: org.funktionale:funktionale-either:1.2" level="project" />
     <orderEntry type="library" name="Gradle: no.tornado:tornadofx:1.7.16" level="project" />
@@ -55,9 +53,14 @@
     <orderEntry type="library" name="Gradle: org.funktionale:funktionale-utils:1.2" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.2.51" level="project" />
     <orderEntry type="library" name="Gradle: org.controlsfx:controlsfx:8.40.14" level="project" />
+    <orderEntry type="library" name="Gradle: org.fxmisc.richtext:richtextfx:0.9.1" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.2.51" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Gradle: org.glassfish:javax.json:1.1.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.fxmisc.undo:undofx:2.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.fxmisc.flowless:flowless:0.6" level="project" />
+    <orderEntry type="library" name="Gradle: org.reactfx:reactfx:2.0-M5" level="project" />
+    <orderEntry type="library" name="Gradle: org.fxmisc.wellbehaved:wellbehavedfx:0.3.3" level="project" />
     <orderEntry type="library" name="Gradle: javax.json:javax.json-api:1.1.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-junit:1.2.51" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test:1.2.51" level="project" />

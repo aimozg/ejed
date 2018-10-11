@@ -74,6 +74,7 @@ dependencies {
     compile "org.controlsfx:controlsfx:8.40.14"
     compile "no.tornado:tornadofx:1.7.16"
     compile "org.funktionale:funktionale-either:1.2"
+    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.9.1'
 //    compile 'com.uchuhimo:kotlinx-bimap:1.0'
     testCompile "junit:junit:4.12"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
