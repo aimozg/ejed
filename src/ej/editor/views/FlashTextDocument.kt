@@ -28,7 +28,7 @@ data class FlashParStyle(
 				ALIGH_JUSTIFY -> textAlignment = TextAlignment.JUSTIFY
 			}
 			when (tag) {
-				PARTAG_P -> padding.top + 0.5.em
+				PARTAG_P -> padding = box(0.5.em, 0.px, 0.px, 0.px)
 			}
 		}
 	}
