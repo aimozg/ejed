@@ -3,18 +3,23 @@ package ej.editor.views
 import ej.editor.utils.WritableExpression
 import javafx.beans.property.Property
 import javafx.geometry.Orientation
+import javafx.scene.input.Clipboard
+import javafx.scene.input.DataFormat
 import javafx.scene.text.TextFlow
 import org.fxmisc.flowless.VirtualFlow
 import org.fxmisc.richtext.StyledTextArea
 import org.fxmisc.richtext.TextExt
+import org.fxmisc.richtext.model.Codec
+import org.fxmisc.richtext.model.StyleSpans
 import tornadofx.*
 import java.util.function.BiConsumer
+
 
 /*
  * Created by aimozg on 11.10.2018.
  * Confidential until published on GitHub
  */
-open class FlashTextEditor(document: EditableFlashTextDocument) :
+class FlashTextEditor(document: EditableFlashTextDocument) :
 		StyledTextArea<FlashParStyle, FlashSegStyle>(
 				FlashParStyle(),
 				BiConsumer<TextFlow, FlashParStyle> { t, u ->
@@ -72,6 +77,71 @@ open class FlashTextEditor(document: EditableFlashTextDocument) :
 	init {
 		richChanges().subscribe {
 			editableTextProperty.markInvalid()
+		}
+		setStyleCodecs(FlashParStyle.CODEC, Codec.styledTextCodec(FlashSegStyle.CODEC))
+		FlashTextEditorBehaviour(this)
+	}
+	
+	override fun paste() {
+		val clipboard = Clipboard.getSystemClipboard()
+		if (clipboard.hasContent(DataFormat.HTML)) {
+			try {
+				val doc = FlashHtmlProcessor().parse(clipboard.html)
+				replaceSelection(doc)
+			} catch (e: Exception) {
+				System.err.println("Failed to parse clipboard content")
+			}
+		} else {
+			super.paste()
+		}
+	}
+	
+	private fun updateStyleInSelection(mixinGetter: (StyleSpans<FlashSegStyle>) -> FlashSegStyle) {
+		val selection = selection
+		if (selection.length != 0) {
+			val styles = getStyleSpans(selection)
+			val mixin = mixinGetter(styles)
+			val newStyles = styles.mapStyles { style -> style.updateWith(mixin) }
+			setStyleSpans(selection.start, newStyles)
+		}
+	}
+	
+	private fun updateStyleInSelection(mixin: FlashSegStyle) {
+		val selection = selection
+		if (selection.length != 0) {
+			val styles = getStyleSpans(selection)
+			val newStyles = styles.mapStyles { style -> style.updateWith(mixin) }
+			setStyleSpans(selection.start, newStyles)
+		}
+	}
+	
+	fun boldSelection() {
+		updateStyleInSelection {
+			FlashSegStyle(
+					bold = !(it.styleStream().findFirst().orElse(null)?.bold ?: false),
+					italic = null,
+					underline = null
+			)
+		}
+	}
+	
+	fun italizeSelection() {
+		updateStyleInSelection {
+			FlashSegStyle(
+					bold = null,
+					italic = !(it.styleStream().findFirst().orElse(null)?.italic ?: false),
+					underline = null
+			)
+		}
+	}
+	
+	fun underlineSelection() {
+		updateStyleInSelection {
+			FlashSegStyle(
+					bold = null,
+					italic = null,
+					underline = !(it.styleStream().findFirst().orElse(null)?.underline ?: false)
+			)
 		}
 	}
 }

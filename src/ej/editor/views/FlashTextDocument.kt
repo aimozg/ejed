@@ -13,6 +13,8 @@ import javafx.scene.text.TextFlow
 import org.fxmisc.richtext.TextExt
 import org.fxmisc.richtext.model.*
 import tornadofx.*
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.util.*
 
 data class FlashParStyle(
@@ -53,14 +55,33 @@ data class FlashParStyle(
 		const val ALIGH_CENTER = "center"
 		const val ALIGH_RIGHT = "right"
 		const val ALIGH_JUSTIFY = "justify"
+		
+		val CODEC = object : Codec<FlashParStyle> {
+			override fun getName() = "FlashParStyle"
+			
+			override fun encode(os: DataOutputStream, t: FlashParStyle) {
+				val flags = (if (t.tag != null) 1 else 0) or
+						(if (t.align != null) 2 else 0)
+				os.writeByte(flags)
+				if (t.tag != null) os.writeUTF(t.tag)
+				if (t.align != null) os.writeUTF(t.align)
+			}
+			
+			override fun decode(`is`: DataInputStream): FlashParStyle {
+				val flags = `is`.readByte().toInt()
+				val tag = if (flags.and(1) != 0) `is`.readUTF() else null
+				val align = if (flags.and(2) != 0) `is`.readUTF() else null
+				return FlashParStyle(tag, align)
+			}
+		}
 	}
 }
 
 
 data class FlashSegStyle(
-		val bold: Boolean = false,
-		val italic: Boolean = false,
-		val underline: Boolean = false,
+		val bold: Boolean? = false,
+		val italic: Boolean? = false,
+		val underline: Boolean? = false,
 		val color: String? = null,
 		val size: Int? = null,
 		val face: String? = null
@@ -76,15 +97,25 @@ data class FlashSegStyle(
 	fun applyTo(t: TextExt) {
 		val s = this
 		t.style {
-			if (s.bold) fontWeight = FontWeight.BOLD
-			if (s.italic) fontStyle = FontPosture.ITALIC
-			if (s.underline) underline = true
+			if (s.bold == true) fontWeight = FontWeight.BOLD
+			if (s.italic == true) fontStyle = FontPosture.ITALIC
+			if (s.underline == true) underline = true
 			if (s.color != null) textFill = c(s.color)
 			if (s.size != null) fontSize = s.size.pt
 			if (s.face != null) fontFamily = s.face
 		}
 	}
 	
+	fun updateWith(u: FlashSegStyle): FlashSegStyle {
+		return FlashSegStyle(
+				u.bold ?: this.bold,
+				u.italic ?: this.italic,
+				u.underline ?: this.underline,
+				u.color ?: this.color,
+				u.size ?: this.size,
+				u.face ?: this.face
+		)
+	}
 	fun mergeWith(u: FlashSegStyle): Optional<FlashSegStyle> {
 		if (
 				different(this.bold, u.bold) ||
@@ -95,9 +126,9 @@ data class FlashSegStyle(
 				different(this.face, u.face)
 		) return Optional.empty()
 		return Optional.of(FlashSegStyle(
-				this.bold,
-				this.italic,
-				this.underline,
+				this.bold ?: u.bold,
+				this.italic ?: u.italic,
+				this.underline ?: u.underline,
 				this.color ?: u.color,
 				this.size ?: u.size,
 				this.face ?: u.face
@@ -108,15 +139,15 @@ data class FlashSegStyle(
 		val before = StringBuilder()
 		val after = StringBuilder()
 		
-		if (bold) {
+		if (bold == true) {
 			before += "<b>"
 			after += "</b>"
 		}
-		if (italic) {
+		if (italic == true) {
 			before += "<i>"
 			after += "</i>"
 		}
-		if (underline) {
+		if (underline == true) {
 			before += "<u>"
 			after += "</u>"
 		}
@@ -137,6 +168,34 @@ data class FlashSegStyle(
 		val segOps = SegmentOps.styledTextOps<FlashSegStyle> { t, u ->
 			t.mergeWith(u)
 		}!!
+		
+		val CODEC = object : Codec<FlashSegStyle> {
+			override fun getName() = "FlashSegStyle"
+			
+			override fun encode(os: DataOutputStream, t: FlashSegStyle) {
+				val flags = (if (t.bold == true) 1 else 0) or
+						(if (t.italic == true) 2 else 0) or
+						(if (t.underline == true) 4 else 0) or
+						(if (t.color != null) 8 else 0) or
+						(if (t.size != null) 16 else 0) or
+						(if (t.face != null) 32 else 0)
+				os.writeByte(flags)
+				if (t.color != null) os.writeUTF(t.color)
+				if (t.size != null) os.writeInt(t.size)
+				if (t.face != null) os.writeUTF(t.face)
+			}
+			
+			override fun decode(`is`: DataInputStream): FlashSegStyle {
+				val flags = `is`.readByte().toInt()
+				val bold = flags.and(1) != 0
+				val italic = flags.and(2) != 0
+				val underline = flags.and(4) != 0
+				val color = if (flags.and(8) != 0) `is`.readUTF() else null
+				val size = if (flags.and(16) != 0) `is`.readInt() else null
+				val face = if (flags.and(32) != 0) `is`.readUTF() else null
+				return FlashSegStyle(bold, italic, underline, color, size, face)
+			}
+		}
 	}
 }
 
