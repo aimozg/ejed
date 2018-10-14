@@ -13,6 +13,8 @@ object AnyExprChooser : ExpressionChooser() {
 			listOf(
 					// constants
 					ConstInt(),
+					ConstFloat(),
+					ConstText(),
 					ConstPlayer(),
 					// specifics
 					ModVariableBuilder(),

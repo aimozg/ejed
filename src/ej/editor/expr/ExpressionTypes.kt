@@ -5,6 +5,10 @@ package ej.editor.expr
  * Confidential until published on GitHub
  */
 object ExpressionTypes {
+	fun isNumber(type: String): Boolean {
+		return type == INT || type == FLOAT
+	}
+	
 	const val ANY = ""
 	const val VOID = "void"
 	

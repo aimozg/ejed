@@ -42,8 +42,10 @@ object DefaultBuilderConverter : BuilderConverter {
 						?: ConstBool.tryConvert(this, expr)
 			is IntLiteral ->
 				ConstInt.tryConvert(this, expr)
-			is FloatLiteral -> null
-			is StringLiteral -> null
+			is FloatLiteral ->
+				ConstFloat.tryConvert(this, expr)
+			is StringLiteral ->
+				ConstText.tryConvert(this, expr)
 			is ListExpression -> null
 			is ObjectExpression -> null
 			is CallExpression ->

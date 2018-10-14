@@ -125,10 +125,11 @@ enum class WhitespacePolicy {
 }
 
 private val CONSECUTIVE_WHITESPACE = Regex("\\s++")
+private val LINEBREAK_WITH_SPACE = Regex("\n[ \t\\xA0]++")
 fun WhitespacePolicy.applyTo(s: String): String = when (this) {
 	WhitespacePolicy.KEEP -> s
 	WhitespacePolicy.COMPACT -> s.replace(CONSECUTIVE_WHITESPACE, " ")
-	WhitespacePolicy.TRIM -> s.trim()
+	WhitespacePolicy.TRIM -> s.trim().replace(LINEBREAK_WITH_SPACE, "\n")
 }
 
 @Target(AnnotationTarget.PROPERTY)

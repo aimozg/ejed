@@ -2,10 +2,15 @@ package ej.editor.expr.external
 
 import ej.editor.expr.*
 import ej.editor.expr.impl.ConstBool
+import ej.editor.expr.impl.ConstFloat
+import ej.editor.expr.impl.ConstInt
+import ej.editor.expr.impl.ConstText
 import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.lists.CreatureChooser
 import ej.editor.expr.lists.SimpleExpressionChooser
+import ej.editor.utils.NullableDoubleStringConverter
+import ej.editor.utils.NullableIntStringConverter
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.text.FontPosture
 import javafx.scene.text.TextFlow
@@ -71,13 +76,13 @@ class ExternalFunctionBuilder(
 				}
 				
 			}
-			if(ltext != null) text(ltext)
+			if (ltext != null) text(ltext.replace("\\n", "\n"))
 		}
 		decl.editorHint?.let { hint ->
-			text("\n" + hint) {
+			text("\n\n" + hint) {
 				style {
-					padding = box(0.5.em)
 					fontStyle = FontPosture.ITALIC
+					fontSize = 120.percent
 				}
 			}
 		}
@@ -85,7 +90,24 @@ class ExternalFunctionBuilder(
 	
 	private fun TextFlow.inputFor(decl: ParamDecl,
 	                              prop: SimpleObjectProperty<ExpressionBuilder?>) {
-		TODO()
+		val pv = prop.value
+		if (ExpressionTypes.isNumber(decl.type)) {
+			when (pv) {
+				is ConstInt -> textfield(pv.constant, NullableIntStringConverter) {
+					prefColumnCount = 3
+				}
+				is ConstFloat -> textfield(pv.constant, NullableDoubleStringConverter) {
+					prefColumnCount = 6
+				}
+				else -> linkFor(decl, prop)
+			}
+		} else if (decl.type == ExpressionTypes.STRING && pv is ConstText) {
+			textfield {
+				textProperty().bindBidirectional(pv.constant)
+			}
+		} else {
+			linkFor(decl, prop)
+		}
 	}
 	
 	private fun TextFlow.checkboxFor(decl: ParamDecl,

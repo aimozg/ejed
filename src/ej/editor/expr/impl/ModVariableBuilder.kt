@@ -22,7 +22,10 @@ class ModVariableBuilder : ExpressionBuilder() {
 	}
 	
 	override fun text() = mktext("Mod variable ", variable.value?.name)
-	override fun build() = DotExpression(Identifier("state"), variable.value.name)
+	override fun build(): Expression {
+		val value = variable.value ?: return nop()
+		return DotExpression(Identifier("state"), value.name)
+	}
 	
 	val variable = SimpleObjectProperty<StateVar>()
 	

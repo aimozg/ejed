@@ -216,6 +216,17 @@ object NullableIntStringConverter : StringConverter<Int?>() {
 	
 }
 
+object NullableDoubleStringConverter : StringConverter<Double?>() {
+	override fun toString(`object`: Double?): String {
+		return `object`?.toString() ?: ""
+	}
+	
+	override fun fromString(string: String?): Double? {
+		return string?.toDoubleOrNull()
+	}
+	
+}
+
 fun <THIS : Any> THIS.withPropertiesFrom(from: THIS,
                                          vararg properties: KProperty1<THIS, Property<*>>): THIS {
 	for (property in properties) {

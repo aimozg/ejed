@@ -34,6 +34,43 @@
         <value name="has horn(s)" impl="'horns'"/>
         <value name="has tail(s)" impl="'tails'"/>
     </enum>
+    <enum name="BuffableStatName">
+        <value name="Strength" impl="'str'"/>
+        <value name="Speed" impl="'spe'"/>
+        <value name="Toughness" impl="'tou'"/>
+        <value name="Intelligence" impl="'int'"/>
+        <value name="Wisdom" impl="'wis'"/>
+        <value name="Libido" impl="'lib'"/>
+        <value name="Min Sensitivity" impl="sensMin"/>
+        <value name="Max Sensitivity" impl="sensMax"/>
+        <value name="Min Lust" impl="lustMin"/>
+        <value name="Max Lust" impl="lustMax"/>
+        <value name="Max HP" impl="hpMax"/>
+        <value name="Max Stamina" impl="staminaMax"/>
+        <value name="Max Ki" impl="kiMax"/>
+        <value name="Defense" impl="defense"/>
+        <value name="Spell power (multiplier)" impl="spellPower"/>
+        <value name="HP per Toughness" impl="hpPerTou"/>
+        <value name="Attack Rating" impl="attackRating"/>
+        <value name="Defense Rating" impl="defenseRating"/>
+        <value name="Strength (multiplier)" impl="'str.mult'"/>
+        <value name="Speed (multiplier)" impl="'spe.mult'"/>
+        <value name="Toughness (multiplier)" impl="'tou.mult'"/>
+        <value name="Intelligenc (multiplier)" impl="'int.mult'"/>
+        <value name="Wisdom (multiplier)" impl="'wis.mult'"/>
+        <value name="Libido (multiplier)" impl="'lib.mult'"/>
+    </enum>
+    <enum name="BuffRate">
+        <value name="indefinite time" impl="0"/>
+        <value name="round(s)" impl="1"/>
+        <value name="hour(s)" impl="2"/>
+        <value name="day(s)" impl="3"/>
+    </enum>
+    <enum name="TempBuffRate">
+        <value name="round(s)" impl="1"/>
+        <value name="hour(s)" impl="2"/>
+        <value name="day(s)" impl="3"/>
+    </enum>
     <!-- *********
          FUNCTIONS
          ********* -->
@@ -76,15 +113,87 @@
          COMMANDS
          ******** -->
     <!-- stats -->
-    <command name="DynStats">
-        <listname>Creature: Change stats</listname>
-        <param name="Creature" type="Creature" default="player"/>
-        <param name="Cor" type="int" default="0"/>
+    <!-- public function BuffOrRecover(statname:String, value:Number, tag:String, text:String, tick: int, rate:int):void { -->
+    <command name="BuffOrRecover">
+        <listname>Player: Buff/Recover stat</listname>
+        <param name="Statname" type="BuffableStatName" default="'str'"/>
+        <param name="Value" type="float" default="5"/>
+        <param name="Tag" type="string" default="''"/>
+        <param name="Text" type="string" default="'Bonus'"/>
+        <param name="Tick" type="int" default="36"/>
+        <param name="Rate" type="TempBuffRate" default="2"/>
         <editor>
-            Alter
-            <param name="Creature"/>
-            stats: cor
-            <param name="Cor"/>
+            Buff/Recover player's
+            <param name="Statname" type="SELECT"/>
+            stat by
+            <param name="Value"/>
+            for
+            <param name="Tick" type="INPUT"/>
+            <param name="Rate" type="SELECT"/>
+            \n with tag
+            <param name="Tag" type="INPUT"/>
+            and visible text
+            <param name="Text" type="INPUT"/>
+        </editor>
+        <editor-hint>
+            If player has "Drain" debuff applied, stat will be recovered by the value specified.
+            Otherwise, add temporary buff.
+            Existing buff for same stat with same tag will be replaced.
+            Recommended tag name is 'context name/buff name', e.g. "templeOfAimozg/superBlessing"
+        </editor-hint>
+    </command>
+    <command name="Buff">
+        <listname>Creature: Add temporary buff</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Statname" type="BuffableStatName" default="'str'"/>
+        <param name="Value" type="float" default="5"/>
+        <param name="Tag" type="string" default="''"/>
+        <param name="Text" type="string" default="'Bonus'"/>
+        <param name="Tick" type="int" default="36"/>
+        <param name="Rate" type="TempBuffRate" default="2"/>
+        <editor>
+            Buff
+            <param name="Creature"/>'s
+            <param name="Statname" type="SELECT"/>
+            stat by
+            <param name="Value"/>
+            for
+            <param name="Tick" type="INPUT"/>
+            <param name="Rate" type="SELECT"/>
+            \n with tag
+            <param name="Tag" type="INPUT"/>
+            and visible text
+            <param name="Text" type="INPUT"/>
+        </editor>
+        <editor-hint>
+            Existing buff for same stat with same tag will be increased.
+            Recommended tag name is 'context name/buff name', e.g. "templeOfAimozg/superBlessing"
+        </editor-hint>
+    </command>
+    <command name="BuffClearByTagStat">
+        <listname>Creature: Clear specific buff from stat</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Statname" type="BuffableStatName" default="'str'"/>
+        <param name="Tag" type="string" default="''"/>
+        <editor>
+            Remove buff tagged
+            <param name="Tag" type="INPUT"/>
+            from
+            <param name="Creature"/>'s
+            <param name="Statname" type="SELECT"/>
+            stat
+        </editor>
+    </command>
+    <command name="BuffClearByTag">
+        <listname>Creature: Clear specific buff from all stats</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Tag" type="string" default="''"/>
+        <editor>
+            Remove buffs tagged
+            <param name="Tag" type="INPUT"/>
+            from
+            <param name="Creature"/>'s
+            stats
         </editor>
     </command>
     <!-- items -->

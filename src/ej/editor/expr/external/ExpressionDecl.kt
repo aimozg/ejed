@@ -2,10 +2,7 @@ package ej.editor.expr.external
 
 import ej.utils.Validable
 import ej.utils.ValidationReport
-import ej.xml.Attribute
-import ej.xml.Element
-import ej.xml.Elements
-import ej.xml.XmlAutoSerializable
+import ej.xml.*
 import tornadofx.*
 
 /*
@@ -30,6 +27,7 @@ abstract class ExpressionDecl : XmlAutoSerializable, Validable {
 	var editor = ExpressionEditorDecl()
 	
 	@Element("editor-hint")
+	@TextBodyWhitespacePolicy(WhitespacePolicy.TRIM)
 	var editorHint: String? = null
 	
 	val arity get() = params.size

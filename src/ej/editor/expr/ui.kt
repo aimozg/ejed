@@ -3,13 +3,14 @@ package ej.editor.expr
 import com.sun.javafx.binding.DoubleConstant
 import ej.editor.Styles
 import ej.editor.expr.impl.RawExpressionBuilder
+import ej.editor.utils.nodeBinding
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.WritableValue
 import javafx.geometry.Pos
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
-import javafx.scene.layout.Pane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
@@ -27,7 +28,7 @@ inline fun defaultEditorTextFlow(cssClass: CssRule? = Styles.xexpr, init: TextFl
 	return TextFlow().apply {
 		hgrow = Priority.ALWAYS
 		if (cssClass != null) addClass(cssClass)
-		prefWidthProperty().bind(parentProperty().select {
+		minWidthProperty().bind(parentProperty().select {
 			if (it is Region) {
 				it.widthProperty().minus(it.paddingHorizontalProperty)
 			} else DoubleConstant.valueOf(-1.0)
@@ -111,12 +112,14 @@ abstract class ChooserDialog<T:Any> : Fragment() {
 	val resultProperty = SimpleObjectProperty<T>()
 	var result:T? by resultProperty
 	var ok:Boolean = false
+	val okbtn = HBox()
 	protected fun defaultRoot(init:VBox.()->Unit) = vbox(5.0) {
 		paddingAll = 10.0
-		minWidth = 300.0
-		minHeight = 200.0
+		minWidth = 600.0
+		minHeight = 250.0
+		hgrow = Priority.ALWAYS
 		init()
-		hbox {
+		this += okbtn.apply {
 			alignment = Pos.BASELINE_RIGHT
 			button("OK") {
 				isDefaultButton = true
@@ -154,6 +157,7 @@ open class ListChooserDialog<T:Any> : ChooserDialog<T>() {
 				result = it
 			}
 		}
+		prefWidthProperty().bind(list.prefWidthProperty())
 	}
 	fun showModal(title:String,
 	              initial: T?,
@@ -167,28 +171,22 @@ open class ListChooserDialog<T:Any> : ChooserDialog<T>() {
 }
 class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 	val items = ArrayList<ExpressionBuilder>().observable()
-	var editorContainer: Pane by singleAssign()
-	var exprEditor: Pane = hbox()
 	
 	override val root = defaultRoot {
-		combobox(resultProperty,items) {
+		val cb = combobox(resultProperty, items) {
 			hgrow = Priority.ALWAYS
 			promptText = "-- Pick an option --"
 			cellFormat {
 				text = item?.name()?:"-- Pick an option --"
 			}
-			selectionModel.selectedItemProperty().onChange { eb ->
-				exprEditor.removeFromParent()
-				exprEditor = eb?.editorBody()?:hbox()
-				editorContainer += exprEditor
-			}
 		}
-		hbox {
-			editorContainer = this
+		nodeBinding(cb.selectionModel.selectedItemProperty()) { it ->
+			it?.editorBody()?.also {
+				currentStage?.sizeToScene()
+			}
+		}.apply {
 			vgrow = Priority.ALWAYS
-			minWidth = 300.0
-			minHeight = 200.0
-			this += exprEditor
+			hgrow = Priority.ALWAYS
 		}
 	}
 	
