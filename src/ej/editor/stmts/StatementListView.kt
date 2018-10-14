@@ -5,6 +5,8 @@ import ej.editor.utils.fontAwesome
 import ej.editor.utils.presentWhen
 import ej.editor.views.DecoratedSimpleListView
 import ej.mod.XStatement
+import ej.utils.addAfter
+import ej.utils.addBefore
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.geometry.Side
@@ -95,16 +97,13 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	}
 	
 	fun insertAfter(ref: XStatement?, stmt: XStatement) {
-		val pos = items.indexOf(ref)
-		println("Inserting $stmt after $pos")
-		items.add(pos + 1, stmt)
+		println("Inserting $stmt after $ref")
+		items.addAfter(ref, stmt)
 	}
 	
 	fun insertBefore(ref: XStatement?, stmt: XStatement) {
-		val pos = items.indexOf(ref)
-		println("Inserting $stmt before $pos")
-		if (pos >= 0) items.add(pos, stmt)
-		else items.add(stmt)
+		println("Inserting $stmt before $ref")
+		items.addBefore(ref, stmt)
 	}
 	
 	init {

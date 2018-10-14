@@ -113,7 +113,7 @@ abstract class Evaluator {
 		is IntLiteral -> Evaluated.IntValue(e.value)
 		is FloatLiteral -> Evaluated.FloatValue(e.value)
 		is StringLiteral -> Evaluated.StringValue(e.value)
-		is ListExpression -> Evaluated.ListValue(e.parts.map { evaluate(e) })
+		is ListExpression -> Evaluated.ListValue(e.parts.map { evaluate(it) })
 		is ObjectExpression -> Evaluated.ObjectValue(e.items.mapValues { (_, v) -> evaluate(v) })
 		is CallExpression -> evaluate(e.function).call(
 				e.arguments.map { evaluate(it) }

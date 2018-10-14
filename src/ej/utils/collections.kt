@@ -46,6 +46,17 @@ fun <T> MutableList<T>.remove(fromIndex: Int, toIndex: Int) {
 	subList(fromIndex, toIndex).clear()
 }
 
+fun <T> MutableList<T>.addBefore(ref: T?, item: T) {
+	val pos = indexOf(ref)
+	if (pos >= 0) add(pos, item)
+	else add(item)
+}
+
+fun <T> MutableList<T>.addAfter(ref: T?, item: T) {
+	val pos = indexOf(ref)
+	add(pos + 1, item)
+}
+
 /**
  * If [replace] returns non-null value, replace old value with it
  */

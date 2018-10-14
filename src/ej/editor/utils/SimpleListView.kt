@@ -22,12 +22,10 @@ import tornadofx.*
  */
 open class SimpleListView<T : Any>() : VBox() {
 	val itemsProperty: Property<ObservableList<T>> = object : SimpleObjectProperty<ObservableList<T>>() {
-		/*
 		override fun invalidated() {
 			super.invalidated()
-			bindTo(value)
+			if (scene != null && value != null) bindTo(value)
 		}
-		*/
 	}
 	var items: ObservableList<T> by itemsProperty
 	private val itemsListener: ListChangeListener<T> = ListChangeListener { change ->
@@ -94,7 +92,6 @@ open class SimpleListView<T : Any>() : VBox() {
 		
 		itemsProperty.addListener { _, old, it ->
 			if (old != null) unbindFrom(old)
-			if (it != null && scene != null) bindTo(it)
 		}
 		sceneProperty().onChange {
 			unbindFrom(items)

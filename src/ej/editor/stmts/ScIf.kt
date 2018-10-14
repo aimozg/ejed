@@ -10,6 +10,10 @@ import ej.mod.XStatement
 import ej.mod.XlElse
 import ej.mod.XlElseIf
 import ej.mod.XlIf
+import ej.utils.addAfter
+import ej.utils.addBefore
+import ej.utils.crop
+import javafx.scene.input.KeyCombination
 import tornadofx.*
 
 /*
@@ -32,6 +36,12 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 					stmt.elseGroup = XlElse()
 				}
 				enableWhen(stmt.elseGroupProperty.isNull)
+			}
+			item("Delete Else") {
+				action {
+					stmt.elseGroup = null
+				}
+				enableWhen(stmt.elseGroupProperty.isNotNull)
 			}
 		}
 		addClass(Styles.xlogic)
@@ -58,6 +68,32 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 							if (it != null) elseif.testProperty.fromBuilder(it)
 						})
 					}
+					contextmenu {
+						item("Add Else-If Above", KeyCombination.valueOf("Shift+Insert")) {
+							action {
+								stmt.elseifGroups.addBefore(elseif, XlElseIf())
+							}
+						}
+						item("Add Else-If Below", KeyCombination.valueOf("Insert")) {
+							action {
+								stmt.elseifGroups.addAfter(elseif, XlElseIf())
+							}
+						}
+						item("Delete Else-If", KeyCombination.valueOf("Delete")) {
+							textProperty().bind(bindingN(elseif.testProperty) { test ->
+								"Delete Else-If" + test?.crop(20)
+							})
+							action {
+								stmt.elseifGroups.remove(elseif)
+							}
+						}
+						item("Add Else") {
+							action {
+								stmt.elseGroup = XlElse()
+							}
+							enableWhen(stmt.elseGroupProperty.isNull)
+						}
+					}
 				}
 			}
 		}.addClass("sc-if-elseifs")
@@ -72,6 +108,13 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 						addClass(Styles.xlogic)
 					}
 					presentWhen(stmt.elseGroupProperty.isNotNull)
+				}
+				contextmenu {
+					item("Delete Else", KeyCombination.valueOf("Delete")) {
+						action {
+							stmt.elseGroup = null
+						}
+					}
 				}
 			}
 			presentWhen(stmt.elseGroupProperty.isNotNull)

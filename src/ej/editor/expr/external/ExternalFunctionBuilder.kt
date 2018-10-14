@@ -35,7 +35,7 @@ class ExternalFunctionBuilder(
 					ExpressionEditorDecl.ParamEditorType.CHECKBOX ->
 						if (expr is ConstBool) {
 							if (expr.constant.value == true) r.typedata
-							else null
+							else ""
 						} else {
 							expr
 						}
