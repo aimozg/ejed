@@ -11,6 +11,7 @@ import javafx.geometry.Side
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
+import javafx.scene.control.Menu
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -29,15 +30,15 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	
 	fun detachListMenu(): Node {
 		beforeList = null
-		return listMenu
+		return listTopMenu
 	}
 	
 	fun attachListMenu() {
-		listMenu.removeFromParent()
-		beforeList = listMenu
+		listTopMenu.removeFromParent()
+		beforeList = listTopMenu
 	}
 	
-	private val listMenu = HBox().apply {
+	private val listTopMenu = HBox().apply {
 		addClass("stmt-ctrl-listmenu")
 		expandButton = button {
 			addClass("small-button")
@@ -58,6 +59,26 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 					else item(e.name, KeyCombination.valueOf(e.hotkey)) {
 						action {
 							insertAfter(null, e.factory())
+						}
+					}
+				}
+			}
+			action {
+				contextMenu.show(this, Side.BOTTOM, 0.0, 0.0)
+			}
+		}
+	}
+	val listBottomMenu = HBox().apply {
+		addClass("stmt-ctrl-listmenu")
+		button {
+			addClass("small-button")
+			graphic = fontAwesome.create(FontAwesome.Glyph.PLUS)
+			contextmenu {
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name, KeyCombination.valueOf(e.hotkey)) {
+						action {
+							insertBefore(null, e.factory())
 						}
 					}
 				}
@@ -105,7 +126,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 						}
 					}
 				}
-				menu("Insert After") {
+				this += Menu("Insert After").apply {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
 						else item(e.name, KeyCombination.valueOf(e.hotkey)) {
@@ -140,7 +161,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				}
 			}
 		}
-		beforeList = listMenu
+		beforeList = listTopMenu
 		cellContainer.presentWhen(expandedProperty)
 	}
 }

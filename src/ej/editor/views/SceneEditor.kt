@@ -42,6 +42,8 @@ class SceneEditor(val mod: ModData) : VBox() {
 			itemsProperty.bind(bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
 			})
+			afterList = listBottomMenu
+			paddingBottom = 80
 		}
 		scrollpane(true, false) {
 			hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
