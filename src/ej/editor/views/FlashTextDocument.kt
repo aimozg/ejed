@@ -6,6 +6,7 @@ package ej.editor.views
  */
 
 import ej.utils.plusAssign
+import javafx.scene.input.DataFormat
 import javafx.scene.text.FontPosture
 import javafx.scene.text.FontWeight
 import javafx.scene.text.TextAlignment
@@ -13,6 +14,8 @@ import javafx.scene.text.TextFlow
 import org.fxmisc.richtext.TextExt
 import org.fxmisc.richtext.model.*
 import tornadofx.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
@@ -208,6 +211,26 @@ typealias FlashTextDocumentBuilder = ReadOnlyStyledDocumentBuilder<FlashParStyle
 typealias FlashStyledSegment = StyledSegment<String, FlashSegStyle>
 
 fun ReadOnlyFlashTextDocument.editableCopy() = EditableFlashTextDocument(this)
-fun FlashTextDocument.toFlashHtml() = paragraphs.joinToString("") {
+fun FlashTextDocument.toFlashHtml() = paragraphs.joinToString("\n") {
 	it.paragraphStyle.toFlashHtml(it.styledSegments)
+}
+
+val FLASH_TEXT_DOCUMENT_CODEC: Codec<FlashTextDocument> by lazy {
+	ReadOnlyStyledDocument.codec(
+			FlashParStyle.CODEC,
+			Codec.styledTextCodec(FlashSegStyle.CODEC),
+			FlashSegStyle.segOps)
+}
+val FLASH_TEXT_DOCUMENT_FORMAT by lazy {
+	DataFormat.lookupMimeType(FLASH_TEXT_DOCUMENT_CODEC.name) ?: DataFormat(FLASH_TEXT_DOCUMENT_CODEC.name)
+}
+
+fun <T> Codec<T>.decode(bytes: ByteArray): T {
+	return decode(DataInputStream(ByteArrayInputStream(bytes)))
+}
+
+fun <T> Codec<T>.encode(t: T): ByteArray {
+	val baos = ByteArrayOutputStream()
+	encode(DataOutputStream(baos), t)
+	return baos.toByteArray()
 }

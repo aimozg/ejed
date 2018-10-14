@@ -43,6 +43,19 @@ abstract class ExpressionBuilder : WithReadableText {
 	override fun toString(): String {
 		return "<${name()}: ${build()}>"
 	}
+	
+	override fun equals(other: Any?): Boolean {
+		val o = other as? ExpressionBuilder ?: return false
+		return o.name() == name() && o.build() == build()
+	}
+	
+	override fun hashCode(): Int {
+		return name().hashCode().shl(31) + build().hashCode()
+	}
+	
+	open fun initializableBy(initial: ExpressionBuilder): Boolean {
+		return javaClass == initial.javaClass
+	}
 }
 
 abstract class ValueChooser<T:Any> {

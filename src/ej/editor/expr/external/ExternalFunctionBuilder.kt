@@ -1,6 +1,7 @@
 package ej.editor.expr.external
 
 import ej.editor.expr.*
+import ej.editor.expr.impl.ConstBool
 import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.lists.CreatureChooser
@@ -17,14 +18,32 @@ import tornadofx.*
 class ExternalFunctionBuilder(
 		val decl: FunctionDecl
 ) : ExpressionBuilder() {
-	val params = decl.params.map { SimpleObjectProperty<ExpressionBuilder?>(this,it.name,null) }
+	val params = decl.params.map { param ->
+		val d = param.default?.let {
+			DefaultBuilderConverter.convert(parseExpressionSafe(it), param.type)
+		}
+		SimpleObjectProperty(this, param.name, d)
+	}
 	val paramsByName = params.associateBy { it.name }
 
 	@Suppress("IMPLICIT_CAST_TO_ANY")
 	override fun text(): String {
 		return mktext(decl.editor.parts.map {(l,r)->
-			if (r != null) paramsByName[r.name]
-			else l
+			if (r != null) {
+				val expr = paramsByName[r.name]?.value
+				when (r.type) {
+					ExpressionEditorDecl.ParamEditorType.CHECKBOX ->
+						if (expr is ConstBool) {
+							if (expr.constant.value == true) r.typedata
+							else null
+						} else {
+							expr
+						}
+					else -> expr
+				}
+			} else {
+				l
+			}
 		})
 	}
 
@@ -40,38 +59,12 @@ class ExternalFunctionBuilder(
 			val prop = paramsByName[rparam?.name]
 			if (rparam != null && decl != null && prop != null) {
 				when (rparam.type) {
-					ExpressionEditorDecl.ParamEditorType.SELECT -> {
-						if (decl.type == "Perk") {
-							linkFor(decl, prop)
-							/*
-							TODO list of perks
-							val values = Natives.perks.map {
-							
-							}
-							combobox(prop, ) {
-							
-							}
-							 */
-						} else {
-							val enumDecl = Stdlib.enumByTypeName(decl.type)
-							if (enumDecl != null) {
-								val values = enumDecl.values.map {
-									ExternalEnumBuilder(enumDecl, it)
-								}
-								combobox(prop, values) {
-									cellFormat(DefaultScope) { eb ->
-										text = enumDecl.values.find {
-											it.impl == eb?.build()?.source
-										}?.name ?: "<???>"
-									}
-								}
-							} else {
-								linkFor(decl, prop)
-							}
-						}
-					}
-					ExpressionEditorDecl.ParamEditorType.INPUT -> TODO()
-					ExpressionEditorDecl.ParamEditorType.CHECKBOX -> TODO()
+					ExpressionEditorDecl.ParamEditorType.SELECT ->
+						selectFor(decl, prop)
+					ExpressionEditorDecl.ParamEditorType.INPUT ->
+						inputFor(decl, prop)
+					ExpressionEditorDecl.ParamEditorType.CHECKBOX ->
+						checkboxFor(decl, prop, rparam.typedata)
 					ExpressionEditorDecl.ParamEditorType.LINK ->
 						linkFor(decl, prop)
 				}
@@ -81,15 +74,63 @@ class ExternalFunctionBuilder(
 		}
 	}
 	
+	private fun TextFlow.inputFor(decl: ParamDecl,
+	                              prop: SimpleObjectProperty<ExpressionBuilder?>) {
+		TODO()
+	}
+	
+	private fun TextFlow.checkboxFor(decl: ParamDecl,
+	                                 prop: SimpleObjectProperty<ExpressionBuilder?>,
+	                                 typedata: String?) {
+		val pv = prop.value
+		if (decl.type == ExpressionTypes.BOOLEAN && pv is ConstBool) {
+			checkbox(typedata, pv.constant)
+		} else {
+			linkFor(decl, prop)
+		}
+	}
+	
+	private fun TextFlow.selectFor(decl: ParamDecl,
+	                               prop: SimpleObjectProperty<ExpressionBuilder?>) {
+		if (decl.type == ExpressionTypes.PERK) {
+			linkFor(decl, prop)
+			/*
+			TODO list of perks
+			val values = Natives.perks.map {
+			
+			}
+			combobox(prop, ) {
+			
+			}
+			 */
+		} else {
+			val enumDecl = Stdlib.enumByTypeName(decl.type)
+			if (enumDecl != null) {
+				val values = enumDecl.values.map {
+					ExternalEnumBuilder(enumDecl, it)
+				}
+				combobox(prop, values) {
+					cellFormat(DefaultScope) { eb ->
+						text = enumDecl.values.find {
+							it.impl == eb?.build()?.source
+						}?.name ?: "<???>"
+					}
+				}
+			} else {
+				linkFor(decl, prop)
+			}
+		}
+	}
+	
 	fun TextFlow.linkFor(decl: ParamDecl,
 	                     prop: SimpleObjectProperty<ExpressionBuilder?>) {
 		val chooser: ExpressionChooser = when (decl.type) {
 			ExpressionTypes.BOOLEAN -> BoolExprChooser
-			//					ExpressionTypes.INT -> IntExprChooser
-			//					ExpressionTypes.FLOAT -> FloatExprChooser
-			//					ExpressionTypes.STRING -> TextExprChooser
+			//	ExpressionTypes.INT -> IntExprChooser
+			//	ExpressionTypes.FLOAT -> FloatExprChooser
+			//	ExpressionTypes.STRING -> TextExprChooser
 			ExpressionTypes.CREATURE -> CreatureChooser
-			// "Perk" -> TODO() // PerkChooser
+			// ExpressionTypes.PERK -> TODO() // PerkChooser
 			/* TODO pick proper chooser*/
 			else -> {
 				val list = Stdlib.buildersReturning(decl.type)
@@ -110,5 +151,8 @@ class ExternalFunctionBuilder(
 			their.value = my.value
 		}
 	}
-
+	
+	override fun initializableBy(initial: ExpressionBuilder): Boolean {
+		return (initial as? ExternalFunctionBuilder)?.decl == decl
+	}
 }

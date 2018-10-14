@@ -20,6 +20,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 	override fun createDefaultSkin() = IfSkin()
 	
 	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
+		addClass("sc-if")
 		mergedContextMenu().apply {
 			item("Add Else-If") {
 				action {
@@ -35,38 +36,39 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 		}
 		addClass(Styles.xlogic)
 		stmtList(stmt.thenGroup.content) {
+			addClass("sc-if-then")
 			beforeList = hbox {
 				children += detachListMenu()
 				scFlow(Styles.xlogic) {
-					text("If condition ")
+					text("If ")
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 						if (it != null) stmt.testProperty.fromBuilder(it)
 					})
-					text(" is true")
 				}
 			}
 		}
 		simpleList(stmt.elseifGroups) { elseif ->
 			stmtList(elseif.content) {
+				addClass("sc-if-elseif")
 				beforeList = hbox {
 					children += detachListMenu()
 					scFlow(Styles.xlogic) {
-						text("Else if condition ")
-						valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
-							if (it != null) stmt.testProperty.fromBuilder(it)
+						text("Else if ")
+						valueLink("Condition", elseif.testProperty.toBuilder(), BoolExprChooser, setter = {
+							if (it != null) elseif.testProperty.fromBuilder(it)
 						})
-						text(" is true:")
 					}
 				}
 			}
-		}
+		}.addClass("sc-if-elseifs")
 		stmtList(bindingN(stmt.elseGroupProperty) {
 			it?.content ?: emptyList<XStatement>().observableUnique()
 		}) {
+			addClass("sc-if-else")
 			beforeList = hbox {
 				children += detachListMenu()
 				scFlow(Styles.xlogic) {
-					text("Else:") {
+					text("Else") {
 						addClass(Styles.xlogic)
 					}
 					presentWhen(stmt.elseGroupProperty.isNotNull)

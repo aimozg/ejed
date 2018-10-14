@@ -38,7 +38,7 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 	val afterListProperty = SimpleObjectProperty<Node?>()
 	var afterList: Node? by afterListProperty
 	
-	val cellContainer = VBox()
+	val cellContainer = VBox().addClass("decorated-list-body")
 	override val cells: MutableList<Node> = cellContainer.children
 	
 	init {

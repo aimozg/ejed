@@ -108,6 +108,7 @@ open class SimpleListView<T : Any>() : VBox() {
 		
 		init {
 			isFocusTraversable = false
+			addClass("simple-list-cell")
 		}
 		override fun getContentBias(): Orientation {
 			return Orientation.HORIZONTAL

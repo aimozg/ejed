@@ -32,6 +32,8 @@ class ExpressionEditorDecl : XmlAutoSerializable,Validable {
 		var name:String = ""
 		@Attribute
 		var type:ParamEditorType = ParamEditorType.LINK
+		@Attribute
+		var typedata: String? = null
 		
 		val decl:ParamDecl? get() = expression.paramByName(name)
 		

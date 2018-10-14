@@ -17,6 +17,13 @@ import javax.xml.stream.events.XMLEvent
 
 val XML_ESCAPABLE_TOKENS = Regex("[&<>]")
 val XML_ATTR_ESCAPABLE_TOKENS = Regex("[&<>\"\t\r\n]")
+val XML_KNOWN_ENTITIES = mapOf(
+		"amp" to "&",
+		"lt" to "<",
+		"gt" to ">",
+		"quot" to "\"",
+		"apos" to "\'"
+)
 val XML_ENTITIES = mapOf(
 		"&" to "&amp;",
 		"<" to "&lt;",
@@ -26,12 +33,26 @@ val XML_ENTITIES = mapOf(
 		"\r" to "&#xD;",
 		"\n" to "&#xA;"
 )
+val XML_ENTITY_REX = Regex("&(?:([a-zA-Z]+)|#(x[0-9A-Fa-f]+|[0-9]+));")
 
 fun String.escapeXml() = XML_ESCAPABLE_TOKENS.replace(this) {
 	XML_ENTITIES[it.value] ?: it.value
 }
 fun String.escapeXmlAttr() = XML_ATTR_ESCAPABLE_TOKENS.replace(this) {
 	XML_ENTITIES[it.value] ?: it.value
+}
+
+fun String.unescapeXml() = XML_ENTITY_REX.replace(this) {
+	val name = it.groupValues[1]
+	if (name.isNotEmpty()) {
+		XML_KNOWN_ENTITIES[name] ?: this.apply {
+			System.err.println("Unknown XML entity $this")
+		}
+	} else {
+		val scode = it.groupValues[2]
+		val code = if (scode[0] == 'x') scode.drop(1).toInt(16) else scode.toInt(10)
+		code.toChar().toString()
+	}
 }
 
 val java.lang.reflect.Field.isStatic get() = Modifier.isStatic(modifiers)

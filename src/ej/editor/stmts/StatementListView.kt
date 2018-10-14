@@ -95,7 +95,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				menu("Insert Before") {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
-						else item(e.name, KeyCombination.valueOf(e.hotkey)) {
+						else item(e.name, KeyCombination.valueOf("Shift+" + e.hotkey)) {
 							action {
 								insertBefore(stmt, e.factory())
 							}
@@ -105,7 +105,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				menu("Insert After") {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
-						else item(e.name, KeyCombination.valueOf("Shift+" + e.hotkey)) {
+						else item(e.name, KeyCombination.valueOf(e.hotkey)) {
 							action {
 								insertAfter(stmt, e.factory())
 							}

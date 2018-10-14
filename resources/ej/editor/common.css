@@ -237,6 +237,12 @@
     -fx-spacing: 4.0;
 }
 
+.sc-if-then .decorated-list-body,
+.sc-if-elseif .decorated-list-body,
+.sc-if-else .decorated-list-body {
+    -fx-padding: 0 0 0 16;
+}
+
 .xcomment .text-input {
     -fx-background-color: -fx-control-inner-background;
     -fx-background-insets: 1;

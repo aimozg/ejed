@@ -19,6 +19,7 @@ class ScText(stmt: XcText) : StatementControl<XcText>(stmt) {
 			isWrapText = true
 			hgrow = Priority.ALWAYS
 			isAutoStretch = true
+			disableScrollEvents()
 		}
 		children += editor
 	})

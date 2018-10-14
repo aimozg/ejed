@@ -13,7 +13,8 @@ class ConstPlayer : ExpressionBuilder() {
 	override fun editorBody() = defaultEditorTextFlow {
 		text("Player character")
 	}
-	override fun text() = mktext("Player character")
+	
+	override fun text() = mktext("Player")
 	override fun build() = Identifier("player")
 	
 	companion object : PartialBuilderConverter<Identifier>{

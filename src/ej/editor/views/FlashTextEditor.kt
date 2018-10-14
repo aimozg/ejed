@@ -4,7 +4,8 @@ import ej.editor.utils.WritableExpression
 import javafx.beans.property.Property
 import javafx.geometry.Orientation
 import javafx.scene.input.Clipboard
-import javafx.scene.input.DataFormat
+import javafx.scene.input.ClipboardContent
+import javafx.scene.input.ScrollEvent
 import javafx.scene.text.TextFlow
 import org.fxmisc.flowless.VirtualFlow
 import org.fxmisc.richtext.StyledTextArea
@@ -12,6 +13,7 @@ import org.fxmisc.richtext.TextExt
 import org.fxmisc.richtext.model.Codec
 import org.fxmisc.richtext.model.StyleSpans
 import tornadofx.*
+import java.io.IOException
 import java.util.function.BiConsumer
 
 
@@ -54,6 +56,13 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 		return Orientation.HORIZONTAL
 	}
 	
+	fun disableScrollEvents() {
+		addEventFilter(ScrollEvent.SCROLL) {
+			it.consume()
+			parent?.fireEvent(it.copyFor(it.source, parent))
+		}
+	}
+	
 	override fun computePrefHeight(width: Double): Double {
 		if (isAutoStretch) {
 			val ih = insets.top + insets.bottom
@@ -82,17 +91,52 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 		FlashTextEditorBehaviour(this)
 	}
 	
+	override fun copy() {
+		val selection = selection
+		if (selection.length > 0) {
+			val content = ClipboardContent()
+			
+			val doc = subDocument(selection.start, selection.end)
+			content.putString(doc.text)
+			content.putHtml(doc.toFlashHtml())
+			
+			try {
+				content[FLASH_TEXT_DOCUMENT_FORMAT] = FLASH_TEXT_DOCUMENT_CODEC.encode(doc)
+			} catch (e: IOException) {
+				System.err.println("Codec error: Exception in encoding FlashTextDocument:")
+				e.printStackTrace()
+			}
+			
+			Clipboard.getSystemClipboard().setContent(content)
+		}
+	}
+	
 	override fun paste() {
 		val clipboard = Clipboard.getSystemClipboard()
-		if (clipboard.hasContent(DataFormat.HTML)) {
-			try {
-				val doc = FlashHtmlProcessor().parse(clipboard.html)
-				replaceSelection(doc)
-			} catch (e: Exception) {
-				System.err.println("Failed to parse clipboard content")
-			}
+		
+		val doc =
+				(clipboard.getContent(FLASH_TEXT_DOCUMENT_FORMAT) as? ByteArray?)?.let { bytes ->
+					try {
+						FLASH_TEXT_DOCUMENT_CODEC.decode(bytes)
+					} catch (e: IOException) {
+						System.err.println("Codec error: Failed to decode FlashTextDocument:")
+						e.printStackTrace()
+						null
+					}
+				}
+						?: clipboard.html?.let { html ->
+							try {
+								FlashHtmlProcessor().parse(html)
+							} catch (e: Exception) {
+								System.err.println("Failed to parse clipboard content")
+								null
+							}
+						}
+		if (doc != null) {
+			replaceSelection(doc)
 		} else {
-			super.paste()
+			val s = clipboard.string
+			if (s != null) replaceSelection(s)
 		}
 	}
 	

@@ -44,7 +44,10 @@ class CreatureStat : ExpressionBuilder() {
 		
 		HP("HP","Hit Points"),
 		LUST("lust","Lust"),
-		LEVEL("level","Level")
+		LEVEL("level", "Level"),
+		
+		FEMININITY("femininity", "Femininity"),
+		BODYTONE("tone", "Body tone")
 		;
 		
 		override fun text() = shortName

@@ -21,19 +21,65 @@
         <value name="has" impl="true"/>
         <value name="doesn't have" impl="false"/>
     </enum>
-    <function name="CreatureSexTest" return="boolean">
+    <enum name="IsOrNot">
+        <value name="is" impl="true"/>
+        <value name="isn't" impl="false"/>
+    </enum>
+    <enum name="CreatureTrait">
+        <value name="is biped" impl="'biped'"/>
+        <value name="is taur" impl="'taur'"/>
+        <value name="is naga" impl="'naga'"/>
+        <value name="is goo" impl="'goo'"/>
+        <value name="has horn(s)" impl="'horns'"/>
+        <value name="has tail(s)" impl="'tails'"/>
+    </enum>
+    <!-- *********
+         FUNCTIONS
+         ********* -->
+    <!-- creature-has -->
+    <function name="CreatureHasTesticles" return="boolean">
+        <listname>Creature: Has Testicles</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Has" type="HasOrNot" default="true"/>
+        <editor>
+            <param name="Creature"/>
+            <param name="Has" type="SELECT"/>
+            testicles
+        </editor>
+    </function>
+    <function name="CreatureHasPerk" return="boolean">
+        <listname>Creature: Has Perk</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Has" type="HasOrNot" default="true"/>
+        <param name="Perk" type="PerkType"/>
+        <editor>
+            <param name="Creature"/>
+            <param name="Has" type="SELECT"/>
+            perk
+            <param name="Perk" type="SELECT"/>
+        </editor>
+    </function>
+    <function name="CreatureHasTrait" return="boolean">
+        <listname>Creature: Has Trait</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Trait" type="CreatureTrait"/>
+        <param name="Invert" type="boolean" default="true"/>
+        <editor>
+            <param name="Creature"/>
+            <param name="Trait" type="SELECT"/>
+            <param name="Invert" type="CHECKBOX" typedata="not"/>
+        </editor>
+    </function>
+    <!-- creature-test -->
+    <function name="CreatureTestSex" return="boolean">
         <listname>Creature: Test Sex</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="SexTest" type="SexTest"/>
         <editor><param name="Creature"/> is <param name="SexTest" type="SELECT"/></editor>
     </function>
-    <function name="CreaturePerkTest" return="boolean">
-        <listname>Creature: Has Perk</listname>
-        <param name="Creature" type="Creature" default="player"/>
-        <param name="Has" type="HasOrNot" default="true"/>
-        <param name="Perk" type="PerkType"/>
-        <editor><param name="Creature"/> <param name="Has" type="SELECT"/> perk <param name="Perk" type="SELECT"/></editor>
-    </function>
+    <!-- ********
+         COMMANDS
+         ******** -->
     <command name="DynStats">
         <listname>Creature: Change stats</listname>
         <param name="Creature" type="Creature" default="player"/>

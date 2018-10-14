@@ -22,7 +22,7 @@ class ConstBool() : ExpressionBuilder() {
 	}
 	
 	override fun editorBody(): Pane = defaultEditorBody {
-		checkbox(null, constant)
+		checkbox(property = constant)
 	}
 	
 	override fun name(): String = "Always true / Always false"

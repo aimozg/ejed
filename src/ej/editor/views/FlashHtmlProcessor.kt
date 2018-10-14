@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.utils.XmlParser
+import ej.editor.utils.unescapeXml
 
 /*
  * Created by aimozg on 11.10.2018.
@@ -38,7 +39,7 @@ class FlashHtmlProcessor : XmlParser<ReadOnlyFlashTextDocument>() {
 		}
 		
 		override fun doText(text: String) {
-			addText(text)
+			addText(text.unescapeXml())
 		}
 		
 		override fun doOpen(single: Boolean, tag: String, attrs: HashMap<String, String>) {

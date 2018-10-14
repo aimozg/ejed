@@ -35,4 +35,7 @@ class ExternalEnumBuilder(val enumDecl: EnumDecl,initial:EnumDecl.EnumConstDecl?
 		other.value = this.value
 	}
 	
+	override fun initializableBy(initial: ExpressionBuilder): Boolean {
+		return (initial as? ExternalEnumBuilder)?.enumDecl == enumDecl
+	}
 }

@@ -3,64 +3,56 @@ package ej.xml
 import java.io.OutputStream
 import java.io.Writer
 import javax.xml.stream.XMLEventFactory
-import javax.xml.stream.XMLEventWriter
 import javax.xml.stream.XMLOutputFactory
-import javax.xml.stream.events.XMLEvent
+import javax.xml.stream.XMLStreamWriter
 
 /*
  * Created by aimozg on 20.07.2018.
  * Confidential until published on GitHub
  */
 
-class XmlBuilder(val output: XMLEventWriter) {
+class XmlBuilder(val output: XMLStreamWriter) {
 	private interface Sink<T> {
 		operator fun plusAssign(value:T)
 	}
 	constructor(output: OutputStream) : this(
-			XMLOutputFactory.newFactory().createXMLEventWriter(output)
+			XMLOutputFactory.newFactory().createXMLStreamWriter(output)
 	)
 	
 	constructor(output: Writer) : this(
-			XMLOutputFactory.newFactory().createXMLEventWriter(output)
+			XMLOutputFactory.newFactory().createXMLStreamWriter(output)
 	)
 	
 	private val events = XMLEventFactory.newFactory()
-	private val out = object:Sink<XMLEvent> {
-		override fun plusAssign(value: XMLEvent) {
-			output.add(value)
-		}
-	}
 	fun document(body:XmlBuilder.()->Unit) {
 		startDocument()
 		body()
 		endDocument()
 	}
 	fun startDocument() {
-		out += events.createStartDocument()
+		output.writeStartDocument()
 	}
 	fun endDocument() {
-		out += events.createEndDocument()
+		output.writeEndDocument()
 		output.close()
 	}
 	fun element(tag: String, attrs: Map<String, String> = emptyMap(), body: XmlBuilder.() -> Unit) {
-		out += events.createStartElement(
-				"",
-				"",
-				tag,
-				attrs.map { (k, v) ->
-					events.createAttribute(k, v)
-				}.iterator(),
-				emptyList<Any?>().iterator()
-		)
+		output.writeStartElement(tag)
+		for ((k, v) in attrs) output.writeAttribute(k, v)
 		body()
-		out += events.createEndElement("","",tag)
+		output.writeEndElement()
 	}
 	fun element(tag:String,body:String="",attrs:Map<String,String> = emptyMap()) {
-		element(tag,attrs) {
-			if (body.isNotEmpty()) out += events.createCharacters(body)
+		if (body.isNotEmpty()) {
+			element(tag, attrs) {
+				output.writeCharacters(body)
+			}
+		} else {
+			output.writeEmptyElement(tag)
+			for ((k, v) in attrs) output.writeAttribute(k, v)
 		}
 	}
 	fun text(data:String) {
-		if (data.isNotEmpty()) out += events.createCharacters(data)
+		if (data.isNotEmpty()) output.writeCharacters(data)
 	}
 }

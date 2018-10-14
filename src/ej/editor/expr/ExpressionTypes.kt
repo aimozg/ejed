@@ -13,4 +13,5 @@ object ExpressionTypes {
 	const val STRING = "string"
 	
 	const val CREATURE = "Creature"
+	const val PERK = "Perk"
 }

@@ -199,9 +199,11 @@ class ExpressionChooserDialog : ChooserDialog<ExpressionBuilder>() {
 			this.items.setAll(items)
 		} else {
 			this.items.setAll(items.map {
-				if (it.javaClass == initial.javaClass) initial
-				else if (it is RawExpressionBuilder) RawExpressionBuilder(initial.build())
-				else it
+				when {
+					it.initializableBy(initial) -> initial
+					it is RawExpressionBuilder -> RawExpressionBuilder(initial.build())
+					else -> it
+				}
 			})
 		}
 		return showModal(title, initial ?: items.firstOrNull())

@@ -161,7 +161,8 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 		}
 		fun saveMod(mod:ModData,dst: Writer) {
-			getSerializationInfo().serializeDocument(mod, XmlBuilder(dst))
+			val builder = XmlBuilder(dst)
+			getSerializationInfo().serializeDocument(mod, builder)
 		}
 		
 	}

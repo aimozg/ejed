@@ -14,6 +14,8 @@ sealed class Expression {
 	abstract val parts:List<Expression>
 	override fun toString() = source
 	abstract fun copy():Expression
+	final override fun equals(other: Any?) = (other as? Expression)?.source == source
+	final override fun hashCode() = source.hashCode()
 }
 class Identifier(val value:String):Expression() {
 	override val parts get() = emptyList<Expression>()
