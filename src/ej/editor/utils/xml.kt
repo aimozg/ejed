@@ -17,13 +17,21 @@ import javax.xml.stream.events.XMLEvent
 
 val XML_ESCAPABLE_TOKENS = Regex("[&<>]")
 val XML_ATTR_ESCAPABLE_TOKENS = Regex("[&<>\"\t\r\n]")
-val XML_KNOWN_ENTITIES = mapOf(
-		"amp" to "&",
-		"lt" to "<",
-		"gt" to ">",
-		"quot" to "\"",
-		"apos" to "\'"
-)
+val XML_KNOWN_ENTITIES by lazy {
+	try {
+		loadXmlEntities()
+	} catch (e: Throwable) {
+		System.err.println("Error loading XML Entities")
+		e.printStackTrace()
+		mapOf(
+				"amp" to "&",
+				"lt" to "<",
+				"gt" to ">",
+				"quot" to "\"",
+				"apos" to "\'"
+		)
+	}
+}
 val XML_ENTITIES = mapOf(
 		"&" to "&amp;",
 		"<" to "&lt;",
@@ -46,7 +54,7 @@ fun String.unescapeXml() = XML_ENTITY_REX.replace(this) {
 	val name = it.groupValues[1]
 	if (name.isNotEmpty()) {
 		XML_KNOWN_ENTITIES[name] ?: this.apply {
-			System.err.println("Unknown XML entity $this")
+			System.err.println("Unknown XML entity ${it.value}")
 		}
 	} else {
 		val scode = it.groupValues[2]
@@ -77,4 +85,30 @@ fun StartElement.readAttributes():Map<String,String> {
 		m[attribute.name.localPart] = attribute.value
 	}
 	return m
+}
+
+private val CSS_SIMPLE_PROP = Regex("""(?<=^|[;/])\s*([a-z\-]+)\s*:\s*([^;]+)(?=[;/]|${'$'})""")
+fun extractInlineStyle(styleAttr: String?): Map<String, String> {
+	return CSS_SIMPLE_PROP.findAll(styleAttr ?: return emptyMap()).map {
+		it.groupValues[1] to it.groupValues[2]
+	}.toMap()
+}
+
+private val XML_ENTITY_DECL = Regex("""<!ENTITY *([a-zA-Z]+) *"&#(x[0-9A-Fa-f]+|[0-9]+);">""")
+private fun loadXmlEntities(): Map<String, String> {
+	class Anchor
+	return arrayOf("xhtml-lat1.ent", "xhtml-special.ent", "xhtml-symbol.ent").map {
+		Anchor::class.java.getResourceAsStream(it).reader().useLines { lines ->
+			val d = HashMap<String, String>()
+			for (line in lines) {
+				for (m in XML_ENTITY_DECL.findAll(line)) {
+					val name = m.groupValues[1]
+					val scode = m.groupValues[2]
+					val code = if (scode[0] == 'x') scode.toInt(16) else scode.toInt()
+					d[name] = code.toChar().toString()
+				}
+			}
+			d
+		}
+	}.foldRight(emptyMap()) { a, b -> a + b }
 }

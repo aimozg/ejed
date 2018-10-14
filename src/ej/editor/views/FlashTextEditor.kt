@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.utils.WritableExpression
+import ej.utils.crop
 import javafx.beans.property.Property
 import javafx.geometry.Orientation
 import javafx.scene.input.Clipboard
@@ -37,6 +38,8 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 	constructor(textProperty: Property<String>) : this(
 			EditableFlashTextDocument(FlashParStyle(), FlashSegStyle())
 	) {
+		textProperty.unbind()
+		editableTextProperty.unbind()
 		editableTextProperty.bindBidirectional(textProperty)
 	}
 	
@@ -46,6 +49,7 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 		}
 		
 		override fun doSet(value: String) {
+			println("doSet " + value.crop(80))
 			loadText(value)
 		}
 		
@@ -68,8 +72,10 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 			val ih = insets.top + insets.bottom
 			val c = children.firstOrNull() as? VirtualFlow<*, *>
 			if (c != null && paragraphs.size > 0) {
+				val cw = (c.getWidth() - c.getInsets().left - c.getInsets().right).takeIf { it > 0 }
+						?: (width - insets.left - insets.right)
 				return ih + (0 until paragraphs.size).sumByDouble { i ->
-					c.getCell(i).node.prefHeight(width)
+					c.getCell(i).node.prefHeight(cw)
 				}
 			}
 			val d = totalHeightEstimateProperty().value

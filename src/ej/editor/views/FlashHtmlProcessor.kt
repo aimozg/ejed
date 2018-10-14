@@ -1,6 +1,7 @@
 package ej.editor.views
 
 import ej.editor.utils.XmlParser
+import ej.editor.utils.extractInlineStyle
 import ej.editor.utils.unescapeXml
 
 /*
@@ -43,9 +44,14 @@ class FlashHtmlProcessor : XmlParser<ReadOnlyFlashTextDocument>() {
 		}
 		
 		override fun doOpen(single: Boolean, tag: String, attrs: HashMap<String, String>) {
+			val style = extractInlineStyle(attrs["style"])
 			when (tag.toLowerCase()) {
-				"i" -> curSegStyle = curSegStyle.copy(italic = true)
-				"b" -> curSegStyle = curSegStyle.copy(bold = true)
+				"i" -> {
+					curSegStyle = curSegStyle.copy(italic = true)
+				}
+				"b" -> {
+					curSegStyle = curSegStyle.copy(bold = true)
+				}
 				"u" -> curSegStyle = curSegStyle.copy(underline = true)
 				"span" -> {/*curSegStyle = curSegStyle.copy()*/
 				}
@@ -57,12 +63,15 @@ class FlashHtmlProcessor : XmlParser<ReadOnlyFlashTextDocument>() {
 				
 				"br" -> addText("\n")
 				"p" -> {
-					startParagraph(
-							FlashParStyle(
-									tag = FlashParStyle.PARTAG_P,
-									align = attrs["align"]
-							)
-					)
+					if (style["margin-top"]?.startsWith("0") == false
+							|| style["margin-bottom"]?.startsWith("0") == false) {
+						startParagraph(
+								FlashParStyle(
+										tag = FlashParStyle.PARTAG_P,
+										align = attrs["align"]
+								)
+						)
+					}
 				}
 				"div" -> {
 					startParagraph(
@@ -71,6 +80,27 @@ class FlashHtmlProcessor : XmlParser<ReadOnlyFlashTextDocument>() {
 							)
 					)
 				}
+			}
+			for ((k, v) in style) when (k) {
+				"font-weight" -> v.toIntOrNull()?.let { weight ->
+					curSegStyle = curSegStyle.copy(bold = weight >= 600)
+				}
+				"font-style" ->
+					curSegStyle = curSegStyle.copy(italic =
+					                               when (v) {
+						                               "italic" -> true
+						                               "normal" -> false
+						                               else -> null
+					                               }
+					)
+				"text-decoration" ->
+					curSegStyle = curSegStyle.copy(underline =
+					                               when (v) {
+						                               "underline" -> true
+						                               "inherit", "initial" -> null
+						                               else -> false
+					                               }
+					)
 			}
 		}
 		
