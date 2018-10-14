@@ -171,7 +171,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 			s = ""
 		}
 		if (s.isNotEmpty()) {
-			mainText.htmlContent += "<span class='$cc'>$s</span>"
+			mainText.htmlContent += "<span class='$cc'>${s.replace("\n", "<br>")}</span>"
 		}
 	}
 	
