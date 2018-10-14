@@ -42,6 +42,12 @@ annotation class Element(val name: String = "")
 @Retention(AnnotationRetention.RUNTIME)
 annotation class TextBody
 
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class TextBodyWhitespacePolicy(
+		val policy: WhitespacePolicy
+)
+
 /**
  * ```
  * @Elements("item") val items = arrayListOf("me", "her")
@@ -115,7 +121,14 @@ annotation class MixedBodyWhitespacePolicy(
 enum class WhitespacePolicy {
 	KEEP,
 	COMPACT,
-	TRIM
+	TRIM;
+}
+
+private val CONSECUTIVE_WHITESPACE = Regex("\\s++")
+fun WhitespacePolicy.applyTo(s: String): String = when (this) {
+	WhitespacePolicy.KEEP -> s
+	WhitespacePolicy.COMPACT -> s.replace(CONSECUTIVE_WHITESPACE, " ")
+	WhitespacePolicy.TRIM -> s.trim()
 }
 
 @Target(AnnotationTarget.PROPERTY)
@@ -169,7 +182,10 @@ private class PropertyTypeinfo(
 	
 	fun textConverter(): TextConverter<*>? =
 			when {
-				type == String::class.starProjectedType -> StringTextConverter()
+				type == String::class.starProjectedType ->
+					StringTextConverter(
+							property.findAnnotation<TextBodyWhitespacePolicy>()?.policy ?: WhitespacePolicy.KEEP
+					)
 				type == Int::class.starProjectedType -> IntTextConverter()
 				type == Boolean::class.starProjectedType ->
 					if (nullable) TristateBoolTextConverter() else BoolTextConverter()

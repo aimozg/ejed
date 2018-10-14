@@ -14,7 +14,6 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.Menu
-import javafx.scene.input.KeyCombination
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
@@ -58,7 +57,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 			contextmenu {
 				for (e in StatementMetadata.entries) {
 					if (e == null) separator()
-					else item(e.name, KeyCombination.valueOf(e.hotkey)) {
+					else item(e.name/*, KeyCombination.valueOf(e.hotkey)*/) {
 						action {
 							insertAfter(null, e.factory())
 						}
@@ -78,7 +77,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 			contextmenu {
 				for (e in StatementMetadata.entries) {
 					if (e == null) separator()
-					else item(e.name, KeyCombination.valueOf(e.hotkey)) {
+					else item(e.name/*, KeyCombination.valueOf(e.hotkey)*/) {
 						action {
 							insertBefore(null, e.factory())
 						}
@@ -109,26 +108,25 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	init {
 		graphicFactory { cell, stmt ->
 			val cellMenu = cell.contextmenu {
-				item("Delete",
-				     KeyCombination.valueOf("Delete")) {
+				item("_Delete") {
 					action {
 						deleteStmt(stmt)
 					}
 				}
-				menu("Insert Before") {
+				menu("Insert _Before") {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
-						else item(e.name, KeyCombination.valueOf("Shift+" + e.hotkey)) {
+						else item(e.name) {
 							action {
 								insertBefore(stmt, e.factory())
 							}
 						}
 					}
 				}
-				this += Menu("Insert After").apply {
+				this += Menu("Insert _After").apply {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
-						else item(e.name, KeyCombination.valueOf(e.hotkey)) {
+						else item(e.name) {
 							action {
 								insertAfter(stmt, e.factory())
 							}

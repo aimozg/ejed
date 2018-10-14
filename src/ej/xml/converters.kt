@@ -45,34 +45,31 @@ class LambdaTextConverter<A : Any>(
 	override fun convert(s: String): A = deserializeFn(s)
 }
 
-class StringTextConverter : TextConverter<String> {
+class StringTextConverter(
+		val whitespacePolicy: WhitespacePolicy = WhitespacePolicy.KEEP
+) : TextConverter<String> {
 	override fun toString(a: String?) = a
-	override fun convert(s: String) = s
+	override fun convert(s: String) = whitespacePolicy.applyTo(s)
 }
-
-private val CONSECUTIVE_WHITESPACE = Regex("\\s++")
 
 class EitherLeftStringTextConverter<R>
 @JvmOverloads constructor(
 		val whitespacePolicy: WhitespacePolicy = WhitespacePolicy.KEEP
 ) : TextConverter<Either<String, R>> {
-	override fun convert(s: String) = when (whitespacePolicy) {
-		WhitespacePolicy.KEEP -> s
-		WhitespacePolicy.COMPACT -> s.replace(CONSECUTIVE_WHITESPACE, " ")
-		WhitespacePolicy.TRIM -> s.trim()
-	}.takeIf { it.isNotEmpty() }?.iAmEitherLeft()
+	override fun convert(s: String) =
+			whitespacePolicy.applyTo(s).takeIf { it.isNotEmpty() }?.iAmEitherLeft()
 	
 	override fun toString(a: Either<String, R>?): String? = a?.component1()
 }
 
 class IntTextConverter : TextConverter<Int> {
 	override fun toString(a: Int?) = a?.toString()
-	override fun convert(s: String) = s.toInt()
+	override fun convert(s: String) = s.trim().toInt()
 }
 
 class BoolTextConverter : TextConverter<Boolean> {
 	override fun toString(a: Boolean?) = if (a == true) "true" else null
-	override fun convert(s: String) = s == "true"
+	override fun convert(s: String) = s.trim() == "true"
 }
 
 class TristateBoolTextConverter : TextConverter<Boolean> {

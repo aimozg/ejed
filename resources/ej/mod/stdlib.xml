@@ -54,7 +54,7 @@
         <listname>Creature: Has Trait</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="Trait" type="CreatureTrait"/>
-        <param name="Invert" type="boolean" default="true"/>
+        <param name="Invert" type="boolean" default="false"/>
         <editor>
             <param name="Creature"/>
             <param name="Trait" type="SELECT"/>
@@ -75,14 +75,52 @@
     <!-- ********
          COMMANDS
          ******** -->
+    <!-- stats -->
     <command name="DynStats">
         <listname>Creature: Change stats</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="Cor" type="int" default="0"/>
-        <editor>Alter
+        <editor>
+            Alter
             <param name="Creature"/>
             stats: cor
             <param name="Cor"/>
         </editor>
+    </command>
+    <!-- items -->
+    <!-- sex -->
+    <command name="StretchAnus">
+        <listname>Creature: Stretch Anus</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Area" type="float" default="30"/>
+        <param name="NoDisplay" type="boolean" default="false"/>
+        <editor>
+            Stretch
+            <param name="Creature"/>'s
+            anus by
+            <param name="Area"/>
+            sq.in.
+            <param name="NoDisplay" type="CHECKBOX" typedata="(no display)"/>
+        </editor>
+        <editor-hint>
+            Area = (thickness * length) of inserted object, inches
+        </editor-hint>
+    </command>
+    <command name="StretchVagina">
+        <listname>Creature: Stretch Vagina</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Area" type="float" default="30"/>
+        <param name="NoDisplay" type="boolean" default="false"/>
+        <editor>
+            Stretch
+            <param name="Creature"/>'s
+            vagina by
+            <param name="Area"/>
+            sq.in.
+            <param name="NoDisplay" type="CHECKBOX" typedata="(no display)"/>
+        </editor>
+        <editor-hint>
+            Area = (thickness * length) of inserted object, inches
+        </editor-hint>
     </command>
 </stdlib>

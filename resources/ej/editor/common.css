@@ -107,6 +107,31 @@
     -fx-font-family: "Lucida Fax";
 }
 
+.styled-text-area {
+    -fx-background-color: -fx-inner-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3, 2;
+    -fx-text-fill: -fx-text-base-color;
+    -fx-padding: 2;
+}
+
+.styled-text-area:focused {
+    -fx-background-color: -fx-focus-color,
+    -fx-control-inner-background,
+    -fx-faint-focus-color,
+    -fx-control-inner-background;
+    -fx-background-insets: -0.2, 1, -1.4, 3;
+    -fx-background-radius: 3, 2, 4, 0;
+}
+
+.styled-text-area .text {
+    -fx-fill: -fx-text-fill;
+}
+
+.styled-text-area .caret {
+    -fx-stroke: -fx-text-fill;
+}
+
 /* Expression editor: link */
 .xexpr-link {
     -fx-cursor: hand;
@@ -203,7 +228,7 @@
     -fx-rotate: 0;
 }
 
-.simple-list-view {
+.simple-list-view, .decorated-list-body {
     -fx-fill-width: true;
     -fx-pref-height: -1;
     -fx-spacing: 4.0;
@@ -220,7 +245,7 @@
     -fx-pref-height: 16px;
 }
 
-.stmt-ctrl-main .simple-list-view {
+.stmt-ctrl-main .simple-list-view, .stmt-ctrl-main .decorated-list-body {
     -fx-spacing: 4.0;
 }
 

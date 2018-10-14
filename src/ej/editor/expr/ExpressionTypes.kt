@@ -6,6 +6,7 @@ package ej.editor.expr
  */
 object ExpressionTypes {
 	const val ANY = ""
+	const val VOID = "void"
 	
 	const val BOOLEAN = "boolean"
 	const val INT = "int"

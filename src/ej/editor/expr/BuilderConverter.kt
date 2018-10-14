@@ -10,15 +10,27 @@ import ej.editor.expr.impl.*
  */
 
 interface BuilderConverter {
-	fun convert(expr: Expression, type:String="*"): ExpressionBuilder
+	fun convert(expr: Expression, type: String): ExpressionBuilder
 }
 
 interface PartialBuilderConverter<E : Expression> {
 	fun tryConvert(converter: BuilderConverter, expr: E): ExpressionBuilder?
 }
 
+object DefaultCommandConverter : BuilderConverter {
+	override fun convert(expr: Expression, type: String): ExpressionBuilder {
+		if (type == ExpressionTypes.VOID) {
+			val command = if (expr is CallExpression) Stdlib.tryConvertCommand(DefaultBuilderConverter, expr) else null
+			if (command != null) return command
+		}
+		return RawExpressionBuilder(expr)
+	}
+}
 object DefaultBuilderConverter : BuilderConverter {
 	override fun convert(expr: Expression,type:String): ExpressionBuilder {
+		if (type == ExpressionTypes.VOID) {
+			return DefaultCommandConverter.convert(expr, type)
+		}
 		val enumDecl = Stdlib.enumByTypeName(type)
 		val enumConstDecl = enumDecl?.valueByImpl(expr.source)
 		if (enumConstDecl != null) {

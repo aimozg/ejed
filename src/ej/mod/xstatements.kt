@@ -1,10 +1,11 @@
 package ej.mod
 
+import ej.editor.expr.DefaultCommandConverter
+import ej.editor.expr.Expression
 import ej.editor.expr.ExpressionProperty
+import ej.editor.expr.ExpressionTypes
 import ej.utils.affix
-import ej.xml.XmlSerializableCompanion
-import ej.xml.XmlSzInfoBuilder
-import ej.xml.inherit
+import ej.xml.*
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -45,20 +46,34 @@ class XsForward : XStatement {
 	}
 }
 
-class XsSet : XStatement {
+class XsCommand : XStatement, XmlAutoSerializable {
+	val valueProperty = ExpressionProperty("", DefaultCommandConverter, ExpressionTypes.VOID)
+	@TextBody
+	@TextBodyWhitespacePolicy(WhitespacePolicy.COMPACT)
+	var value: String by valueProperty
+	var valueExpression: Expression by valueProperty.expressionProperty
+	
+	override fun toString() = defaultToString("command", "", value)
+}
+
+class XsSet : XStatement, XmlAutoSerializable {
 	val varnameProperty = SimpleObjectProperty("")
+	@Attribute("var")
 	var varname: String by varnameProperty
 	
 	val inobjProperty = SimpleObjectProperty<String?>()
+	@Attribute("in")
 	var inobj: String? by inobjProperty
 	
 	// TODO enum
 	val opProperty = SimpleObjectProperty<String?>( null)
+	@Attribute("op")
 	var op: String? by opProperty
 	
 	val valueProperty = ExpressionProperty("")
+	@Attribute("value")
 	var value: String by valueProperty
-	
+	var valueExpression: Expression by valueProperty.expressionProperty
 	
 	override fun toString() = defaultToString(
 			"set",
@@ -67,7 +82,7 @@ class XsSet : XStatement {
 			op.affix(" op='", "'") +
 			" value='$value'",
 			"")
-	
+	/*
 	companion object : XmlSerializableCompanion<XsSet> {
 		override val szInfoClass = XsSet::class
 		
@@ -80,22 +95,26 @@ class XsSet : XStatement {
 		}
 		
 	}
+	*/
 }
 
-class XsOutput : XStatement {
-	val expressionProperty = SimpleStringProperty("")
-	var expression:String by expressionProperty
+class XsOutput : XStatement, XmlAutoSerializable {
+	val valueProperty = ExpressionProperty("")
+	@TextBody
+	var value: String by valueProperty
+	var valueExpression by valueProperty.expressionProperty
 	
-	override fun toString() = defaultToString("output","",expression)
-	
+	override fun toString() = defaultToString("output", "", value)
+	/*
 	companion object : XmlSerializableCompanion<XsOutput> {
 		override val szInfoClass = XsOutput::class
 		
 		override fun XmlSzInfoBuilder<XsOutput>.buildSzInfo() {
-			textBody(XsOutput::expression)
+			textBody(XsOutput::value)
 		}
 		
 	}
+	*/
 }
 
 class XsMenu : XContentContainer() {

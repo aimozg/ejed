@@ -26,6 +26,11 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression>,
 	fun functionsReturning(rawType:String) = functions.filter {
 		it.returnTypeRaw == rawType
 	}
+	
+	fun commandBuilders(): List<ExpressionBuilder> = commands.map {
+		ExternalFunctionBuilder(it)
+	}
+	
 	fun buildersReturning(rawType:String):List<ExpressionBuilder> = listOfNotNull(
 			enumByTypeName(rawType)?.let {
 				ExternalEnumBuilder(it)
@@ -34,15 +39,27 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression>,
 		ExternalFunctionBuilder(it)
 	}
 	fun functionByName(name:String) = functions.find { it.name == name }
+	fun commandByName(name: String) = commands.find { it.name == name }
 	fun enumByTypeName(typename:String) = enums.find { it.name == typename }
 	
+	fun tryConvertCommand(converter: BuilderConverter, expr: CallExpression): ExpressionBuilder? {
+		val id = expr.function.asId?.value ?: return null
+		val command = commandByName(id) ?: return null
+		return tryConvert(expr, command, converter)
+	}
 	override fun tryConvert(converter: BuilderConverter, expr: CallExpression): ExpressionBuilder? {
 		val id = expr.function.asId?.value ?: return null
-		val arity = expr.arguments.size
 		val function = functionByName(id) ?: return null
-		if (function.arity != arity) return null
-		val efb = ExternalFunctionBuilder(function)
-		for ((i, param) in function.params.withIndex()) {
+		return tryConvert(expr, function, converter)
+	}
+	
+	private fun tryConvert(expr: CallExpression,
+	                       decl: ExpressionDecl,
+	                       converter: BuilderConverter): ExternalFunctionBuilder? {
+		val arity = expr.arguments.size
+		if (decl.arity != arity) return null
+		val efb = ExternalFunctionBuilder(decl)
+		for ((i, param) in decl.params.withIndex()) {
 			efb.params[i].value = converter.convert(expr.arguments[i], param.type)
 		}
 		return efb

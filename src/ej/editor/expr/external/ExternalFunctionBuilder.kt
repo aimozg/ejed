@@ -7,6 +7,7 @@ import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.lists.CreatureChooser
 import ej.editor.expr.lists.SimpleExpressionChooser
 import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.text.FontPosture
 import javafx.scene.text.TextFlow
 import tornadofx.*
 
@@ -16,7 +17,7 @@ import tornadofx.*
  */
 
 class ExternalFunctionBuilder(
-		val decl: FunctionDecl
+		val decl: ExpressionDecl
 ) : ExpressionBuilder() {
 	val params = decl.params.map { param ->
 		val d = param.default?.let {
@@ -71,6 +72,14 @@ class ExternalFunctionBuilder(
 				
 			}
 			if(ltext != null) text(ltext)
+		}
+		decl.editorHint?.let { hint ->
+			text("\n" + hint) {
+				style {
+					padding = box(0.5.em)
+					fontStyle = FontPosture.ITALIC
+				}
+			}
 		}
 	}
 	

@@ -29,6 +29,9 @@ abstract class ExpressionDecl : XmlAutoSerializable, Validable {
 	@Element("editor")
 	var editor = ExpressionEditorDecl()
 	
+	@Element("editor-hint")
+	var editorHint: String? = null
+	
 	val arity get() = params.size
 	
 	fun paramByName(name: String) = params.firstOrNull { it.name == name }

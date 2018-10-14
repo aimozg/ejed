@@ -8,7 +8,10 @@ import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 import java.util.concurrent.atomic.AtomicInteger
 
-open class ExpressionProperty(initialValue:String = "") : SimpleStringProperty(initialValue) {
+open class ExpressionProperty(
+		initialValue: String = "",
+		private val converter: BuilderConverter = DefaultBuilderConverter,
+		private val expressionType: String = ExpressionTypes.ANY) : SimpleStringProperty(initialValue) {
 	val expressionProperty = object: SimpleObjectProperty<Expression>() {
 		override fun set(v: Expression) {
 			mutating.callAtZero {
@@ -32,7 +35,8 @@ open class ExpressionProperty(initialValue:String = "") : SimpleStringProperty(i
 			this@ExpressionProperty.value = expr.source
 		}
 	}
-	fun toBuilder() = DefaultBuilderConverter.convert(expressionProperty.value)
+	
+	fun toBuilder() = converter.convert(expressionProperty.value, expressionType)
 	private val mutating = AtomicInteger(0)
 	override fun set(v: String) {
 		mutating.callAtZero {

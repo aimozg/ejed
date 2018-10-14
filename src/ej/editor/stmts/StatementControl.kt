@@ -107,6 +107,7 @@ fun XStatement.createControl(): StatementControl<*>? = when (this) {
 	is XsForward -> ScForward(this)
 	is XsOutput -> ScOutput(this)
 	is XsSet -> ScSet(this)
+	is XsCommand -> ScCommand(this)
 	is XsMenu -> ScMenu(this)
 	is XsNext -> ScNext(this)
 	is XsButton -> ScButton(this)
@@ -121,18 +122,20 @@ object StatementMetadata {
 	class Entry(val name: String, val hotkey: String, val factory: () -> XStatement)
 	
 	val entries: List<Entry?> = listOf(
-			Entry("Text", "X") { XcText() },
-			Entry("Display", "D") { XsDisplay() },
-			Entry("Output", "W") { XsOutput() },
-			Entry("Comment", "Z") { XlComment() },
+			Entry("Te_xt", "X") { XcText() },
+			Entry("_//Comment", "/") { XlComment() },
+			Entry("_Display", "D") { XsDisplay() },
+			Entry("O_utput", "U") { XsOutput() },
+			Entry("_Command", "C") { XsCommand() },
 			null,
-			Entry("If-Then-Else", "C") { XlIf() },
-			Entry("Switch-Branches", "S") { XlSwitch() },
+			Entry("Set _=", "=") { XsSet() },
+			Entry("_If-Then-Else", "I") { XlIf() },
+			Entry("_Switch-Branches", "S") { XlSwitch() },
 			null,
-			Entry("Next", "N") { XsNext() },
-			Entry("Menu", "M") { XsMenu() },
-			Entry("Menu Option", "O") { XsButton() },
-			Entry("Forward", "F") { XsForward() },
-			Entry("Battle", "B") { XsBattle() }
+			Entry("_Next", "N") { XsNext() },
+			Entry("_Menu", "M") { XsMenu() },
+			Entry("Menu _Button", "B") { XsButton() },
+			Entry("_Forward", "F") { XsForward() },
+			Entry("Batt_le", "L") { XsBattle() }
 	)
 }

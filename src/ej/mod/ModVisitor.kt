@@ -42,16 +42,25 @@ abstract class ModVisitor {
 	open fun visitEncounterTrigger(x:EncounterTrigger) {
 		visitAnyNode(x)
 	}
+	
+	open fun visitPlaceTrigger(x: PlaceTrigger) {
+		visitAnyNode(x)
+	}
 	open fun visitTrigger(x:SceneTrigger) {
 		when (x) {
 			is TimedTrigger -> visitTimedTrigger(x)
 			is EncounterTrigger -> visitEncounterTrigger(x)
+			is PlaceTrigger -> visitPlaceTrigger(x)
 		}
 	}
 	open fun visitOutput(x:XsOutput){
 		visitAnyStmt(x)
 	}
 	open fun visitSet(x:XsSet){
+		visitAnyStmt(x)
+	}
+	
+	open fun visitCommand(x: XsCommand) {
 		visitAnyStmt(x)
 	}
 	open fun visitDisplay(x:XsDisplay) {
@@ -145,6 +154,7 @@ fun ModDataNode.visit(visitor:ModVisitor) {
 		
 		is XsSet -> visitor.visitSet(this)
 		is XsOutput -> visitor.visitOutput(this)
+		is XsCommand -> visitor.visitCommand(this)
 		is XsDisplay -> visitor.visitDisplay(this)
 		is XsForward -> visitor.visitForward(this)
 		is XsBattle -> visitor.visitBattle(this)

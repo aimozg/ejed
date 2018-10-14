@@ -32,8 +32,8 @@ data class Comparison(
 	companion object : PartialBuilderConverter<BinaryExpression> {
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression): Comparison? = Comparison().apply {
 			op = (Operator.byOperator(expr.op) ?: return null)
-			left = converter.convert(expr.left)
-			right = converter.convert(expr.right)
+			left = converter.convert(expr.left, ExpressionTypes.ANY)
+			right = converter.convert(expr.right, ExpressionTypes.ANY)
 		}
 	}
 	

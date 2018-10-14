@@ -590,6 +590,40 @@ class TestAutoSerializable {
 	}
 	
 	@Test
+	fun testTextBodyWhitespace() {
+		val src =
+				"<?xml version='1.0' encoding='utf-8' ?>" +
+						"<mock>\n" +
+						"    skidaddle\n" +
+						"    skidoodle\n" +
+						"</mock>"
+		
+		@RootElement("mock")
+		data class MockKeep(
+				@TextBody
+				@TextBodyWhitespacePolicy(WhitespacePolicy.KEEP)
+				var things: String = ""
+		) : XmlAutoSerializable
+		assertDeserialization(MockKeep("\n    skidaddle\n    skidoodle\n"), src)
+		
+		@RootElement("mock")
+		data class MockCompact(
+				@TextBody
+				@TextBodyWhitespacePolicy(WhitespacePolicy.COMPACT)
+				var things: String = ""
+		) : XmlAutoSerializable
+		assertDeserialization(MockCompact(" skidaddle skidoodle "), src)
+		
+		@RootElement("mock")
+		data class MockTrim(
+				@TextBody
+				@TextBodyWhitespacePolicy(WhitespacePolicy.TRIM)
+				var things: String = ""
+		) : XmlAutoSerializable
+		assertDeserialization(MockTrim("skidaddle\n    skidoodle"), src)
+	}
+	
+	@Test
 	fun testMixedBodyWhitespace() {
 		val src =
 				"<?xml version='1.0' encoding='utf-8' ?>" +

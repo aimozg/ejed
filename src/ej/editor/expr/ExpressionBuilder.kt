@@ -33,16 +33,20 @@ fun WithReadableText.mktext(parts:Iterable<Any?>):String = parts.joinToString(""
 		else -> it.toString()
 	}
 }
-abstract class ExpressionBuilder : WithReadableText {
-	protected val controller:EditorController by lazy { find<EditorController>() }
-	abstract fun build():Expression
+
+abstract class VisualBuilder<T : Any> : WithReadableText {
+	abstract fun build(): T
 	abstract fun editorBody():Pane
 	abstract fun name():String
-	abstract fun copyMe():ExpressionBuilder
 	
 	override fun toString(): String {
 		return "<${name()}: ${build()}>"
 	}
+}
+
+abstract class ExpressionBuilder : VisualBuilder<Expression>() {
+	protected val controller: EditorController by lazy { find<EditorController>() }
+	abstract fun copyMe(): ExpressionBuilder
 	
 	override fun equals(other: Any?): Boolean {
 		val o = other as? ExpressionBuilder ?: return false

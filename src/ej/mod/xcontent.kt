@@ -40,6 +40,7 @@ open class XContentContainer : XComplexStatement {
 			          "display" to XsDisplay::class,
 			          "forward" to XsForward::class,
 			          "set" to XsSet::class,
+			          "command" to XsCommand::class,
 			          "output" to XsOutput::class,
 			          "if" to XmlFlatIf::class,
 			          "else" to XmlFlatElse::class,

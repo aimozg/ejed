@@ -11,11 +11,11 @@ object OutputMgr : StatementManager<XsOutput>() {
 	                        tree: StatementTree
 	) = defaultEditorBody() {
 		label("Evaluate and display:")
-		textfield(stmt.expression) { hgrow = Priority.ALWAYS }
+		textfield(stmt.value) { hgrow = Priority.ALWAYS }
 	}
 	
 	override fun treeGraphic(stmt: XsOutput, tree: StatementTree) =
-			simpleTreeLabel(stmt.expressionProperty.stringBinding {
+			simpleTreeLabel(stmt.valueProperty.stringBinding {
 				"Output: ${it?.squeezeWs()}"
 			}).addClass(Styles.xcommand)
 }

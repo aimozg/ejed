@@ -1,5 +1,7 @@
 package ej.editor.expr
 
+import ej.utils.escapeJs
+
 /*
  * Created by aimozg on 26.07.2018.
  * Confidential until published on GitHub
@@ -16,6 +18,8 @@ interface INumberValue {
 
 sealed class Evaluated {
 	abstract fun coerceToString(): IStringValue
+	open fun repr(): String = super.toString()
+	override fun toString() = repr()
 	open fun coerceToNumber(): INumberValue = coerceToString().let { sv ->
 		if (sv.stringValue.isEmpty()) IntValue(0)
 		else sv.stringValue.toIntOrNull()?.let { IntValue(it) }
@@ -43,18 +47,21 @@ sealed class Evaluated {
 	
 	object NullValue : Evaluated() {
 		override fun isTrue(): Boolean = false
+		override fun repr() = "null"
 		override fun coerceToString(): IStringValue = StringValue("null")
 		override fun coerceToNumber(): INumberValue = IntValue(0)
 	}
 	
 	object TrueValue : Evaluated() {
 		override fun isTrue(): Boolean = true
+		override fun repr() = "true"
 		override fun coerceToString(): IStringValue = StringValue("true")
 		override fun coerceToNumber(): INumberValue = IntValue(1)
 	}
 	
 	object FalseValue : Evaluated() {
 		override fun isTrue(): Boolean = false
+		override fun repr() = "false"
 		override fun coerceToString(): IStringValue = StringValue("false")
 		override fun coerceToNumber(): INumberValue = IntValue(0)
 	}
@@ -62,28 +69,35 @@ sealed class Evaluated {
 	data class IntValue(override val intValue: Int) : Evaluated(), INumberValue {
 		override val doubleValue: Double get() = intValue.toDouble()
 		override fun isTrue(): Boolean = intValue != 0
+		override fun repr() = intValue.toString()
 		override fun coerceToString(): IStringValue = StringValue(intValue.toString())
 		override fun coerceToNumber(): INumberValue = this
 	}
 	
 	data class FloatValue(override val doubleValue: Double) : Evaluated(), INumberValue {
 		override val intValue get() = doubleValue.toInt()
+		override fun repr() = doubleValue.toString()
 		override fun coerceToString(): IStringValue = StringValue(doubleValue.toString())
 		override fun coerceToNumber(): INumberValue = this
 	}
 	
 	data class StringValue(override val stringValue: String) : Evaluated(), IStringValue {
 		override fun isTrue(): Boolean = stringValue.isNotEmpty()
+		override fun repr() = "\"" + stringValue.escapeJs() + "\""
 		override fun coerceToString(): IStringValue = this
 	}
 	
 	class ListValue(val values: List<Evaluated>) : Evaluated() {
 		override fun isTrue(): Boolean = false
+		override fun repr() = values.joinToString(prefix = "[", postfix = "]") { it.repr() }
 		override fun coerceToString(): IStringValue = StringValue(values.joinToString(",") { it.coerceToString().stringValue })
 	}
 	
 	class ObjectValue(val values: Map<String, Evaluated>) : Evaluated() {
 		override fun isTrue(): Boolean = false
+		override fun repr() = values.entries.joinToString(prefix = "{", postfix = "}") {
+			"\"" + it.key.escapeJs() + "\": " + it.value.repr()
+		}
 		override fun coerceToString(): IStringValue = StringValue("[object Object]")
 	}
 	

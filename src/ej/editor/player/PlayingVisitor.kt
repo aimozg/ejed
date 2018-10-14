@@ -65,7 +65,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	 * flow control
 	 ************************************************************/
 	
-	protected inline fun evaluateAndTake(node:ModDataNode,expr:Expression,body:(Evaluated)->Unit) {
+	inline fun evaluateAndTake(node: ModDataNode, expr: Expression, body: (Evaluated) -> Unit) {
 		val test = pif.evaluator.evaluate(expr)
 		if (test is Evaluated.ErrorValue) {
 			pif.runtimeError(test.msg,node)
@@ -74,8 +74,40 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 		}
 	}
 	
+	private fun output(type: ContentType, content: String) {
+		output(type) { content }
+	}
+	
+	private inline fun output(type: ContentType, content: () -> String) {
+		if (!skipping || pif.doSkipped) pif.outputContent(content(), type, skipping)
+	}
+	
+	private inline fun outputCode(source: () -> String) {
+		output(ContentType.CODE, source)
+	}
+	
+	override fun visitSet(x: XsSet) {
+		outputCode { "[set ${x.inobj?.plus(".") ?: ""}${x.varname} ${x.op ?: "="} ${x.value}]" }
+		super.visitSet(x)
+	}
+	
+	override fun visitCommand(x: XsCommand) {
+		outputCode { "[command ${x.value}]" }
+		super.visitCommand(x)
+	}
+	
+	override fun visitOutput(x: XsOutput) {
+		outputCode { "[output ${x.value}]" }
+		if (!skipping) {
+			evaluateAndTake(x, x.valueExpression) { rslt ->
+				output(ContentType.TEXT, rslt.coerceToString().stringValue)
+			}
+		}
+		super.visitOutput(x)
+	}
+	
 	override fun visitIf(x: XlIf) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[if ${x.testExpression.source}]",ContentType.CODE,skipping)
+		outputCode { "[if ${x.testExpression.source}]" }
 		if (skipping) {
 			super.visitIf(x)
 			return
@@ -96,7 +128,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitElseif(x: XlElseIf) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[elseif ${x.testExpression.source}]",ContentType.CODE,skipping)
+		outputCode { "[elseif ${x.testExpression.source}]" }
 		if (skipping) {
 			super.visitElseif(x)
 			return
@@ -114,7 +146,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitElse(x: XlElse) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[else]",ContentType.CODE,skipping)
+		outputCode { "[else]" }
 		if (skipping) {
 			super.visitElse(x)
 			return
@@ -153,17 +185,16 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	
 	
 	override fun visitText(x: XcText) {
-		if (!skipping || pif.doSkipped) pif.outputContent(x.text, ContentType.TEXT, skipping)
+		output(ContentType.TEXT, x.text)
+		super.visitText(x)
 		if (skipping) {
 			return
 		}
 	}
 	
 	override fun visitComment(x: XlComment) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[-- ${x.text} --]", ContentType.COMMENT, skipping)
-		if (skipping) {
-			return
-		}
+		output(ContentType.COMMENT, "[-- ${x.text} --]")
+		super.visitComment(x)
 	}
 	
 	override fun visitMenu(x: XsMenu) {
@@ -180,7 +211,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitButton(x: XsButton) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[${x.text} -> ${x.ref}]",ContentType.CODE,skipping)
+		outputCode { "[${x.text} -> ${x.ref}]" }
 		if (skipping) {
 			return
 		}
@@ -193,7 +224,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitForward(x: XsForward) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[forward: ${x.ref}]",ContentType.CODE,skipping)
+		outputCode { "[forward: ${x.ref}]" }
 		if (skipping) {
 			return
 		}
@@ -207,7 +238,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitDisplay(x: XsDisplay) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[display: ${x.ref}]",ContentType.CODE,skipping)
+		outputCode { "[display: ${x.ref}]" }
 		if (skipping) {
 			return
 		}
@@ -220,7 +251,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitNext(x: XsNext) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[Continue -> ${x.ref}]",ContentType.CODE,skipping)
+		outputCode { "[Continue -> ${x.ref}]" }
 		if (skipping) {
 			return
 		}
@@ -228,7 +259,7 @@ class PlayingVisitor(val pif:PlayerInterface) : ModVisitor() {
 	}
 	
 	override fun visitBattle(x: XsBattle) {
-		if (!skipping || pif.doSkipped) pif.outputContent("[Battle with ${x.monster}]",ContentType.CODE,skipping)
+		outputCode { "[Battle with ${x.monster}]" }
 		if (skipping) {
 			return
 		}

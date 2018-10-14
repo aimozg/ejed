@@ -10,7 +10,7 @@ import ej.editor.expr.ExpressionTypes
  */
 class SimpleExpressionChooser(
 		val items: List<ExpressionBuilder>,
-		val type: String = ExpressionTypes.ANY
+		override val expressionType: String = ExpressionTypes.ANY
 ) : ExpressionChooser() {
 	override fun list() = items
 	

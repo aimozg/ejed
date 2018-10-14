@@ -10,6 +10,6 @@ class ScOutput(stmt: XsOutput) : StatementControl<XsOutput>(stmt) {
 	inner class OutputSkin : ScSkin<XsOutput, ScOutput>(this, {
 		addClass(Styles.xcommand)
 		label("Evaluate and display:")
-		textfield(stmt.expression) { hgrow = Priority.ALWAYS }
+		textfield(stmt.value) { hgrow = Priority.ALWAYS }
 	})
 }

@@ -6,6 +6,8 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.stage.FileChooser
 import tornadofx.*
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 class EditorController : Controller() {
 	companion object {
@@ -48,7 +50,11 @@ class EditorController : Controller() {
 	fun saveMod() {
 		val mod = mod ?: return
 		val file = mod.sourceFile?.takeIf { it.exists() && it.isFile && it.canWrite() } ?: return saveModAs()
-		file.renameTo(File(file.parent,file.nameWithoutExtension+".bak"))
+		Files.move(
+				file.toPath(),
+				file.toPath().parent.resolve(file.nameWithoutExtension + ".bak"),
+				StandardCopyOption.REPLACE_EXISTING
+		)
 		println("Saving to $file")
 		ModData.saveMod(mod, file.writer())
 	}
@@ -59,9 +65,10 @@ class EditorController : Controller() {
 		           filters = MOD_FILE_FILTERS) {
 			initialDirectory = (mod?.sourceFile?.parentFile
 					?: File(modDir)).takeIf { it.exists() && it.isDirectory } ?: File(".")
-		}.firstOrNull()?.let {
-			it.createNewFile()
-			mod?.sourceFile = it
+		}.firstOrNull()?.let { file ->
+			if (file.exists()) file.renameTo(File(file.parent, file.nameWithoutExtension + ".bak"))
+			else file.createNewFile()
+			mod?.sourceFile = file
 			saveMod()
 		}
 	}
