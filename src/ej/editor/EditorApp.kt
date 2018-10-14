@@ -21,7 +21,7 @@ import java.io.PrintStream
 
 const val VERSION = "v0.1.1"
 
-abstract class AModView(title: String? = "EJEd v$VERSION") : View(title) {
+abstract class AModView(title: String? = "EJEd $VERSION") : View(title) {
 	val controller: EditorController by inject(DefaultScope)
 	val mod get() = controller.mod!!
 }
