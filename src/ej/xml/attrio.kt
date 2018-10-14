@@ -22,7 +22,8 @@ abstract class AbstractAio<in T : Any, A : Any>(
 	abstract fun getValue(obj: T): A?
 	abstract fun setValue(obj: T, value: A)
 	override fun consumeAttr(obj: T, key: String, value: String) {
-		setValue(obj, converter.convert(value))
+		val a = converter.convert(value)
+		if (a != null) setValue(obj, a)
 	}
 	override fun produce(obj: T): Pair<String, String>? {
 		val v = converter.toString(getValue(obj))

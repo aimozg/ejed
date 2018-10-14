@@ -35,8 +35,12 @@
     -fx-background-radius: 3, 2, 4, 0;
 }
 
-.styled-text-area .text, .styled-text-area .caret {
+.styled-text-area .text {
     -fx-fill: -fx-text-fill;
+}
+
+.styled-text-area .caret {
+    -fx-stroke: -fx-text-fill;
 }
 
 .menu-bar {

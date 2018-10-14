@@ -29,7 +29,8 @@ abstract class AbstractElementIO<in T : Any, A : Any>(
 	                            tag: String,
 	                            attrs: Map<String, String>,
 	                            input: XmlExplorerController) {
-		setValue(obj, converter.convert(tag, attrs, input, obj))
+		val a = converter.convert(tag, attrs, input, obj)
+		if (a != null) setValue(obj, a)
 	}
 	
 	override fun produce(builder: XmlBuilder, obj: T) {
@@ -97,7 +98,8 @@ class ListPropertyEio<in T : Any, A : Any>(
 	                            tag: String,
 	                            attrs: Map<String, String>,
 	                            input: XmlExplorerController) {
-		prop.get(obj) += converter.convert(tag, attrs, input, obj)
+		val a = converter.convert(tag, attrs, input, obj)
+		if (a != null) prop.get(obj) += a
 	}
 }
 class WrappedListPropertyEio<in T: Any, A:Any>(
@@ -128,7 +130,8 @@ class WrappedListPropertyEio<in T: Any, A:Any>(
 			if (l != null && l.isNotBlank()) error("Unexpected text $l")
 			if (r != null) {
 				val (etag,eattrs) = r
-				list += converter.convert(etag,eattrs,input,obj)
+				val a = converter.convert(etag, eattrs, input, obj)
+				if (a != null) list += a
 			}
 		}
 	}

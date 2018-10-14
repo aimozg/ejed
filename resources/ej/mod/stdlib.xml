@@ -75,7 +75,11 @@
         <listname>Creature: Test Sex</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="SexTest" type="SexTest"/>
-        <editor><param name="Creature"/> is <param name="SexTest" type="SELECT"/></editor>
+        <editor>
+            <param name="Creature"/>
+            is
+            <param name="SexTest" type="SELECT"/>
+        </editor>
     </function>
     <!-- ********
          COMMANDS
@@ -84,6 +88,10 @@
         <listname>Creature: Change stats</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="Cor" type="int" default="0"/>
-        <editor>Alter <param name="Creature"/> stats: cor <param name="Cor"/></editor>
+        <editor>Alter
+            <param name="Creature"/>
+            stats: cor
+            <param name="Cor"/>
+        </editor>
     </command>
 </stdlib>

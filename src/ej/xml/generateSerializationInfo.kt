@@ -108,6 +108,18 @@ annotation class MixedToEitherBody(
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
+annotation class MixedBodyWhitespacePolicy(
+		val policy: WhitespacePolicy
+)
+
+enum class WhitespacePolicy {
+	KEEP,
+	COMPACT,
+	TRIM
+}
+
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class ParentElement
 
 @Target(AnnotationTarget.CLASS)
@@ -126,6 +138,9 @@ annotation class BeforeLoad
 @Retention(AnnotationRetention.RUNTIME)
 annotation class AfterSave
 
+/**
+ * Target: `fun(parent:Any?)` or `fun()`
+ */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class AfterLoad
@@ -304,7 +319,9 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 				if (!pti.list) error("Cannot have @PolymorphicElements for non-list $property")
 				@Suppress("UNCHECKED_CAST")
 				mixedBody(property as KProperty1<T,MutableList<Either<String, XmlSerializable>>>,
-				          EitherLeftStringTextConverter(),
+				          EitherLeftStringTextConverter(
+						          property.findAnnotation<MixedBodyWhitespacePolicy>()?.policy ?: WhitespacePolicy.KEEP
+				          ),
 				          annotation.polymorphisms.map {it.qualifier to {EitherRightSzInfo(it.klass)} }
 				          )
 			}

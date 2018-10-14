@@ -69,16 +69,19 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	}
 	
 	fun deleteStmt(stmt: XStatement) {
+		println("Deleting $stmt")
 		items.remove(stmt)
 	}
 	
 	fun insertAfter(ref: XStatement?, stmt: XStatement) {
 		val pos = items.indexOf(ref)
+		println("Inserting $stmt after $pos")
 		items.add(pos + 1, stmt)
 	}
 	
 	fun insertBefore(ref: XStatement?, stmt: XStatement) {
 		val pos = items.indexOf(ref)
+		println("Inserting $stmt before $pos")
 		if (pos >= 0) items.add(pos, stmt)
 		else items.add(stmt)
 	}

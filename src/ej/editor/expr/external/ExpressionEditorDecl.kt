@@ -21,6 +21,7 @@ class ExpressionEditorDecl : XmlAutoSerializable,Validable {
 	lateinit var expression: ExpressionDecl
 	
 	@MixedToEitherBody(Polymorphism("param", ParamRef::class))
+	@MixedBodyWhitespacePolicy(WhitespacePolicy.COMPACT)
 	val parts = ArrayList<Either<String,ParamRef>>().observable()
 
 	override fun validate() = ValidationReport.build {

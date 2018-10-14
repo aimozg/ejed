@@ -1,16 +1,17 @@
 package ej.xml
 
+import ej.utils.iAmEitherLeft
 import org.funktionale.either.Either
 
 interface TextConverter<A : Any> {
-	fun convert(s: String): A
+	fun convert(s: String): A?
 	fun toString(a: A?): String?
 }
 interface ElementConverter<A:Any> {
 	fun convert(tag: String,
 	            attrs: Map<String, String>,
 	            input: XmlExplorerController,
-	            parent: Any?): A
+	            parent: Any?): A?
 	fun write(builder:XmlBuilder, value:A)
 }
 interface OverwritingElementConverter<A:XmlSerializable>: ElementConverter<A> {
@@ -25,7 +26,7 @@ class TextElementConverter<A:Any>(val tag:String,val t:TextConverter<A>) : Eleme
 	override fun convert(tag: String,
 	                     attrs: Map<String, String>,
 	                     input: XmlExplorerController,
-	                     parent: Any?): A {
+	                     parent: Any?): A? {
 		return t.convert(input.text())
 	}
 	
@@ -49,8 +50,17 @@ class StringTextConverter : TextConverter<String> {
 	override fun convert(s: String) = s
 }
 
-class EitherLeftStringTextConverter<R> : TextConverter<Either<String, R>> {
-	override fun convert(s: String) = Either.left(s)
+private val CONSECUTIVE_WHITESPACE = Regex("\\s++")
+
+class EitherLeftStringTextConverter<R>
+@JvmOverloads constructor(
+		val whitespacePolicy: WhitespacePolicy = WhitespacePolicy.KEEP
+) : TextConverter<Either<String, R>> {
+	override fun convert(s: String) = when (whitespacePolicy) {
+		WhitespacePolicy.KEEP -> s
+		WhitespacePolicy.COMPACT -> s.replace(CONSECUTIVE_WHITESPACE, " ")
+		WhitespacePolicy.TRIM -> s.trim()
+	}.takeIf { it.isNotEmpty() }?.iAmEitherLeft()
 	
 	override fun toString(a: Either<String, R>?): String? = a?.component1()
 }

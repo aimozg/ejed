@@ -42,7 +42,7 @@ class ExternalFunctionBuilder(
 					else -> expr
 				}
 			} else {
-				l
+				l?.replace("\\n", "\n")
 			}
 		})
 	}

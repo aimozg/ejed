@@ -2,6 +2,8 @@
 
 package ej.xml
 
+import ej.utils.iAmEitherLeft
+import ej.utils.iAmEitherRight
 import org.funktionale.either.Either
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -9,10 +11,8 @@ import org.junit.Before
 import org.junit.Test
 import java.io.StringReader
 import java.io.StringWriter
-import kotlin.reflect.KClass
 import kotlin.test.assertFails
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 /*
  * Created by aimozg on 22.07.2018.
@@ -31,7 +31,23 @@ class TestAutoSerializable {
 		}
 	}
 	
-	inline fun <T : XmlAutoSerializable, R : Any>
+	inline fun <reified T : XmlAutoSerializable>
+			assertDeserialization(
+			expected: T,
+			actualString: String) {
+		assertDeserialization(expected, actualString, getSerializationInfo())
+	}
+	
+	fun <T : XmlAutoSerializable>
+			assertDeserialization(
+			expected: T,
+			actualString: String,
+			szInfo: XmlSerializationInfo<T>) {
+		val actual = szInfo.deserializeDocument(XmlExplorer(StringReader(actualString)))
+		assertEquals(expected, actual)
+	}
+	
+	inline fun <reified T : XmlAutoSerializable, R : Any>
 			assertXml(src: T,
 			          reverse: Boolean = true,
 			          expected: XmlExplorerController.() -> R): R {
@@ -39,7 +55,7 @@ class TestAutoSerializable {
 		val builder = XmlBuilder(output)
 		
 		@Suppress("UNCHECKED_CAST")
-		val szInfo = getSerializationInfo(src::class as KClass<T>)
+		val szInfo = getSerializationInfo<T>()
 		szInfo.serializeDocument(src, builder)
 		val actual = output.buffer.toString()
 		val r = try {
@@ -59,11 +75,11 @@ class TestAutoSerializable {
 		return r
 	}
 	
-	fun <T : XmlAutoSerializable, R : Any>
+	inline fun <reified T : XmlAutoSerializable, R : Any>
 			assertXml(src: T,
 			          rootElement: String,
 			          reverse: Boolean = true,
-			          expected: XmlExplorerController.(rootAttrs: Map<String, String>) -> R): R {
+			          noinline expected: XmlExplorerController.(rootAttrs: Map<String, String>) -> R): R {
 		return assertXml(src, reverse) {
 			exploreDocument(rootElement, expected)
 		}
@@ -572,6 +588,87 @@ class TestAutoSerializable {
 			)
 		}
 	}
+	
+	@Test
+	fun testMixedBodyWhitespace() {
+		val src =
+				"<?xml version='1.0' encoding='utf-8' ?>" +
+						"<mock>\n" +
+						"    <thing name='a'/>\n" +
+						"    then\n" +
+						"    <thing name='b'/>\n" +
+						"    <thing name='c'/>\n" +
+						"    .\n" +
+						"    \n" +
+						"    <thing name='d'/>\n" +
+						"</mock>"
+		
+		data class Thing(@Attribute var name: String = "") : XmlAutoSerializable
+		@RootElement("mock")
+		data class MockKeep(
+				@MixedToEitherBody(Polymorphism("thing", Thing::class))
+				@MixedBodyWhitespacePolicy(WhitespacePolicy.KEEP)
+				val things: MutableList<Either<String, Thing>>
+		) : XmlAutoSerializable {
+			constructor(vararg things: Either<String, Thing>) : this(mutableListOf(*things))
+		}
+		assertDeserialization(
+				MockKeep(
+						"\n    ".iAmEitherLeft(),
+						Thing("a").iAmEitherRight(),
+						"\n    then\n    ".iAmEitherLeft(),
+						Thing("b").iAmEitherRight(),
+						"\n    ".iAmEitherLeft(),
+						Thing("c").iAmEitherRight(),
+						"\n    .\n    \n    ".iAmEitherLeft(),
+						Thing("d").iAmEitherRight(),
+						"\n".iAmEitherLeft()
+				),
+				src
+		)
+		@RootElement("mock")
+		data class MockCompact(
+				@MixedToEitherBody(Polymorphism("thing", Thing::class))
+				@MixedBodyWhitespacePolicy(WhitespacePolicy.COMPACT)
+				val things: MutableList<Either<String, Thing>>
+		) : XmlAutoSerializable {
+			constructor(vararg things: Either<String, Thing>) : this(mutableListOf(*things))
+		}
+		assertDeserialization(
+				MockCompact(
+						" ".iAmEitherLeft(),
+						Thing("a").iAmEitherRight(),
+						" then ".iAmEitherLeft(),
+						Thing("b").iAmEitherRight(),
+						" ".iAmEitherLeft(),
+						Thing("c").iAmEitherRight(),
+						" . ".iAmEitherLeft(),
+						Thing("d").iAmEitherRight(),
+						" ".iAmEitherLeft()
+				),
+				src
+		)
+		@RootElement("mock")
+		data class MockTrim(
+				@MixedToEitherBody(Polymorphism("thing", Thing::class))
+				@MixedBodyWhitespacePolicy(WhitespacePolicy.TRIM)
+				val things: MutableList<Either<String, Thing>>
+		) : XmlAutoSerializable {
+			constructor(vararg things: Either<String, Thing>) : this(mutableListOf(*things))
+		}
+		assertDeserialization(
+				MockTrim(
+						Thing("a").iAmEitherRight(),
+						"then".iAmEitherLeft(),
+						Thing("b").iAmEitherRight(),
+						Thing("c").iAmEitherRight(),
+						".".iAmEitherLeft(),
+						Thing("d").iAmEitherRight()
+				),
+				src
+		)
+		
+	}
 	@Test
 	fun testMixedBodyEither() {
 		abstract class Thing
@@ -584,11 +681,11 @@ class TestAutoSerializable {
 			val things = mutableListOf(*init)
 		}
 		assertXml(Mock(
-				Either.right(Sword("Excalibur")),
-				Either.left("vs"),
-				Either.right(Gun("Railgun")),
-				Either.left("and"),
-				Either.right(Gun("Trigun"))),
+				Sword("Excalibur").iAmEitherRight(),
+				"vs".iAmEitherLeft(),
+				Gun("Railgun").iAmEitherRight(),
+				"and".iAmEitherLeft(),
+				Gun("Trigun").iAmEitherRight()),
 		          "mock") { rootAttrs ->
 			assertNoAttrs(rootAttrs)
 			assertEquals(
@@ -635,7 +732,7 @@ class TestAutoSerializable {
 			@BeforeLoad
 			private fun f3(parent:Any?) {
 				assertNotNull(parent)
-				assertTrue(parent!!.toString()=="mock")
+				assertEquals("mock", parent!!.toString())
 				tmpParent = parent
 				log += "bli"
 			}

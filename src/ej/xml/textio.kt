@@ -23,7 +23,8 @@ abstract class AbstractTio<in T : Any, A : Any>(
 	abstract fun getValue(obj: T): A?
 	abstract fun setValue(obj: T, value: A)
 	override fun consumeText(obj: T, data: String) {
-		setValue(obj, converter.convert(data))
+		val a = converter.convert(data)
+		if (a != null) setValue(obj, a)
 	}
 	
 	override fun produce(obj: T): String = converter.toString(getValue(obj))?:""
@@ -62,6 +63,7 @@ class ListPropertyTio<in T : Any, A : Any>(
 	}
 	
 	override fun consumeText(obj: T, data: String) {
-		prop.get(obj) += converter.convert(data)
+		val a = converter.convert(data)
+		if (a != null) prop.get(obj) += a
 	}
 }
