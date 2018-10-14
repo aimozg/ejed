@@ -19,7 +19,7 @@ import java.io.PrintStream
  * Confidential until published on GitHub
  */
 
-const val VERSION = "v0.1.1"
+const val VERSION = "v0.1.2"
 
 abstract class AModView(title: String? = "EJEd $VERSION") : View(title) {
 	val controller: EditorController by inject(DefaultScope)
