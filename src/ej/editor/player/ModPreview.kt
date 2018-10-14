@@ -5,6 +5,9 @@ import ej.editor.AModView
 import ej.editor.Styles
 import ej.editor.expr.Evaluated
 import ej.editor.expr.Evaluator
+import ej.editor.expr.ExpressionTypes
+import ej.editor.expr.external.Stdlib
+import ej.editor.expr.impl.CreatureStat
 import ej.editor.utils.escapeXml
 import ej.editor.utils.onChangeAndNow
 import ej.editor.views.ManagedWebView
@@ -12,6 +15,7 @@ import ej.mod.ModDataNode
 import ej.mod.StoryStmt
 import ej.mod.locate
 import ej.mod.visit
+import ej.utils.RandomMwc
 import ej.utils.appendIf
 import ej.utils.crop
 import javafx.beans.property.SimpleBooleanProperty
@@ -39,8 +43,40 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	
 	val uiButtons = ArrayList<Button>()
 	val playingVisitor = PlayingVisitor(this)
+	var rng = RandomMwc()
 	override val evaluator: Evaluator = object:Evaluator() {
 		override fun evalId(id: String): Evaluated {
+			Stdlib.functionByName(id)?.let { func ->
+				when (func.returnTypeRaw) {
+					ExpressionTypes.BOOLEAN -> {
+						val preset = Evaluated.BoolValue(rng.nextBoolean())
+						return Evaluated.FunctionValue(func.arity) { preset }
+					}
+				}
+				Unit
+			}
+			when (id) {
+				"player" -> Evaluated.ObjectValue(
+						CreatureStat.Stat.values().map {
+							it.name to Evaluated.IntValue(when (it) {
+								                              CreatureStat.Stat.STR,
+								                              CreatureStat.Stat.TOU,
+								                              CreatureStat.Stat.SPE,
+								                              CreatureStat.Stat.INT,
+								                              CreatureStat.Stat.WIS,
+								                              CreatureStat.Stat.LIB -> rng.nextInt(1..200)
+								                              CreatureStat.Stat.SENS,
+								                              CreatureStat.Stat.FEMININITY,
+								                              CreatureStat.Stat.BODYTONE -> rng.nextInt(0..100)
+								                              CreatureStat.Stat.COR -> rng.nextInt(1..50) * rng.nextInt(
+										                              0..2)
+								                              CreatureStat.Stat.HP -> rng.nextInt(1..1000)
+								                              CreatureStat.Stat.LUST -> rng.nextInt(1..200)
+								                              CreatureStat.Stat.LEVEL -> rng.nextInt(1..60)
+							                              })
+						}.toMap()
+				)
+			}
 			return Evaluated.NullValue
 		}
 		

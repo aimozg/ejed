@@ -108,97 +108,101 @@ sealed class Evaluated {
 
 abstract class Evaluator {
 	private val stack = ArrayList<Any>()
-	fun evaluate(e: Expression): Evaluated = when (e) {
-		is Identifier -> evalId(e.value)
-		is IntLiteral -> Evaluated.IntValue(e.value)
-		is FloatLiteral -> Evaluated.FloatValue(e.value)
-		is StringLiteral -> Evaluated.StringValue(e.value)
-		is ListExpression -> Evaluated.ListValue(e.parts.map { evaluate(it) })
-		is ObjectExpression -> Evaluated.ObjectValue(e.items.mapValues { (_, v) -> evaluate(v) })
-		is CallExpression -> evaluate(e.function).call(
-				e.arguments.map { evaluate(it) }
-		)
-		is DotExpression -> evaluate(e.obj).get(e.key)
-		is AccessExpression -> evaluate(e.obj).get(evaluate(e.index).coerceToString().stringValue)
-		is ConditionalExpression ->
-			if (evaluate(e.condition).isTrue()) evaluate(e.ifTrue)
-			else evaluate(e.ifFalse)
-		is BinaryExpression ->
-			when (e.op) {
-				BinaryOperator.OR ->
-					if (evaluate(e.left).isTrue()) Evaluated.TrueValue
-					else Evaluated.BoolValue(evaluate(e.right).isTrue())
-				BinaryOperator.AND ->
-					if (!evaluate(e.left).isTrue()) Evaluated.FalseValue
-					else Evaluated.BoolValue(evaluate(e.right).isTrue())
-				else -> {
-					val a = evaluate(e.left)
-					val b = evaluate(e.right)
-					val an = a.coerceToNumber()
-					val bn = b.coerceToNumber()
-					val ai = an.intValue
-					val bi = bn.intValue
-					val ad = an.doubleValue
-					val bd = bn.doubleValue
-					val astr = a.coerceToString().stringValue
-					val bstr = b.coerceToString().stringValue
-					val rslt: Evaluated
-					rslt = when (e.op) {
-						BinaryOperator.OR -> Evaluated.BoolValue(a.isTrue() || b.isTrue())
-						BinaryOperator.AND -> Evaluated.BoolValue(a.isTrue() && b.isTrue())
-						BinaryOperator.LT -> Evaluated.BoolValue(ad < bd)
-						BinaryOperator.LTE -> Evaluated.BoolValue(ad <= bd)
-						BinaryOperator.GT -> Evaluated.BoolValue(ad > bd)
-						BinaryOperator.GTE -> Evaluated.BoolValue(ad >= bd)
-						BinaryOperator.NEQ,
-						BinaryOperator.EQ -> {
-							val eq =
-									when {
-										a is Evaluated.StringValue || b is Evaluated.StringValue ->
-											astr == bstr
-										a is Evaluated.IntValue && b is Evaluated.IntValue ->
-											ai == bi
-										else -> false
-									}
-							Evaluated.BoolValue(if (e.op == BinaryOperator.EQ) eq else !eq)
+	fun evaluate(e: Expression): Evaluated {
+		val rslt = when (e) {
+			is Identifier -> evalId(e.value)
+			is IntLiteral -> Evaluated.IntValue(e.value)
+			is FloatLiteral -> Evaluated.FloatValue(e.value)
+			is StringLiteral -> Evaluated.StringValue(e.value)
+			is ListExpression -> Evaluated.ListValue(e.parts.map { evaluate(it) })
+			is ObjectExpression -> Evaluated.ObjectValue(e.items.mapValues { (_, v) -> evaluate(v) })
+			is CallExpression -> evaluate(e.function).call(
+					e.arguments.map { evaluate(it) }
+			)
+			is DotExpression -> evaluate(e.obj).get(e.key)
+			is AccessExpression -> evaluate(e.obj).get(evaluate(e.index).coerceToString().stringValue)
+			is ConditionalExpression ->
+				if (evaluate(e.condition).isTrue()) evaluate(e.ifTrue)
+				else evaluate(e.ifFalse)
+			is BinaryExpression ->
+				when (e.op) {
+					BinaryOperator.OR ->
+						if (evaluate(e.left).isTrue()) Evaluated.TrueValue
+						else Evaluated.BoolValue(evaluate(e.right).isTrue())
+					BinaryOperator.AND ->
+						if (!evaluate(e.left).isTrue()) Evaluated.FalseValue
+						else Evaluated.BoolValue(evaluate(e.right).isTrue())
+					else -> {
+						val a = evaluate(e.left)
+						val b = evaluate(e.right)
+						val an = a.coerceToNumber()
+						val bn = b.coerceToNumber()
+						val ai = an.intValue
+						val bi = bn.intValue
+						val ad = an.doubleValue
+						val bd = bn.doubleValue
+						val astr = a.coerceToString().stringValue
+						val bstr = b.coerceToString().stringValue
+						val rslt: Evaluated
+						rslt = when (e.op) {
+							BinaryOperator.OR -> Evaluated.BoolValue(a.isTrue() || b.isTrue())
+							BinaryOperator.AND -> Evaluated.BoolValue(a.isTrue() && b.isTrue())
+							BinaryOperator.LT -> Evaluated.BoolValue(ad < bd)
+							BinaryOperator.LTE -> Evaluated.BoolValue(ad <= bd)
+							BinaryOperator.GT -> Evaluated.BoolValue(ad > bd)
+							BinaryOperator.GTE -> Evaluated.BoolValue(ad >= bd)
+							BinaryOperator.NEQ,
+							BinaryOperator.EQ -> {
+								val eq =
+										when {
+											a is Evaluated.StringValue || b is Evaluated.StringValue ->
+												astr == bstr
+											a is Evaluated.IntValue && b is Evaluated.IntValue ->
+												ai == bi
+											else -> false
+										}
+								Evaluated.BoolValue(if (e.op == BinaryOperator.EQ) eq else !eq)
+							}
+							BinaryOperator.ADD -> when {
+								a is Evaluated.IntValue && b is Evaluated.IntValue ->
+									Evaluated.IntValue(ai + bi)
+								a is Evaluated.IntValue || a is Evaluated.FloatValue ->
+									Evaluated.FloatValue(ad + bd)
+								else ->
+									Evaluated.StringValue(astr + bstr)
+							}
+							BinaryOperator.SUB -> when {
+								a is Evaluated.IntValue && b is Evaluated.IntValue ->
+									Evaluated.IntValue(ai - bi)
+								else ->
+									Evaluated.FloatValue(ad - bd)
+							}
+							BinaryOperator.MUL -> when {
+								a is Evaluated.IntValue && b is Evaluated.IntValue ->
+									Evaluated.IntValue(ai * bi)
+								else ->
+									Evaluated.FloatValue(ad * bd)
+							}
+							BinaryOperator.DIV -> when {
+								a is Evaluated.IntValue && b is Evaluated.IntValue ->
+									Evaluated.IntValue(ai / bi)
+								else ->
+									Evaluated.FloatValue(ad / bd)
+							}
+							BinaryOperator.MOD -> when {
+								a is Evaluated.IntValue && b is Evaluated.IntValue ->
+									Evaluated.IntValue(ai % bi)
+								else ->
+									Evaluated.FloatValue(ad % bd)
+							}
 						}
-						BinaryOperator.ADD -> when {
-							a is Evaluated.IntValue && b is Evaluated.IntValue ->
-								Evaluated.IntValue(ai + bi)
-							a is Evaluated.IntValue || a is Evaluated.FloatValue ->
-								Evaluated.FloatValue(ad + bd)
-							else ->
-								Evaluated.StringValue(astr + bstr)
-						}
-						BinaryOperator.SUB -> when {
-							a is Evaluated.IntValue && b is Evaluated.IntValue ->
-								Evaluated.IntValue(ai - bi)
-							else ->
-								Evaluated.FloatValue(ad - bd)
-						}
-						BinaryOperator.MUL -> when {
-							a is Evaluated.IntValue && b is Evaluated.IntValue ->
-								Evaluated.IntValue(ai * bi)
-							else ->
-								Evaluated.FloatValue(ad * bd)
-						}
-						BinaryOperator.DIV -> when {
-							a is Evaluated.IntValue && b is Evaluated.IntValue ->
-								Evaluated.IntValue(ai / bi)
-							else ->
-								Evaluated.FloatValue(ad / bd)
-						}
-						BinaryOperator.MOD -> when {
-							a is Evaluated.IntValue && b is Evaluated.IntValue ->
-								Evaluated.IntValue(ai % bi)
-							else ->
-								Evaluated.FloatValue(ad % bd)
-						}
+						rslt
 					}
-					rslt
 				}
-			}
-		is InvalidExpression -> Evaluated.ErrorValue("InvalidExpression ${e.source}")
+			is InvalidExpression -> Evaluated.ErrorValue("InvalidExpression ${e.source}")
+		}
+		println("Evaluator $e -> $rslt")
+		return rslt
 	}
 	
 	abstract fun evalId(id: String): Evaluated

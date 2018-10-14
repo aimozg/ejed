@@ -30,6 +30,7 @@
         <value name="is taur" impl="'taur'"/>
         <value name="is naga" impl="'naga'"/>
         <value name="is goo" impl="'goo'"/>
+        <value name="has testicles" impl="'testicles'"/>
         <value name="has horn(s)" impl="'horns'"/>
         <value name="has tail(s)" impl="'tails'"/>
     </enum>
@@ -37,16 +38,6 @@
          FUNCTIONS
          ********* -->
     <!-- creature-has -->
-    <function name="CreatureHasTesticles" return="boolean">
-        <listname>Creature: Has Testicles</listname>
-        <param name="Creature" type="Creature" default="player"/>
-        <param name="Has" type="HasOrNot" default="true"/>
-        <editor>
-            <param name="Creature"/>
-            <param name="Has" type="SELECT"/>
-            testicles
-        </editor>
-    </function>
     <function name="CreatureHasPerk" return="boolean">
         <listname>Creature: Has Perk</listname>
         <param name="Creature" type="Creature" default="player"/>
