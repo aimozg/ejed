@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <stdlib>
-    <!-- Tests -->
+    <!-- *****
+         TESTS
+         ***** -->
+    <!-- body & misc -->
     <enum name="SexTest">
         <value name="sexless" impl="0"/>
         <value name="male" impl="1"/>
@@ -34,6 +37,7 @@
         <value name="has horn(s)" impl="'horns'"/>
         <value name="has tail(s)" impl="'tails'"/>
     </enum>
+    <!-- stat -->
     <enum name="BuffableStatName">
         <value name="Strength" impl="'str'"/>
         <value name="Speed" impl="'spe'"/>
@@ -60,6 +64,17 @@
         <value name="Wisdom (multiplier)" impl="'wis.mult'"/>
         <value name="Libido (multiplier)" impl="'lib.mult'"/>
     </enum>
+    <enum name="RawStatName">
+        <value name="HP" impl="'hp'"/>
+        <value name="Lust" impl="'lust'"/>
+        <value name="Stamina" impl="'stamina'"/>
+        <value name="Mana" impl="'mana'"/>
+        <value name="Wrath" impl="'wrath'"/>
+        <value name="Ki" impl="'ki'"/>
+        <value name="Satiety" impl="'satiety'"/>
+        <value name="Corruption" impl="'cor'"/>
+        <value name="Sensitivity" impl="'sen'"/>
+    </enum>
     <enum name="BuffRate">
         <value name="indefinite time" impl="0"/>
         <value name="round(s)" impl="1"/>
@@ -70,6 +85,19 @@
         <value name="round(s)" impl="1"/>
         <value name="hour(s)" impl="2"/>
         <value name="day(s)" impl="3"/>
+    </enum>
+    <!-- sex -->
+    <enum name="OrgasmType">
+        <value name="anything" impl="'Generic'"/>
+        <value name="vagina" impl="'Vaginal'"/>
+        <value name="anus" impl="'Anal'"/>
+        <value name="penis" impl="'Dick'"/>
+        <value name="vagina or anus" impl="'VaginalAnal'"/>
+        <value name="penis or anus" impl="'DickAnal'"/>
+        <value name="lips" impl="'Lips'"/>
+        <value name="breasts" impl="'Tits'"/>
+        <value name="nipples" impl="'Nipples'"/>
+        <value name="ovipositor" impl="'Ovi'"/>
     </enum>
     <!-- *********
          FUNCTIONS
@@ -196,6 +224,25 @@
             stats
         </editor>
     </command>
+    <command name="ModRawStat">
+        <listname>Creature: Modify non-buffable stat</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="Statname" type="RawStatName" default="'lust'"/>
+        <param name="Value" type="float" default="5.0"/>
+        <param name="Unscaled" type="boolean" default="false"/>
+        <editor>
+            Modify
+            <param name="Creature"/>'s
+            <param name="Statname" type="SELECT"/>
+            stat by
+            <param name="Value"/>
+            <param name="Unscaled" type="CHECKBOX" typedata="(unscaled)"/>
+        </editor>
+        <editor-hint>
+            Positive to increase, negative to decrease. Won't go over max/min.
+            "Unscaled" means that resistances/bonuses that might ater value won't be applied.
+        </editor-hint>
+    </command>
     <!-- items -->
     <!-- sex -->
     <command name="StretchAnus">
@@ -231,5 +278,15 @@
         <editor-hint>
             Area = (thickness * length) of inserted object, inches
         </editor-hint>
+    </command>
+    <command name="Orgasm">
+        <listname>Creature: Orgasm</listname>
+        <param name="Creature" type="Creature" default="player"/>
+        <param name="OrgasmType" type="OrgasmType" default="'Generic'"/>
+        <editor>
+            <param name="Creature"/>
+            orgasms with
+            <param name="OrgasmType" type="SELECT"/>
+        </editor>
     </command>
 </stdlib>

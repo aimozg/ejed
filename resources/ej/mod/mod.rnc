@@ -264,7 +264,7 @@ content =
 t = element t {
     text
 }
-xcc-statement = display | set | output | lib
+xcc-statement = display | set | output | lib | command
 display = element display {
     attribute ref { text },
     empty
@@ -279,6 +279,7 @@ set = element set {
     )
 }
 output = element output { expression }
+command = element command { expression }
 # #############################################
 # xlogic
 xxc-logic = if | switch | comment

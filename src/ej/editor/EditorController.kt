@@ -42,7 +42,9 @@ class EditorController : Controller() {
 	}
 	fun loadMod(src: File) {
 		println("Loading from $src")
-		val mod = ModData.loadMod(src.reader())
+		val mod = src.reader().use { reader ->
+			ModData.loadMod(reader)
+		}
 		mod.sourceFile = src
 		this.mod = mod
 	}
@@ -56,7 +58,9 @@ class EditorController : Controller() {
 				StandardCopyOption.REPLACE_EXISTING
 		)
 		println("Saving to $file")
-		ModData.saveMod(mod, file.writer())
+		file.writer().use { writer ->
+			ModData.saveMod(mod, writer)
+		}
 	}
 	
 	fun saveModAs() {
