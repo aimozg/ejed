@@ -5,7 +5,7 @@ import kotlin.reflect.KProperty1
 
 
 interface TextConsumer<in T:Any> {
-	fun consumeText(obj: T, data: String)
+	fun consumeText(obj: T, data: String, input: XmlExplorerController)
 }
 abstract class TextProducer<in T:Any>: XmlProducer<T> {
 	abstract fun produce(obj: T):String
@@ -22,7 +22,7 @@ abstract class AbstractTio<in T : Any, A : Any>(
 ): TextIO<T>() {
 	abstract fun getValue(obj: T): A?
 	abstract fun setValue(obj: T, value: A)
-	override fun consumeText(obj: T, data: String) {
+	override fun consumeText(obj: T, data: String, input: XmlExplorerController) {
 		val a = converter.convert(data)
 		if (a != null) setValue(obj, a)
 	}
@@ -62,7 +62,7 @@ class ListPropertyTio<in T : Any, A : Any>(
 		converter.toString(it)?:""
 	}
 	
-	override fun consumeText(obj: T, data: String) {
+	override fun consumeText(obj: T, data: String, input: XmlExplorerController) {
 		val a = converter.convert(data)
 		if (a != null) prop.get(obj) += a
 	}

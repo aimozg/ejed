@@ -5,7 +5,10 @@ import java.util.*
 
 abstract class XmlExplorerController {
 	abstract fun forEachNode(handler: XmlExplorerController.(Either<String, Pair<String, Map<String, String>>>)->Unit)
-
+	
+	open fun error(msg: String): Nothing {
+		kotlin.error(msg)
+	}
 	fun text(): String {
 		val s = StringBuilder()
 		forEachNode { (l, r) ->

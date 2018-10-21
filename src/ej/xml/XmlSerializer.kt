@@ -12,12 +12,12 @@ fun <T : Any> XmlSerializationInfo<T>.deserializeInto(obj: T,
 	beforeLoad?.invoke(obj, parent)
 	for ((k, v) in myAttrs) {
 		val aio = attri[k] ?: defaultAttrConsumer
-		aio.consumeAttr(obj, k, v)
+		aio.consumeAttr(obj, k, v, input)
 	}
 	val textbody = texti ?: defaultTextConsumer
 	input.forEachNode { (l, r) ->
 		if (l != null) {
-			textbody.consumeText(obj, l)
+			textbody.consumeText(obj, l, input)
 		}
 		if (r != null) {
 			val (tag, attrs) = r

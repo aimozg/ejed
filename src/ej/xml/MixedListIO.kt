@@ -50,7 +50,7 @@ class MixedListIO<T:Any,E:Any>(
 		if (s != null) builder.text(s)
 	}
 	
-	override fun consumeText(obj: T, data: String) {
+	override fun consumeText(obj: T, data: String, input: XmlExplorerController) {
 		val a = textConverter.convert(data)
 		if (a != null) prop.get(obj).add(a)
 	}

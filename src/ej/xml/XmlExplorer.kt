@@ -23,7 +23,21 @@ class XmlExplorer(input: XMLEventReader): XmlExplorerController() {
 			XMLInputFactory.newFactory().createXMLEventReader(input)
 	)
 	
-	private val events = input.typed
+	private val events = object : Iterator<XMLEvent> {
+		val base = input.typed
+		override fun hasNext(): Boolean = base.hasNext()
+		
+		override fun next(): XMLEvent = base.next().also { lastEvent = it }
+	}
+	private var lastEvent: XMLEvent? = null
+	override fun error(msg: String): Nothing {
+		val e = lastEvent?.location
+		if (e == null) kotlin.error(msg)
+		else {
+			kotlin.error("At ${e.lineNumber}:${e.columnNumber} $msg")
+		}
+	}
+	
 	
 	override fun<R> exploreDocument(handler: XmlExplorerController.(rootTag:String, rootAttrs:Map<String, String>) -> R):R {
 		var wasStartDocument = false

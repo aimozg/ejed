@@ -8,7 +8,7 @@ import kotlin.reflect.jvm.isAccessible
  * Confidential until published on GitHub
  */
 interface AttrConsumer<in T:Any> {
-	fun consumeAttr(obj: T, key: String, value: String)
+	fun consumeAttr(obj: T, key: String, value: String, input: XmlExplorerController)
 }
 abstract class AttrProducer<in T:Any> {
 	abstract fun produce(obj: T): Pair<String,String>?
@@ -21,7 +21,7 @@ abstract class AbstractAio<in T : Any, A : Any>(
 ): AttrIO<T>() {
 	abstract fun getValue(obj: T): A?
 	abstract fun setValue(obj: T, value: A)
-	override fun consumeAttr(obj: T, key: String, value: String) {
+	override fun consumeAttr(obj: T, key: String, value: String, input: XmlExplorerController) {
 		val a = converter.convert(value)
 		if (a != null) setValue(obj, a)
 	}

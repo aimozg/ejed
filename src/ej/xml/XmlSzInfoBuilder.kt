@@ -37,7 +37,10 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 	fun handleAttribute(name: String,
 	                    handler: T.(String) -> Unit) {
 		info.attri[name] = object : AttrConsumer<T> {
-			override fun consumeAttr(obj: T, key: String, value: String) {
+			override fun consumeAttr(obj: T,
+			                         key: String,
+			                         value: String,
+			                         input: XmlExplorerController) {
 				obj.handler(value)
 			}
 		}

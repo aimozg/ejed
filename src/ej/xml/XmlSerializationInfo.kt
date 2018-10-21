@@ -119,13 +119,13 @@ class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>):AXmlSerializa
 	}
 	
 	internal var defaultAttrConsumer = object : AttrConsumer<T> {
-		override fun consumeAttr(obj: T, key: String, value: String) {
-			error("unknown attribute $nameOrClass@$key")
+		override fun consumeAttr(obj: T, key: String, value: String, input: XmlExplorerController) {
+			input.error("unknown attribute $nameOrClass@$key")
 		}
 	}
 	internal var defaultTextConsumer = object : TextConsumer<T> {
-		override fun consumeText(obj: T, data: String) {
-			if (data.isNotBlank()) error("unexpected text $nameOrClass $data")
+		override fun consumeText(obj: T, data: String, input: XmlExplorerController) {
+			if (data.isNotBlank()) input.error("unexpected text $nameOrClass $data")
 		}
 	}
 	internal var defaultElementConsumer = object : ElementConsumer<T> {
@@ -133,7 +133,7 @@ class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>):AXmlSerializa
 		                            tag: String,
 		                            attrs: Map<String, String>,
 		                            input: XmlExplorerController) {
-			error("unexpected element $nameOrClass.$tag")
+			input.error("unexpected element $nameOrClass.$tag")
 		}
 		
 	}
