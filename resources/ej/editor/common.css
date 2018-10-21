@@ -228,7 +228,7 @@
     -fx-rotate: 0;
 }
 
-.simple-list-view, .decorated-list-body {
+.simple-list-view {
     -fx-fill-width: true;
     -fx-pref-height: -1;
     -fx-spacing: 4.0;
@@ -245,7 +245,7 @@
     -fx-pref-height: 16px;
 }
 
-.stmt-ctrl-main .simple-list-view, .stmt-ctrl-main .decorated-list-body {
+.stmt-ctrl-main .simple-list-view, .stmt-ctrl-main {
     -fx-spacing: 4.0;
 }
 
@@ -262,9 +262,9 @@
     -fx-spacing: 4.0;
 }
 
-.sc-if-then .decorated-list-body,
-.sc-if-elseif .decorated-list-body,
-.sc-if-else .decorated-list-body {
+.sc-if-then > .simple-list-cell,
+.sc-if-elseif > .simple-list-cell,
+.sc-if-else > .simple-list-cell {
     -fx-padding: 0 0 0 16;
 }
 
