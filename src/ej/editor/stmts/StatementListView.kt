@@ -1,10 +1,12 @@
 package ej.editor.stmts
 
+import ej.editor.stmts.old.DATAFORMAT_XSTATEMENT
 import ej.editor.utils.boundFaGlyph
 import ej.editor.utils.fontAwesome
 import ej.editor.utils.presentWhen
 import ej.editor.views.DecoratedSimpleListView
 import ej.mod.XStatement
+import ej.mod.toXmlObject
 import ej.utils.addAfter
 import ej.utils.addBefore
 import javafx.beans.property.SimpleBooleanProperty
@@ -14,6 +16,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.Menu
+import javafx.scene.input.TransferMode
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
@@ -107,6 +110,13 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	
 	init {
 		graphicFactory { cell, stmt ->
+			cell.setOnDragDetected { event ->
+				val db = cell.startDragAndDrop(TransferMode.MOVE)
+				val content = stmt.toXmlObject()
+				db.setContent(mapOf(DATAFORMAT_XSTATEMENT to content.toBytes()))
+				println("dragging $content")
+				event.consume()
+			}
 			val cellMenu = cell.contextmenu {
 				item("_Delete") {
 					action {

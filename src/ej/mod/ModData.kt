@@ -142,7 +142,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 				for ((k,v) in attrs) when(k) {
 					"pool" -> trigger.pool = v
 					"name" -> scene.name = v
-					else -> error("Unexpected encounter@$k")
+					else -> kotlin.error("Unexpected encounter@$k")
 				}
 				scene.trigger = trigger
 				scene.owner = mod
@@ -161,7 +161,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 		}
 		fun saveMod(mod:ModData,dst: Writer) {
-			val builder = XmlBuilder(dst)
+			val builder = XmlStreamBuilder(dst)
 			getSerializationInfo().serializeDocument(mod, builder)
 		}
 		

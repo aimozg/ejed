@@ -41,6 +41,13 @@ fun <E : XmlSerializable> TagPolymorphicPicker(mappings: List<Pair<String, KClas
 			}
 		})
 
+fun <E : XmlSerializable> TagPolymorphicPicker(mappings: Map<String, KClass<out E>>) = TagPolymorphicPicker(
+		mappings.map {
+			it.key to {
+				getSerializationInfo(it.value)
+			}
+		})
+
 class AttrPolymorphicPicker<E:Any>(
 		val tagname:String,
 		val attrname:String,

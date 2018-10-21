@@ -36,14 +36,18 @@ fun <T: Any> XmlSerializationInfo<T>.deserializeElementInto(obj: T,
 	eio.consumeElement(obj, tag, attrs, input)
 }
 
-fun <T : Any> XmlSerializationInfo<T>.deserializeDocument(input: XmlExplorer): T {
+fun <T : Any> XmlSerializationInfo<T>.deserializeDocument(input: XmlExplorerController): T {
 	return input.exploreDocument(name ?: error("$klass XmlSerializationInfo is unnamed")) { attrs ->
 		deserialize(input, attrs, null)
 	}
 }
 
-fun <T : Any> AXmlSerializationInfo<T>.serializeDocument(obj: T, output: XmlBuilder) {
+fun <T : Any> AXmlSerializationInfo<T>.serializeDocument(obj: T, nameOverride: String, output: XmlBuilder) {
 	output.startDocument()
-	serialize(obj, name ?: error("$obj serialization info has no name"), output)
+	serialize(obj, nameOverride, output)
 	output.endDocument()
+}
+
+fun <T : Any> AXmlSerializationInfo<T>.serializeDocument(obj: T, output: XmlBuilder) {
+	serializeDocument(obj, name ?: error("$obj serialization info has no name"), output)
 }

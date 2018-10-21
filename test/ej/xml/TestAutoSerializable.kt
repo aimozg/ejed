@@ -52,7 +52,7 @@ class TestAutoSerializable {
 			          reverse: Boolean = true,
 			          expected: XmlExplorerController.() -> R): R {
 		val output = StringWriter()
-		val builder = XmlBuilder(output)
+		val builder = XmlStreamBuilder(output)
 		
 		@Suppress("UNCHECKED_CAST")
 		val szInfo = getSerializationInfo<T>()
@@ -67,7 +67,7 @@ class TestAutoSerializable {
 		if (reverse) {
 			val src2 = szInfo.deserializeDocument(XmlExplorer(StringReader(actual)))
 			val output2 = StringWriter()
-			val builder2 = XmlBuilder(output2)
+			val builder2 = XmlStreamBuilder(output2)
 			szInfo.serializeDocument(src2, builder2)
 			assertEquals(output2.buffer.toString(), actual)
 		}

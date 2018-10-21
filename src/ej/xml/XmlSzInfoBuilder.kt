@@ -333,6 +333,14 @@ class XmlSzInfoBuilder<T : Any>(name: String?,
 		mixedBody(prop,LambdaTextConverter(toStr, fromStr), mappings)
 	}
 	
+	@JvmName("mixedBodyListMappedMap")
+	fun <E : Any> mixedBody(prop: KProperty1<T, MutableList<E>>,
+	                        toStr: (E?) -> String?,
+	                        fromStr: (String) -> E,
+	                        mappings: Map<String, SzInfoMaker<out E>>) {
+		mixedBody(prop, LambdaTextConverter(toStr, fromStr), mappings.map { it.toPair() })
+	}
+	
 	@JvmName("mixedBodyListMappedKlass")
 	fun <E : XmlSerializable> mixedBody(prop: KProperty1<T, MutableList<E>>,
 	                                    toStr: (E?) -> String?,

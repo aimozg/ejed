@@ -3,9 +3,7 @@ package ej.mod
 import ej.editor.utils.escapeXmlAttr
 import ej.utils.affixNonEmpty
 import ej.utils.crop
-import ej.xml.XmlSerializableCompanion
-import ej.xml.XmlSzInfoBuilder
-import ej.xml.inherit
+import ej.xml.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
@@ -16,6 +14,22 @@ import tornadofx.*
 internal fun ModDataNode.defaultToString(tagname:String, attrs:String, content:String) =
 		"[" + tagname + attrs.affixNonEmpty("(",")") + content.affixNonEmpty(": ") + "]"
 
+fun XStatement.toXmlObject(): XmllikeObject =
+		XmlObjectBuilder().also { builder ->
+			val myInfo = getSerializationInfo(javaClass.kotlin)
+			val defaultName = XContentContainer.statementMappings.entries.find {
+				it.value() == myInfo
+			}?.key ?: kotlin.error("Unsaveable statement $this")
+			myInfo.serializeDocument(this, defaultName, builder)
+		}.build()
+
+fun XStatementFromXmlObject(src: XmllikeObject): XStatement =
+		XmlObjectExplorer(src).exploreDocument { rootTag, rootAttrs ->
+			val szinfo = XContentContainer.statementMappings[rootTag]?.invoke()
+					?: error("Unknown statement tag $rootTag")
+			szinfo.deserialize(this, rootAttrs, null)
+		}
+		
 open class XContentContainer : XComplexStatement {
 	
 	final override val content: ObservableList<XStatement> = ArrayList<XStatement>().observable()
@@ -25,6 +39,24 @@ open class XContentContainer : XComplexStatement {
 	
 	companion object : XmlSerializableCompanion<XContentContainer> {
 		override val szInfoClass= XContentContainer::class
+		
+		val statementMappings: Map<String, SzInfoMaker<out XStatement>> = mapOf(
+				"t" to XcText::class,
+				"display" to XsDisplay::class,
+				"forward" to XsForward::class,
+				"set" to XsSet::class,
+				"command" to XsCommand::class,
+				"output" to XsOutput::class,
+				"if" to XmlFlatIf::class,
+				"else" to XmlFlatElse::class,
+				"elseif" to XmlFlatElseif::class,
+				"switch" to XlSwitch::class,
+				"comment" to XlComment::class,
+				"menu" to XsMenu::class,
+				"next" to XsNext::class,
+				"button" to XsButton::class,
+				"battle" to XsBattle::class
+		).mapValues { { getSerializationInfo(it.value) } }
 		
 		override fun XmlSzInfoBuilder<XContentContainer>.buildSzInfo() {
 			beforeSave {
@@ -36,21 +68,7 @@ open class XContentContainer : XComplexStatement {
 			mixedBody(XContentContainer::contentRaw,
 			          { (it as? XcText)?.text },
 			          { XcText(it) },
-			          "t" to XcText::class,
-			          "display" to XsDisplay::class,
-			          "forward" to XsForward::class,
-			          "set" to XsSet::class,
-			          "command" to XsCommand::class,
-			          "output" to XsOutput::class,
-			          "if" to XmlFlatIf::class,
-			          "else" to XmlFlatElse::class,
-			          "elseif" to XmlFlatElseif::class,
-			          "switch" to XlSwitch::class,
-			          "comment" to XlComment::class,
-			          "menu" to XsMenu::class,
-			          "next" to XsNext::class,
-			          "button" to XsButton::class,
-			          "battle" to XsBattle::class
+			          statementMappings
 			)
 			afterLoad {
 				content.addAll(contentRaw.map { e -> (e as? XmlFlatIf)?.grouped()?:e })
