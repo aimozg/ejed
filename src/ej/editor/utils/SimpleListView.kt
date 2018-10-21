@@ -113,7 +113,7 @@ open class SimpleListView<T : Any> : Region() {
 	}
 	
 	override fun computeMinHeight(width: Double) =
-			totalPaddingVert + cells.sumByDouble { it.minHeight(width) } + extraNodesMinHeight(width)
+			totalPaddingVert + cells.sumByDouble { it.minHeight(width) } + extraNodesMinHeight(width) + (cells.size - 1) * spacing
 	
 	override fun computePrefWidth(height: Double) =
 			totalPaddingHoriz + maxOf(
@@ -130,7 +130,7 @@ open class SimpleListView<T : Any> : Region() {
 	}
 	
 	override fun computePrefHeight(width: Double) =
-			totalPaddingVert + cells.sumByDouble { it.prefHeight(width) } + extraNodesPrefHeight(width)
+			totalPaddingVert + cells.sumByDouble { it.prefHeight(width) } + extraNodesPrefHeight(width) + (cells.size - 1) * spacing
 	
 	private var performingLayout = false
 	override fun layoutChildren() {
