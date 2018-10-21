@@ -66,3 +66,15 @@ inline fun<T> MutableList<T>.replaceSome(replace:(T)->T?) {
 		if (value != null) set(i, value)
 	}
 }
+
+inline fun <T> Iterable<T>.maxOf(initial: Double = Double.MIN_VALUE, value: (T) -> Double): Double {
+	return fold(initial) { r, e ->
+		maxOf(r, value(e))
+	}
+}
+
+inline fun <T> Iterable<T>.minOf(initial: Double = Double.MAX_VALUE, value: (T) -> Double): Double {
+	return fold(initial) { r, e ->
+		minOf(r, value(e))
+	}
+}

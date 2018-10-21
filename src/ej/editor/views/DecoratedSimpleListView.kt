@@ -1,8 +1,8 @@
 package ej.editor.views
 
+import ej.editor.utils.NodeBinding
 import ej.editor.utils.SimpleListView
 import ej.editor.utils.SingleElementSkinBase
-import ej.editor.utils.nodeBinding
 import ej.editor.utils.nodeBindingNonNull
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
@@ -38,13 +38,9 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 	val afterListProperty = SimpleObjectProperty<Node?>()
 	var afterList: Node? by afterListProperty
 	
-	val cellContainer = VBox().addClass("decorated-list-body")
-	override val cells: MutableList<Node> = cellContainer.children
-	
 	init {
-		nodeBinding(beforeListProperty)
-		children.add(cellContainer)
-		nodeBinding(afterListProperty)
+		beforeCells += NodeBinding(beforeListProperty)
+		afterCells += NodeBinding(afterListProperty)
 	}
 	
 	class DecoratedListCell<T : Any>(override val list: DecoratedSimpleListView<T>, item: T) : SimpleListCell<T>(list,

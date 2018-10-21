@@ -158,7 +158,12 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				}
 			}
 		}
+		
+		cells.onChange {
+			while (it.next()) {
+				for (cell in it.addedSubList) cell.presentWhen(expandedProperty)
+			}
+		}
 		beforeList = listTopMenu
-		cellContainer.presentWhen(expandedProperty)
 	}
 }

@@ -7,6 +7,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Region
 import javafx.scene.text.Text
 import tornadofx.*
 
@@ -188,3 +189,11 @@ fun <T : Node> T.presentWhen(predicate: ObservableValue<Boolean>) = apply {
 inline fun <reified T : Node> Node.ancestor(): T? = generateSequence(this) {
 	it.parent
 }.filterIsInstance<T>().firstOrNull()
+
+val Region.totalPaddingHoriz
+	get() =
+		if (isSnapToPixel) 0.0 + Math.round(insets.left) + Math.round(insets.right) else insets.left + insets.right
+val Region.totalPaddingVert
+	get() =
+		if (isSnapToPixel) 0.0 + Math.round(insets.top) + Math.round(insets.bottom) else insets.top + insets.bottom
+

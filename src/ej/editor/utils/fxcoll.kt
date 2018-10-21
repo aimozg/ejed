@@ -1,6 +1,8 @@
 package ej.editor.utils
 
 import com.sun.javafx.collections.ObservableListWrapper
+import ej.utils.longSwap
+import ej.utils.remove
 import javafx.beans.Observable
 import javafx.beans.WeakInvalidationListener
 import javafx.beans.binding.Bindings
@@ -31,41 +33,46 @@ fun ObservableValue<out String?>.isNullOrEmpty(): BooleanBinding =
 //fun ObservableValue<out String?>.isNotEmpty(): BooleanBinding =
 //		booleanBinding { it.isNullOrEmpty() }
 
-fun <T> ObservableValue<T>.addWeakListener(fn:(observale:ObservableValue<out T>, oldValue:T?, newValue:T?)->Unit): ChangeListener<T>{
+fun <T> ObservableValue<T>.addWeakListener(fn: (observale: ObservableValue<out T>, oldValue: T?, newValue: T?) -> Unit): ChangeListener<T> {
 	val listener = ChangeListener(fn)
 	addListener(WeakChangeListener(listener))
 	return listener
 }
+
 fun <T> ObservableValue<T>.onChangeAndNowWeak(op: (T?) -> Unit): ChangeListener<T> {
 	op(value)
 	val listener = ChangeListener<T> { _, _, newValue -> op(newValue) }
 	addListener(WeakChangeListener(listener))
 	return listener
 }
+
 fun <T> ObservableValue<T>.onChangeAndNow(op: (T?) -> Unit) {
 	op(value)
-	addListener{ _, _, newValue -> op(newValue) }
+	addListener { _, _, newValue -> op(newValue) }
 }
+
 fun <T> ObservableValue<T>.onChangeWeak(op: (T?) -> Unit): ChangeListener<T> {
-	val listener = ChangeListener<T>{ _, _, newValue -> op(newValue) }
+	val listener = ChangeListener<T> { _, _, newValue -> op(newValue) }
 	addListener(WeakChangeListener(listener))
 	return listener
 }
+
 fun <T> ObservableList<T>.onChangeWeak(op: (ListChangeListener.Change<out T>) -> Unit): ListChangeListener<T> {
 	val listener = ListChangeListener<T> { op(it) }
 	addListener(WeakListChangeListener(listener))
 	return listener
 }
+
 private val LISTENERS_PROPERTY_KEY = java.lang.Object()
 fun Any.saveIntoPropertiesOf(node: Node) {
 	@Suppress("UNCHECKED_CAST")
-	val list = (node.properties.getOrPut(LISTENERS_PROPERTY_KEY){ArrayList<Any>()}) as ArrayList<Any>
+	val list = (node.properties.getOrPut(LISTENERS_PROPERTY_KEY) { ArrayList<Any>() }) as ArrayList<Any>
 	list.add(this)
 }
 
-fun <I : ObservableList<*>, O: Any> I.listBinding(calculator:(I)->O): Property<O> {
+fun <I : ObservableList<*>, O : Any> I.listBinding(calculator: (I) -> O): Property<O> {
 	val list = this
-	return object:SimpleObjectProperty<O>(calculator(this)) {
+	return object : SimpleObjectProperty<O>(calculator(this)) {
 		@Suppress("unused")
 		val listener = list.onChangeWeak {
 			value = calculator(list)
@@ -73,8 +80,8 @@ fun <I : ObservableList<*>, O: Any> I.listBinding(calculator:(I)->O): Property<O
 	}
 }
 
-fun <I,O> ObservableList<I>.transformed(transform:(I)->O): ObservableList<O> = TransformingList(this,transform)
-fun <T> List<T>.observableUnique():ObservableList<T> = object: ObservableListWrapper<T>(this.observable()) {
+fun <I, O> ObservableList<I>.transformed(transform: (I) -> O): ObservableList<O> = TransformingList(this, transform)
+fun <T> List<T>.observableUnique(): ObservableList<T> = object : ObservableListWrapper<T>(this.observable()) {
 	override fun hashCode(): Int {
 		return System.identityHashCode(this)
 	}
@@ -84,10 +91,11 @@ fun <T> List<T>.observableUnique():ObservableList<T> = object: ObservableListWra
 	}
 }
 
-open class ObservableMutableProperty<T:Observable?>(initialValue:T): SimpleObjectProperty<T>(initialValue) {
-	private val listener = WeakInvalidationListener{
+open class ObservableMutableProperty<T : Observable?>(initialValue: T) : SimpleObjectProperty<T>(initialValue) {
+	private val listener = WeakInvalidationListener {
 		this@ObservableMutableProperty.fireValueChangedEvent()
 	}
+	
 	override fun set(v: T) {
 		value?.removeListener(listener)
 		super.set(v)
@@ -163,15 +171,16 @@ inline fun <reified B> ObservableList<*>.filteredIsInstance(): FilteredList<B> {
 	return filtered { it is B } as FilteredList<B>
 }
 
-fun<E> ObservableList<E>.filteredMutable(test:(E)->Boolean) = FilteredMutableList(this,test)
+fun <E> ObservableList<E>.filteredMutable(test: (E) -> Boolean) = FilteredMutableList(this, test)
 @Suppress("UNCHECKED_CAST")
-inline fun<reified B> ObservableList<*>.filteredIsInstanceMutable() =
+inline fun <reified B> ObservableList<*>.filteredIsInstanceMutable() =
 		filteredMutable { it is B } as ObservableList<B>
 
-fun<E> observableConcatenation(vararg lists:ObservableList<out E>):ObservableList<E> =
+fun <E> observableConcatenation(vararg lists: ObservableList<out E>): ObservableList<E> =
 		AggregatedObservableArrayList(*lists).aggregatedList
 
-fun stringValueToggler(source: Property<out String?>,defaultTrueValue:String) = object:SimpleObjectProperty<Boolean>() {
+fun stringValueToggler(source: Property<out String?>,
+                       defaultTrueValue: String) = object : SimpleObjectProperty<Boolean>() {
 	override fun set(v: Boolean?) {
 		if (v == true) {
 			val srcVal = source.value
@@ -182,11 +191,13 @@ fun stringValueToggler(source: Property<out String?>,defaultTrueValue:String) = 
 			source.value = ""
 		}
 	}
+	
 	init {
 		bind(source.isNullOrEmpty().not())
 	}
 }
-inline fun AtomicInteger.callDepthTracking(code:()->Unit):Int {
+
+inline fun AtomicInteger.callDepthTracking(code: () -> Unit): Int {
 	incrementAndGet()
 	try {
 		code()
@@ -194,7 +205,8 @@ inline fun AtomicInteger.callDepthTracking(code:()->Unit):Int {
 		return decrementAndGet()
 	}
 }
-inline fun AtomicInteger.callAtZero(code:()->Unit):Boolean {
+
+inline fun AtomicInteger.callAtZero(code: () -> Unit): Boolean {
 	if (compareAndSet(0, 1)) {
 		try {
 			code()
@@ -205,9 +217,10 @@ inline fun AtomicInteger.callAtZero(code:()->Unit):Boolean {
 	}
 	return false
 }
+
 object NullableIntStringConverter : StringConverter<Int?>() {
 	override fun toString(`object`: Int?): String {
-		return `object`?.toString()?:""
+		return `object`?.toString() ?: ""
 	}
 	
 	override fun fromString(string: String?): Int? {
@@ -246,4 +259,16 @@ object NullableStringConverter : StringConverter<String?>() {
 	
 	override fun fromString(string: String?): String? = string
 	
+}
+
+fun <T> ListChangeListener.Change<out T>.reapplyTo(tgt: MutableList<T>) {
+	while (next()) if (wasPermutated()) {
+		for (i in from until to) {
+			val j = getPermutation(i)
+			tgt.longSwap(i, j)
+		}
+	} else {
+		if (wasAdded()) tgt.addAll(from, addedSubList)
+		if (wasRemoved()) tgt.remove(from, to)
+	}
 }
