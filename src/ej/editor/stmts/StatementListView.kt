@@ -119,6 +119,9 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				if (event.gestureSource != cell) {
 					if (event.dragboard.hasStatement()) {
 						event.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
+						for (p in generateSequence(parent) { it.parent }) {
+							p.removeClass(Styles.dragover, Styles.dragoverFromBottom, Styles.dragoverFromTop)
+						}
 					}
 				}
 				event.consume()
