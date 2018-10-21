@@ -269,6 +269,6 @@ fun <T> ListChangeListener.Change<out T>.reapplyTo(tgt: MutableList<T>) {
 		}
 	} else {
 		if (wasAdded()) tgt.addAll(from, addedSubList)
-		if (wasRemoved()) tgt.remove(from, to)
+		if (wasRemoved()) tgt.remove(from, from + removedSize)
 	}
 }
