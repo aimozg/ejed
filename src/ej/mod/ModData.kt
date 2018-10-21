@@ -151,7 +151,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 			elementsByTag(ModData::lib,
 			              "scene" to XcScene::class,
 			              "lib" to XcLib::class,
-			              "text" to XcLib::class)
+			              "text" to XcNamedText::class)
 		}
 		
 		fun loadMod(src: InputStream):ModData {
