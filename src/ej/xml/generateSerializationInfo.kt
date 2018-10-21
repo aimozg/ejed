@@ -233,7 +233,7 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 	}) {
 		@Suppress("UNCHECKED_CAST")
 		val src = getSerializationInfoSafe(superclass) as XmlSerializationInfo<T>?
-		if (src != null) copySzInfo(src, this)
+		src?.copyTo(info)
 	}
 	clazz.findAnnotation<RootElement>()?.let { rootAnno ->
 		name = rootAnno.name

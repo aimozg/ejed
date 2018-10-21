@@ -403,32 +403,22 @@ fun <T : Any> serializationInfo(
 ): XmlSerializationInfo<T> =
 		XmlSzInfoBuilder(name, klass).apply(init).build()
 
-inline fun <reified T : R, R : Any> serializationInfo(
+internal inline fun <reified T : R, R : Any> serializationInfo(
 		parent: XmlSerializationInfo<R>,
 		name: String? = null,
 		init: XmlSzInfoBuilder<T>.() -> Unit
 ): XmlSerializationInfo<T> =
 		XmlSzInfoBuilder(name, T::class).apply {
-			copySzInfo(parent, this)
+			parent.copyTo(info)
 			init()
 		}.build()
 
-fun <T : R, R : Any> copySzInfo(src: XmlSerializationInfo<R>, tgt: XmlSerializationInfo<T>) {
-	tgt.attri.putAll(src.attri)
-	tgt.texti = src.texti
-	tgt.elements.putAll(src.elements)
-	tgt.attro.addAll(src.attro)
-	tgt.producers.addAll(src.producers)
-	tgt.beforeSave = src.beforeSave
-	tgt.afterLoad = src.afterLoad
-}
-
 fun <T : R, R : Any> copySzInfo(src: XmlSerializationInfo<R>, tgtb: XmlSzInfoBuilder<T>) {
-	copySzInfo(src, tgtb.info)
+	src.copyTo(tgtb.info)
 }
 
 fun <T : R, R : Any> XmlSzInfoBuilder<T>.inherit(from: XmlSerializationInfo<R>) {
-	copySzInfo(from, info)
+	from.copyTo(info)
 }
 
 fun <T : R, R : Any> XmlSzInfoBuilder<T>.inherit(from: XmlSerializableCompanion<R>) {

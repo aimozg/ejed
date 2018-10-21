@@ -73,6 +73,17 @@ class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>):AXmlSerializa
 	internal var beforeLoad: (T.(Any?) -> Unit)? = null
 	internal var afterLoad: (T.(Any?) -> Unit)? = null
 	internal val createInstanceInParent: ((Any?) -> T?)
+	internal fun <R : T> copyTo(tgt: XmlSerializationInfo<R>) {
+		tgt.attri.putAll(attri)
+		tgt.texti = texti
+		tgt.elements.putAll(elements)
+		tgt.attro.addAll(attro)
+		tgt.producers.addAll(producers)
+		tgt.beforeSave = beforeSave
+		tgt.afterSave = afterSave
+		tgt.beforeSave = beforeSave
+		tgt.afterLoad = afterLoad
+	}
 	
 	init {
 		
