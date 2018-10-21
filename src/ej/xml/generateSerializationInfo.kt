@@ -284,7 +284,7 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 								elemName
 						)
 					}
-				} else TODO("elementOverwrite Not implemented yet")
+				} else TODO("elementOverwrite Not implemented yet for $property")
 			}
 			is Elements -> {
 				if (!pti.list) error("Cannot have @Elements for non-list $property")

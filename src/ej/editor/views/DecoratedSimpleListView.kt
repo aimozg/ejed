@@ -3,7 +3,6 @@ package ej.editor.views
 import ej.editor.utils.NodeBinding
 import ej.editor.utils.SimpleListView
 import ej.editor.utils.SingleElementSkinBase
-import ej.editor.utils.nodeBindingNonNull
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -49,9 +48,10 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 			return SingleElementSkinBase<DecoratedListCell<T>>(this, VBox().apply {
 				vgrow = Priority.SOMETIMES
 				alignment = Pos.TOP_LEFT
-				nodeBindingNonNull(itemProperty, list.nodeBeforeCell)
-				nodeBindingNonNull(itemProperty) { list.graphicFactory(this@DecoratedListCell) }
-				nodeBindingNonNull(itemProperty, list.nodeAfterCell)
+				list.nodeBeforeCell(item)?.attachTo(this)
+				list.graphicFactory(this@DecoratedListCell).attachTo(this)
+				list.nodeAfterCell(item)?.attachTo(this)
+//				nodeBindingNonNull(itemProperty) { list.graphicFactory(this@DecoratedListCell) }
 			})
 		}
 	}

@@ -8,6 +8,7 @@ import ej.utils.affix
 import ej.xml.*
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.ObservableList
 import tornadofx.*
 
 class XlComment() : XStatement {
@@ -63,8 +64,9 @@ class XlIf(): XStatement,XmlAutoSerializable {
 	var test:String by testProperty
 	var testExpression: Expression by testProperty.expressionProperty
 	
-	@Element("then")
 	val thenGroup = XlThen()
+	@Element("then")
+	private var rawThenGroup: XlThen = thenGroup
 	
 	@Elements("elseif")
 	val elseifGroups = ArrayList<XlElseIf>().observable()
@@ -73,11 +75,17 @@ class XlIf(): XStatement,XmlAutoSerializable {
 	@Element("else")
 	var elseGroup: XlElse? by elseGroupProperty
 	
-	val allGroups = observableConcatenation(
+	val allGroups: ObservableList<PartOfIf> = observableConcatenation(
 			listOf(thenGroup).observable(),
 			elseifGroups,
 			ObservableSingletonList(elseGroupProperty)
 	)
+	
+	@AfterLoad
+	private fun afterLoad() {
+		thenGroup.content.setAll(rawThenGroup)
+		rawThenGroup = thenGroup
+	}
 	
 	override fun toString() = defaultToString("if","test=$test",
 	                                          thenGroup.toString()+" "+
@@ -85,11 +93,11 @@ class XlIf(): XStatement,XmlAutoSerializable {
 			                                          (elseGroup?.toString()?:""))
 }
 sealed class PartOfIf: XContentContainer()
-class XlThen: PartOfIf() {
+class XlThen : PartOfIf(), XmlAutoSerializable {
 	override fun toString() = defaultToString("then")
 }
 
-class XlElseIf(): PartOfIf() {
+class XlElseIf() : PartOfIf(), XmlAutoSerializable {
 	constructor(test:String):this() {
 		this.test = test
 	}
@@ -100,7 +108,7 @@ class XlElseIf(): PartOfIf() {
 	override fun toString() = defaultToString("elseif","test=$test")
 }
 
-class XlElse: PartOfIf() {
+class XlElse : PartOfIf(), XmlAutoSerializable {
 	override fun toString() = defaultToString("else")
 }
 internal fun XmlFlatIf.grouped():XlIf {

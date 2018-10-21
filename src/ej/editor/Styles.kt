@@ -53,6 +53,7 @@ class Styles : Stylesheet() {
 //		val smallButton by cssclass()
 //		val smallButtonSpace by cssclass()
 		
+		val dragged by cssclass()
 		val dragover by cssclass()
 		val dragoverFromTop by cssclass()
 		val dragoverFromBottom by cssclass()

@@ -112,3 +112,7 @@
 .tree-cell.validation-invalid .tree-graphic {
     -fx-text-fill: #a33;
 }
+
+.dragover {
+    -fx-background-color: #242;
+}

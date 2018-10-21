@@ -227,9 +227,10 @@ open class SimpleListView<T : Any> : Region() {
 		requestLayout()
 	}
 	
-	open class SimpleListCell<T : Any>(open val list: SimpleListView<T>, item: T) : Control() {
-		val itemProperty = SimpleObjectProperty<T>(item)
-		var item: T by itemProperty
+	open class SimpleListCell<T : Any>(open val list: SimpleListView<T>, val item: T) : Control() {
+		//		val itemProperty = SimpleObjectProperty<T>(item)
+//		val item: T by itemProperty
+		val index get() = list.items.indexOf(item)
 		
 		init {
 			isFocusTraversable = false
@@ -243,11 +244,12 @@ open class SimpleListView<T : Any> : Region() {
 		override fun createDefaultSkin(): Skin<out SimpleListCell<T>> =
 				SingleElementSkinBase(
 						this,
-						NodeBinding(
+						list.graphicFactory(this)
+						/*NodeBinding(
 								itemProperty.objectBinding {
 									list.graphicFactory(this)
 								}
-						)
+						)*/
 				)
 	}
 	

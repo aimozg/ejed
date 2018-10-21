@@ -1,14 +1,18 @@
 package ej.editor.stmts
 
+import ej.editor.Styles
 import ej.editor.stmts.old.DATAFORMAT_XSTATEMENT
+import ej.editor.stmts.old.hasStatement
 import ej.editor.utils.boundFaGlyph
 import ej.editor.utils.fontAwesome
 import ej.editor.utils.presentWhen
 import ej.editor.views.DecoratedSimpleListView
 import ej.mod.XStatement
+import ej.mod.XStatementFromXmlObject
 import ej.mod.toXmlObject
 import ej.utils.addAfter
 import ej.utils.addBefore
+import ej.xml.XmllikeObject
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.geometry.Side
@@ -108,13 +112,45 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 		items.addBefore(ref, stmt)
 	}
 	
+	private var wasDragFromTop = false
 	init {
 		graphicFactory { cell, stmt ->
-			cell.setOnDragDetected { event ->
-				val db = cell.startDragAndDrop(TransferMode.MOVE)
-				val content = stmt.toXmlObject()
-				db.setContent(mapOf(DATAFORMAT_XSTATEMENT to content.toBytes()))
-				println("dragging $content")
+			cell.setOnDragOver { event ->
+				if (event.gestureSource != cell) {
+					if (event.dragboard.hasStatement()) {
+						event.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
+					}
+				}
+				event.consume()
+			}
+			cell.setOnDragEntered { event ->
+				if (event.gestureSource != cell && event.dragboard.hasContent(DATAFORMAT_XSTATEMENT)) {
+					cell.addClass(Styles.dragover)
+					if (event.y < cell.height / 2) {
+						cell.addClass(Styles.dragoverFromTop)
+						wasDragFromTop = true
+					} else {
+						cell.addClass(Styles.dragoverFromBottom)
+						wasDragFromTop = false
+					}
+				}
+				event.consume()
+			}
+			cell.setOnDragExited { event ->
+				cell.removeClass(Styles.dragover, Styles.dragoverFromTop, Styles.dragoverFromBottom)
+				event.consume()
+			}
+			cell.setOnDragDropped { event ->
+				val rawStmt = event.dragboard.getContent(DATAFORMAT_XSTATEMENT) as? ByteArray
+				if (rawStmt != null) {
+					val content = XStatementFromXmlObject(XmllikeObject.fromBytes(rawStmt))
+					println("dropped $content onto $stmt (from top = $wasDragFromTop)")
+					val tgti = if (wasDragFromTop) cell.index else (cell.index + 1)
+					cell.list.items.add(tgti, content)
+					event.isDropCompleted = true
+				} else {
+					event.isDropCompleted = false
+				}
 				event.consume()
 			}
 			val cellMenu = cell.contextmenu {
@@ -157,6 +193,20 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 						graphic = fontAwesome.create(FontAwesome.Glyph.ELLIPSIS_H)
 						action {
 							cellMenu.show(this, Side.BOTTOM, 0.0, 0.0)
+						}
+						setOnDragDetected { event ->
+							val db = cell.startDragAndDrop(TransferMode.MOVE)
+							val content = stmt.toXmlObject()
+							db.setContent(mapOf(DATAFORMAT_XSTATEMENT to content.toBytes()))
+							cell.addClass(Styles.dragged)
+							event.consume()
+							cell.setOnDragDone { done ->
+								cell.removeClass(Styles.dragged)
+								if (done.isAccepted) {
+									items.remove(cell.item)
+								}
+								done.consume()
+							}
 						}
 					}
 				}

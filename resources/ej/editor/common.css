@@ -195,14 +195,21 @@
     -fx-padding: 0;
 }
 
-.tree-cell.dragover .tree-graphic {
-    -fx-border-color: #0f0;
+.dragover {
+    -fx-background-color: #afa;
 }
-.tree-cell.dragover.dragover-from-top .tree-graphic {
+
+.dragged {
+    -fx-opacity: 0.5;
+}
+
+.dragover.dragover-from-top {
+    -fx-border-color: #0f0;
     -fx-border-width: 2 0 0 0;
 }
 
-.tree-cell.dragover.dragover-from-bottom .tree-graphic {
+.dragover.dragover-from-bottom {
+    -fx-border-color: #0f0;
     -fx-border-width: 0 0 2 0;
 }
 

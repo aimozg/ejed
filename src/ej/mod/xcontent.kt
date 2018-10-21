@@ -14,18 +14,28 @@ import tornadofx.*
 internal fun ModDataNode.defaultToString(tagname:String, attrs:String, content:String) =
 		"[" + tagname + attrs.affixNonEmpty("(",")") + content.affixNonEmpty(": ") + "]"
 
+fun XStatement.defaultNamedSzInfo(): Pair<String, AXmlSerializationInfo<XStatement>>? {
+	val myInfo = getSerializationInfo(javaClass.kotlin)
+	return XContentContainer.statementMappings.entries.find {
+		it.value() == myInfo
+	}?.let {
+		it.key to myInfo
+	}
+}
+
+fun defaultNamedSzInfo(name: String): AXmlSerializationInfo<out XStatement>? {
+	return XContentContainer.statementMappings[name]?.invoke()
+}
 fun XStatement.toXmlObject(): XmllikeObject =
 		XmlObjectBuilder().also { builder ->
-			val myInfo = getSerializationInfo(javaClass.kotlin)
-			val defaultName = XContentContainer.statementMappings.entries.find {
-				it.value() == myInfo
-			}?.key ?: kotlin.error("Unsaveable statement $this")
-			myInfo.serializeDocument(this, defaultName, builder)
+			val myInfo = defaultNamedSzInfo()
+					?: kotlin.error("Unsaveable statement $this")
+			myInfo.second.serializeDocument(this, myInfo.first, builder)
 		}.build()
 
 fun XStatementFromXmlObject(src: XmllikeObject): XStatement =
 		XmlObjectExplorer(src).exploreDocument { rootTag, rootAttrs ->
-			val szinfo = XContentContainer.statementMappings[rootTag]?.invoke()
+			val szinfo = defaultNamedSzInfo(rootTag)
 					?: error("Unknown statement tag $rootTag")
 			szinfo.deserialize(this, rootAttrs, null)
 		}
@@ -50,6 +60,7 @@ open class XContentContainer : XComplexStatement {
 				"if" to XmlFlatIf::class,
 				"else" to XmlFlatElse::class,
 				"elseif" to XmlFlatElseif::class,
+				"if0" to XlIf::class,
 				"switch" to XlSwitch::class,
 				"comment" to XlComment::class,
 				"menu" to XsMenu::class,
