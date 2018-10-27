@@ -186,9 +186,12 @@ fun <T : Node> T.presentWhen(predicate: ObservableValue<Boolean>) = apply {
 	managedProperty().cleanBind(predicate)
 }
 
-inline fun <reified T : Node> Node.ancestor(): T? = generateSequence(this) {
-	it.parent
-}.filterIsInstance<T>().firstOrNull()
+inline fun <reified T : Node> Node.ancestor(): T? = parents().filterIsInstance<T>().firstOrNull()
+
+// From this.parent to scene root
+fun Node.parents() = generateSequence(parent) { it.parent }
+
+fun Node.meAndParents() = generateSequence(this) { it.parent }
 
 val Region.totalPaddingHoriz
 	get() =

@@ -42,8 +42,9 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 		afterCells += NodeBinding(afterListProperty)
 	}
 	
-	class DecoratedListCell<T : Any>(override val list: DecoratedSimpleListView<T>, item: T) : SimpleListCell<T>(list,
-	                                                                                                             item) {
+	open class DecoratedListCell<T : Any>(override val list: DecoratedSimpleListView<T>, item: T) : SimpleListCell<T>(
+			list,
+			item) {
 		override fun createDefaultSkin(): Skin<DecoratedListCell<T>> {
 			return SingleElementSkinBase<DecoratedListCell<T>>(this, VBox().apply {
 				vgrow = Priority.SOMETIMES

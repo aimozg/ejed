@@ -17,31 +17,6 @@
     -fx-font-family: "Consolas";
 }
 
-/* Mod player: Main text */
-.main-text {
-    -fx-font-family: "Lucida Console";
-    -fx-background-color: #eee;
-    -fx-text-fill: #222;
-    -fx-padding: 1em;
-}
-.main-text .content-text {
-    -fx-text-fill: #222;
-}
-.main-text .content-text-skipped {
-    -fx-text-fill: #888;
-}
-.main-text .content-code {
-    -fx-text-fill: #228;
-}
-.main-text .content-code-skipped {
-    -fx-text-fill: #88b;
-}
-.main-text .content-comment {
-    -fx-text-fill: #282;
-}
-.main-text .content-code-skipped {
-    -fx-text-fill: #8b8;
-}
 
 /* Restyling forms */
 .form {
@@ -105,6 +80,11 @@
 /* Node type: text */
 .xtext {
     -fx-font-family: "Lucida Fax";
+    -fx-font-size: 16;
+}
+
+.xlogic, .xcomment, .xnext {
+    -fx-font-family: "Lucida Console";
 }
 
 .styled-text-area {
@@ -267,6 +247,10 @@
 .stmt-ctrl-row {
     -fx-alignment: baseline-left;
     -fx-spacing: 4.0;
+}
+
+TextFlow.xlogic, TextFlow.xcommand, TextFlow.xcomment, TextFlow.xnext {
+    -fx-padding: 4 0 0 0;
 }
 
 .sc-if-then > .simple-list-cell,

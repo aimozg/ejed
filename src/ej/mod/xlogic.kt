@@ -83,7 +83,7 @@ class XlIf(): XStatement,XmlAutoSerializable {
 	
 	@AfterLoad
 	private fun afterLoad() {
-		thenGroup.content.setAll(rawThenGroup)
+		thenGroup.content.setAll(rawThenGroup.content)
 		rawThenGroup = thenGroup
 	}
 	

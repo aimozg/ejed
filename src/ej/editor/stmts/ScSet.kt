@@ -13,8 +13,7 @@ class ScSet(stmt: XsSet) : StatementControl<XsSet>(stmt) {
 	
 	inner class SetSkin : ScSkin<XsSet, ScSet>(this, {
 		addClass(Styles.xcommand)
-		scFlow {
-			addClass(Styles.xcommand)
+		scFlow(Styles.xcommand) {
 			text(stmt.opProperty.stringBinding {
 				when (it) {
 					null, "=", "assign" -> "Set to "

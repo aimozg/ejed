@@ -10,7 +10,6 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.geometry.Orientation
 import javafx.scene.Parent
-import javafx.scene.control.ContextMenu
 import javafx.scene.control.Control
 import javafx.scene.control.Skin
 import javafx.scene.layout.HBox
@@ -30,12 +29,6 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 	
 	fun rootStatement(): XComplexStatement? {
 		return ancestor<SceneEditor>()?.rootStatement
-	}
-	
-	fun mergedContextMenu(): ContextMenu {
-		val cm = ancestor<SimpleListView.SimpleListCell<*>>()?.contextMenu
-		if (cm != null) return cm
-		return contextmenu { }
 	}
 	
 	fun mod(): ModData? {
@@ -119,23 +112,25 @@ fun XStatement.createControl(): StatementControl<*>? = when (this) {
 }
 
 object StatementMetadata {
-	class Entry(val name: String, val hotkey: String, val factory: () -> XStatement)
+	class Entry(val name: String, val hotkey: String?, val factory: () -> XStatement)
 	
 	val entries: List<Entry?> = listOf(
-			Entry("Te_xt", "X") { XcText() },
-			Entry("_//Comment", "/") { XlComment() },
-			Entry("_Display", "D") { XsDisplay() },
-			Entry("O_utput", "U") { XsOutput() },
-			Entry("_Command", "C") { XsCommand() },
+			Entry("Te_xt", "1") { XcText() },
+			Entry("_//Comment", "2") { XlComment() },
+			Entry("_Display", "3") { XsDisplay() },
+			Entry("O_utput", "4") { XsOutput() },
+			Entry("_Command", "5") { XsCommand() },
 			null,
-			Entry("Set _=", "=") { XsSet() },
-			Entry("_If-Then-Else", "I") { XlIf() },
-			Entry("_Switch-Branches", "S") { XlSwitch() },
+			Entry("Set _=", "6") { XsSet() },
+			Entry("_If-Then-Else", "7") {
+				XlIf().also { it.thenGroup.content += XcText() }
+			},
+			Entry("_Switch-Branches", "8") { XlSwitch() },
 			null,
-			Entry("_Next", "N") { XsNext() },
-			Entry("_Menu", "M") { XsMenu() },
-			Entry("Menu _Button", "B") { XsButton() },
-			Entry("_Forward", "F") { XsForward() },
-			Entry("Batt_le", "L") { XsBattle() }
+			Entry("_Next", "9") { XsNext() },
+			Entry("_Menu", null) { XsMenu() },
+			Entry("Menu _Button", null) { XsButton() },
+			Entry("_Forward", null) { XsForward() },
+			Entry("Batt_le", null) { XsBattle() }
 	)
 }

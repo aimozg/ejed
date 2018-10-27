@@ -3,16 +3,15 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.valueLink
+import ej.editor.utils.ContextMenuContainer
 import ej.editor.utils.bindingN
 import ej.editor.utils.observableUnique
 import ej.editor.utils.presentWhen
-import ej.mod.XStatement
-import ej.mod.XlElse
-import ej.mod.XlElseIf
-import ej.mod.XlIf
+import ej.mod.*
 import ej.utils.addAfter
 import ej.utils.addBefore
 import ej.utils.crop
+import javafx.scene.control.Menu
 import javafx.scene.input.KeyCombination
 import tornadofx.*
 
@@ -20,20 +19,19 @@ import tornadofx.*
  * Created by aimozg on 22.09.2018.
  * Confidential until published on GitHub
  */
-class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
+class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 	override fun createDefaultSkin() = IfSkin()
 	
-	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
-		addClass("sc-if")
-		mergedContextMenu().apply {
+	override val menus: List<Menu> by lazy {
+		listOf(Menu("_If-Statement").apply {
 			item("Add Else-If") {
 				action {
-					stmt.elseifGroups.add(XlElseIf())
+					stmt.elseifGroups.add(XlElseIf().also { it.content += XcText() })
 				}
 			}
 			item("Add Else") {
 				action {
-					stmt.elseGroup = XlElse()
+					stmt.elseGroup = XlElse().also { it.content += XcText() }
 				}
 				enableWhen(stmt.elseGroupProperty.isNull)
 			}
@@ -43,12 +41,16 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 				}
 				enableWhen(stmt.elseGroupProperty.isNotNull)
 			}
-		}
+		})
+	}
+	
+	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
+		addClass("sc-if")
 		addClass(Styles.xlogic)
 		stmtList(stmt.thenGroup.content) {
 			addClass("sc-if-then")
 			beforeList = hbox {
-				children += detachListMenu()
+				children += listTopMenu
 				scFlow(Styles.xlogic) {
 					text("If ")
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
@@ -61,7 +63,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 			stmtList(elseif.content) {
 				addClass("sc-if-elseif")
 				beforeList = hbox {
-					children += detachListMenu()
+					children += listTopMenu
 					scFlow(Styles.xlogic) {
 						text("Else if ")
 						valueLink("Condition", elseif.testProperty.toBuilder(), BoolExprChooser, setter = {
@@ -71,12 +73,12 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 					contextmenu {
 						item("Add Else-If Above", KeyCombination.valueOf("Shift+Insert")) {
 							action {
-								stmt.elseifGroups.addBefore(elseif, XlElseIf())
+								stmt.elseifGroups.addBefore(elseif, XlElseIf().also { it.content += XcText() })
 							}
 						}
 						item("Add Else-If Below", KeyCombination.valueOf("Insert")) {
 							action {
-								stmt.elseifGroups.addAfter(elseif, XlElseIf())
+								stmt.elseifGroups.addAfter(elseif, XlElseIf().also { it.content += XcText() })
 							}
 						}
 						item("Delete Else-If", KeyCombination.valueOf("Delete")) {
@@ -89,7 +91,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 						}
 						item("Add Else") {
 							action {
-								stmt.elseGroup = XlElse()
+								stmt.elseGroup = XlElse().also { it.content += XcText() }
 							}
 							enableWhen(stmt.elseGroupProperty.isNull)
 						}
@@ -102,7 +104,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt) {
 		}) {
 			addClass("sc-if-else")
 			beforeList = hbox {
-				children += detachListMenu()
+				children += listTopMenu
 				scFlow(Styles.xlogic) {
 					text("Else") {
 						addClass(Styles.xlogic)

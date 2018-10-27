@@ -11,8 +11,7 @@ import tornadofx.*
 class ScCommand(stmt: XsCommand) : StatementControl<XsCommand>(stmt) {
 	override fun createDefaultSkin() = ScSkin(this) {
 		addClass(Styles.xcommand)
-		scFlow {
-			addClass(Styles.xcommand)
+		scFlow(Styles.xcommand) {
 			valueLink(stmt.valueProperty.builderProperty,
 			          "Command",
 			          SimpleExpressionChooser(

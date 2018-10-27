@@ -10,8 +10,8 @@ class ScMenu(stmt: XsMenu) : StatementControl<XsMenu>(stmt) {
 		addClass(Styles.xcommand)
 		stmtList(stmt.content) {
 			beforeList = hbox {
-				children += detachListMenu()
-				scFlow {
+				children += listTopMenu
+				scFlow(Styles.xcommand) {
 					text("Menu:")
 				}
 			}

@@ -45,7 +45,9 @@ class XmllikeObject(
 		return "<$name" +
 				attributes.entries.joinToString(separator = "") { (k, v) -> " $k=\"$v\"" } +
 				(if (body.isEmpty()) "/>"
-				else body.joinToString(prefix = ">", separator = "", postfix = "</$name>"))
+				else body.joinToString(prefix = ">", separator = "", postfix = "</$name>") { (l, r) ->
+					l ?: r?.toString() ?: ""
+				})
 	}
 	
 	

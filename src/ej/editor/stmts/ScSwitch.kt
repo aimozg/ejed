@@ -22,7 +22,7 @@ class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
 		simpleList(stmt.branches) { stmt ->
 			stmtList(stmt.content) {
 				beforeList = hbox {
-					children += detachListMenu()
+					children += listTopMenu
 					scFlow(Styles.xlogic) {
 						text("Branch when: ")
 						combobox(

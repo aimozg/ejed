@@ -3,6 +3,7 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.stmts.old.DATAFORMAT_XSTATEMENT
 import ej.editor.stmts.old.hasStatement
+import ej.editor.utils.ContextMenuContainer
 import ej.editor.utils.boundFaGlyph
 import ej.editor.utils.fontAwesome
 import ej.editor.utils.presentWhen
@@ -16,10 +17,10 @@ import ej.xml.XmllikeObject
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Pos
 import javafx.geometry.Side
-import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.Menu
+import javafx.scene.input.KeyCombination
 import javafx.scene.input.TransferMode
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -34,21 +35,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	val expandedProperty = SimpleBooleanProperty(true)
 	var expanded by expandedProperty
 	
-	lateinit var expandButton: Button; private set
-	
-	fun detachListMenu(): Node {
-		beforeList = null
-		return listTopMenu
-	}
-	
-	fun attachListMenu() {
-		listTopMenu.removeFromParent()
-		beforeList = listTopMenu
-	}
-	
-	private val listTopMenu = HBox().apply {
-		addClass("stmt-ctrl-listmenu")
-		expandButton = button {
+	val expandButton: Button by lazy {
+		Button().apply {
 			addClass("small-button")
 			graphic = boundFaGlyph(expandedProperty.stringBinding { expanded ->
 				if (expanded == true) FontAwesome.Glyph.CARET_DOWN.char.toString()
@@ -58,7 +46,9 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				expanded = !expanded
 			}
 		}
-		button {
+	}
+	val insertFirstButton by lazy {
+		Button().apply {
 			addClass("small-button")
 			graphic = fontAwesome.create(FontAwesome.Glyph.PLUS)
 			contextmenu {
@@ -66,7 +56,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 					if (e == null) separator()
 					else item(e.name/*, KeyCombination.valueOf(e.hotkey)*/) {
 						action {
-							insertAfter(null, e.factory())
+							insertAfter(null, e.factory(), true)
 						}
 					}
 				}
@@ -76,9 +66,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 			}
 		}
 	}
-	val listBottomMenu = HBox().apply {
-		addClass("stmt-ctrl-listmenu")
-		button {
+	val insertLastButton by lazy {
+		Button().apply {
 			addClass("small-button")
 			graphic = fontAwesome.create(FontAwesome.Glyph.PLUS)
 			contextmenu {
@@ -86,7 +75,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 					if (e == null) separator()
 					else item(e.name/*, KeyCombination.valueOf(e.hotkey)*/) {
 						action {
-							insertBefore(null, e.factory())
+							insertBefore(null, e.factory(), true)
 						}
 					}
 				}
@@ -94,6 +83,19 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 			action {
 				contextMenu.show(this, Side.BOTTOM, 0.0, 0.0)
 			}
+		}
+	}
+	val listTopMenu by lazy {
+		HBox().apply {
+			addClass("stmt-ctrl-listmenu")
+			this += expandButton
+			this += insertFirstButton
+		}
+	}
+	val listBottomMenu by lazy {
+		HBox().apply {
+			addClass("stmt-ctrl-listmenu")
+			this += insertLastButton
 		}
 	}
 	
@@ -102,17 +104,23 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 		items.remove(stmt)
 	}
 	
-	fun insertAfter(ref: XStatement?, stmt: XStatement) {
+	fun insertAfter(ref: XStatement?, stmt: XStatement, andFocus: Boolean) {
 		println("Inserting $stmt after $ref")
 		items.addAfter(ref, stmt)
+		if (andFocus) (cells.getOrNull(items.indexOf(stmt)) as? StatementCell)?.requestFocus()
 	}
 	
-	fun insertBefore(ref: XStatement?, stmt: XStatement) {
+	fun insertBefore(ref: XStatement?, stmt: XStatement, andFocus: Boolean) {
 		println("Inserting $stmt before $ref")
 		items.addBefore(ref, stmt)
+		if (andFocus) (cells.getOrNull(items.indexOf(stmt)) as? StatementCell)?.requestFocus()
 	}
 	
 	private var wasDragFromTop = false
+	override fun cellFactory(item: XStatement): DecoratedListCell<XStatement> {
+		return StatementCell(this, item)
+	}
+	
 	init {
 		graphicFactory { cell, stmt ->
 			cell.setOnDragOver { event ->
@@ -146,8 +154,9 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 			cell.setOnDragDropped { event ->
 				val rawStmt = event.dragboard.getContent(DATAFORMAT_XSTATEMENT) as? ByteArray
 				if (rawStmt != null) {
-					val content = XStatementFromXmlObject(XmllikeObject.fromBytes(rawStmt))
-					println("dropped $content onto $stmt (from top = $wasDragFromTop)")
+					val xobj = XmllikeObject.fromBytes(rawStmt)
+					val content = XStatementFromXmlObject(xobj)
+//					println("dropped $content generated from $xobj onto $stmt (from top = $wasDragFromTop)")
 					val tgti = if (wasDragFromTop) cell.index else (cell.index + 1)
 					cell.list.items.add(tgti, content)
 					event.isDropCompleted = true
@@ -155,33 +164,6 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 					event.isDropCompleted = false
 				}
 				event.consume()
-			}
-			val cellMenu = cell.contextmenu {
-				item("_Delete") {
-					action {
-						deleteStmt(stmt)
-					}
-				}
-				menu("Insert _Before") {
-					for (e in StatementMetadata.entries) {
-						if (e == null) separator()
-						else item(e.name) {
-							action {
-								insertBefore(stmt, e.factory())
-							}
-						}
-					}
-				}
-				this += Menu("Insert _After").apply {
-					for (e in StatementMetadata.entries) {
-						if (e == null) separator()
-						else item(e.name) {
-							action {
-								insertAfter(stmt, e.factory())
-							}
-						}
-					}
-				}
 			}
 			HBox().apply {
 				alignment = Pos.TOP_LEFT
@@ -193,13 +175,11 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 					maxHeight = Region.USE_PREF_SIZE
 					button().apply {
 						addClass("small-button")
-						graphic = fontAwesome.create(FontAwesome.Glyph.ELLIPSIS_H)
-						action {
-							cellMenu.show(this, Side.BOTTOM, 0.0, 0.0)
-						}
+						graphic = fontAwesome.create(FontAwesome.Glyph.REORDER)
 						setOnDragDetected { event ->
 							val db = cell.startDragAndDrop(TransferMode.MOVE)
 							val content = stmt.toXmlObject()
+//							println("Dragging $content")
 							db.setContent(mapOf(DATAFORMAT_XSTATEMENT to content.toBytes()))
 							cell.addClass(Styles.dragged)
 							event.consume()
@@ -214,7 +194,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 					}
 				}
 				children += (stmt.createControl() ?: Label("not supported ${stmt.javaClass.simpleName}").apply {
-					contextMenu = cellMenu
+					// contextMenu = cellMenu
 					textAlignment = TextAlignment.LEFT
 				}).apply {
 					hgrow = Priority.ALWAYS
@@ -227,6 +207,40 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 				for (cell in it.addedSubList) cell.presentWhen(expandedProperty)
 			}
 		}
-		beforeList = listTopMenu
+	}
+	
+	class StatementCell(list: StatementListView, stmt: XStatement) :
+			DecoratedListCell<XStatement>(list, stmt),
+			ContextMenuContainer {
+		override val menus by lazy {
+			listOf(Menu("Insert _After").apply {
+				id = "IA" + System.identityHashCode(stmt)
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name) {
+						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+" + e.hotkey)
+						action {
+							list.insertAfter(stmt, e.factory(), true)
+						}
+					}
+				}
+			}, Menu("Insert _Before").apply {
+				id = "IB" + System.identityHashCode(stmt)
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name) {
+						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+Shift+" + e.hotkey)
+						action {
+							list.insertBefore(stmt, e.factory(), true)
+						}
+					}
+				}
+			}, Menu("_Delete").apply {
+				id = "D" + System.identityHashCode(stmt)
+				action {
+					list.deleteStmt(stmt)
+				}
+			})
+		}
 	}
 }

@@ -42,6 +42,7 @@ class SceneEditor(val mod: ModData) : VBox() {
 			itemsProperty.bind(bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
 			})
+			beforeList = listTopMenu
 			afterList = listBottomMenu
 			paddingBottom = 80
 		}

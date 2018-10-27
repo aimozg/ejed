@@ -1,14 +1,14 @@
 package ej.editor
 
-import ej.editor.utils.SplittingOutputStream
-import ej.editor.utils.TextAreaOutputStream
-import ej.editor.utils.onChangeAndNow
-import ej.editor.utils.textInputDialog
+import ej.editor.utils.*
 import ej.editor.views.ModListView
 import ej.editor.views.ModView
 import ej.mod.ModData
+import ej.utils.indexOfOrNull
 import ej.utils.replaceSome
 import javafx.geometry.Side
+import javafx.scene.control.Menu
+import javafx.scene.control.MenuBar
 import javafx.scene.input.KeyCombination
 import tornadofx.*
 import java.io.PrintStream
@@ -29,10 +29,12 @@ abstract class AModView(title: String? = "EJEd $VERSION") : View(title) {
 class EditorView : AModView() {
 //	val leftDrawer = Drawer(Side.LEFT,false,false)
 	val rightDrawer = Drawer(Side.RIGHT,false,false)
+	var mainMenu = MenuBar()
 	override val root = borderpane {
 		addClass(Styles.editorView)
 		top {
-			menubar {
+			this += mainMenu.apply {
+				isUseSystemMenuBar = true
 				menu("Mod") {
 					item("New").action {
 						val name = textInputDialog("New mod","Enter new mod name","unnamed") ?: return@action
@@ -85,9 +87,45 @@ class EditorView : AModView() {
 		}
 	}
 	
+	private val menus = HashMap<String, ArrayList<Menu>>()
 	override fun onDock() {
-		currentStage?.scene?.focusOwnerProperty()?.onChange {
-			println("focusOwner = $it")
+		val scene = currentStage?.scene ?: return
+		scene.focusOwnerProperty().addListener { _, oldValue, newValue ->
+			//			println("focusOwner -> $newValue")
+			val oldParents = oldValue?.meAndParents()?.toList()?.reversed() ?: emptyList()
+			val newParents = newValue?.meAndParents()?.toList()?.reversed() ?: emptyList()
+			// Find greatest common prefix
+			val firstChange = (0 until minOf(oldParents.size, newParents.size)).firstOrNull {
+				oldParents[it] != newParents[it]
+			} ?: minOf(oldParents.size, newParents.size)
+			for (removed in oldParents.slice(firstChange until oldParents.size)) {
+				if (removed !is ContextMenuContainer) continue
+				for (menu in removed.menus) {
+					val synonyms = menus[menu.text] ?: continue
+					synonyms.remove(menu)
+//					println("synonyms['${menu.text}'] -= $menu, remaining ${synonyms.size}")
+					val i = mainMenu.menus.indexOfOrNull(menu) ?: continue
+					if (synonyms.isNotEmpty()) {
+						mainMenu.menus[i] = synonyms.last()
+					} else {
+						mainMenu.menus.removeAt(i)
+					}
+				}
+			}
+			for (added in newParents.slice(firstChange until newParents.size)) {
+				if (added !is ContextMenuContainer) continue
+				for (menu in added.menus) {
+					val synonyms = menus.getOrPut(menu.text) { ArrayList() }
+//					println("synonyms['${menu.text}'] += $menu, was ${synonyms.size}")
+					val i = mainMenu.menus.indexOfOrNull(synonyms.lastOrNull())
+					if (i != null) {
+						mainMenu.menus[i] = menu
+					} else {
+						mainMenu.menus += menu
+					}
+					synonyms += menu
+				}
+			}
 		}
 		this.controller.modProperty.onChangeAndNow {
 			if (it != null) {

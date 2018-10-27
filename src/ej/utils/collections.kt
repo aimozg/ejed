@@ -78,3 +78,5 @@ inline fun <T> Iterable<T>.minOf(initial: Double = Double.MAX_VALUE, value: (T) 
 		minOf(r, value(e))
 	}
 }
+
+fun <T> Iterable<T>.indexOfOrNull(element: T): Int? = indexOf(element).takeIf { it >= 0 }
