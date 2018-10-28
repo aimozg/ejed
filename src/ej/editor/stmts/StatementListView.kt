@@ -15,6 +15,7 @@ import ej.utils.addAfter
 import ej.utils.addBefore
 import ej.xml.XmllikeObject
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.control.Button
@@ -122,6 +123,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 	}
 	
 	init {
+		cellWrappersOrientation = Orientation.HORIZONTAL
 		graphicFactory { cell, stmt ->
 			cell.setOnDragOver { event ->
 				if (event.gestureSource != cell) {
@@ -213,32 +215,33 @@ class StatementListView : DecoratedSimpleListView<XStatement>() {
 			DecoratedListCell<XStatement>(list, stmt),
 			ContextMenuContainer {
 		override val menus by lazy {
-			listOf(Menu("Insert _After").apply {
-				id = "IA" + System.identityHashCode(stmt)
-				for (e in StatementMetadata.entries) {
-					if (e == null) separator()
-					else item(e.name) {
-						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+" + e.hotkey)
-						action {
-							list.insertAfter(stmt, e.factory(), true)
+			listOf(Menu("Statement").apply {
+				item("Delete", "Shortcut+Delete") {
+					action {
+						list.deleteStmt(stmt)
+					}
+				}
+				item("Insert _After").apply {
+					for (e in StatementMetadata.entries) {
+						if (e == null) separator()
+						else item(e.name) {
+							if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+" + e.hotkey)
+							action {
+								list.insertAfter(stmt, e.factory(), true)
+							}
 						}
 					}
 				}
-			}, Menu("Insert _Before").apply {
-				id = "IB" + System.identityHashCode(stmt)
-				for (e in StatementMetadata.entries) {
-					if (e == null) separator()
-					else item(e.name) {
-						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+Shift+" + e.hotkey)
-						action {
-							list.insertBefore(stmt, e.factory(), true)
+				item("Insert _Before").apply {
+					for (e in StatementMetadata.entries) {
+						if (e == null) separator()
+						else item(e.name) {
+							if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+Shift+" + e.hotkey)
+							action {
+								list.insertBefore(stmt, e.factory(), true)
+							}
 						}
 					}
-				}
-			}, Menu("_Delete").apply {
-				id = "D" + System.identityHashCode(stmt)
-				action {
-					list.deleteStmt(stmt)
 				}
 			})
 		}

@@ -23,7 +23,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 	override fun createDefaultSkin() = IfSkin()
 	
 	override val menus: List<Menu> by lazy {
-		listOf(Menu("_If-Statement").apply {
+		listOf(Menu("_If-Then-Else").apply {
 			item("Add Else-If") {
 				action {
 					stmt.elseifGroups.add(XlElseIf().also { it.content += XcText() })

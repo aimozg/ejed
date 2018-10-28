@@ -129,6 +129,10 @@ open class SimpleListView<T : Any> : Region() {
 		)
 	}
 	
+	override fun isResizable(): Boolean {
+		return true
+	}
+	
 	override fun computePrefHeight(width: Double) =
 			totalPaddingVert + cells.sumByDouble { it.prefHeight(width) } + extraNodesPrefHeight(width) + (cells.size - 1) * spacing
 	
