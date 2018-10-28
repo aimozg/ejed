@@ -10,7 +10,7 @@ buildscript {
     }
 }
 apply plugin: 'kotlin-platform-jvm'
-version '0.1.5'
+version '0.1.6'
 
 repositories {
     maven {     url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
