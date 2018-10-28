@@ -232,6 +232,11 @@
     -fx-pref-height: 16px;
 }
 
+.stmt-ctrl-itemmenu .small-button,
+.stmt-ctrl-itemmenu .small-button .glyph-font {
+    -fx-text-fill: -fx-body-color;
+}
+
 .stmt-ctrl-main .simple-list-view, .stmt-ctrl-main {
     -fx-spacing: 4.0;
 }

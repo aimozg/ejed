@@ -2,6 +2,7 @@ package ej.editor.views
 
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
+import ej.editor.utils.ContextMenuContainer
 import ej.editor.utils.bindingN
 import ej.editor.utils.nodeBinding
 import ej.editor.utils.observableUnique
@@ -20,7 +21,7 @@ import tornadofx.*
  * Created by aimozg on 18.09.2018.
  * Confidential until published on GitHub
  */
-class SceneEditor(val mod: ModData) : VBox() {
+class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>(XcScene())
 	var rootStatement: XComplexStatement by rootStatementProperty
 	
@@ -29,7 +30,8 @@ class SceneEditor(val mod: ModData) : VBox() {
 	}
 	
 	private val stmtList: StatementListView
-
+	override val menus get() = stmtList.menus
+	
 	init {
 		nodeBinding(rootStatementProperty) { it ->
 				(it as? XcScene)?.let {
@@ -42,8 +44,8 @@ class SceneEditor(val mod: ModData) : VBox() {
 			itemsProperty.bind(bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
 			})
-			beforeList = listTopMenu
-			afterList = listBottomMenu
+//			beforeList = listTopMenu
+//			afterList = listBottomMenu
 			paddingBottom = 80
 		}
 		scrollpane(true, false) {

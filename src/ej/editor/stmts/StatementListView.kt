@@ -31,11 +31,40 @@ import javafx.scene.text.TextAlignment
 import org.controlsfx.glyphfont.FontAwesome
 import tornadofx.*
 
-class StatementListView : DecoratedSimpleListView<XStatement>() {
+class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuContainer {
 	
 	val expandedProperty = SimpleBooleanProperty(true)
 	var expanded by expandedProperty
 	
+	override val menus by lazy {
+		listOf(Menu("_List").apply {
+			menu("Collapse/E_xpand") {
+				action {
+					expanded = !expanded
+				}
+			}
+			menu("Insert At _Start") {
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name/*, KeyCombination.valueOf(e.hotkey)*/) {
+						action {
+							insertAfter(null, e.factory(), true)
+						}
+					}
+				}
+			}
+			menu("Insert At _End") {
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name/*, KeyCombination.valueOf(e.hotkey)*/) {
+						action {
+							insertAfter(null, e.factory(), true)
+						}
+					}
+				}
+			}
+		})
+	}
 	val expandButton: Button by lazy {
 		Button().apply {
 			addClass("small-button")

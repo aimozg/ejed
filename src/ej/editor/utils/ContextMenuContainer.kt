@@ -1,5 +1,7 @@
 package ej.editor.utils
 
+import javafx.scene.Node
+import javafx.scene.control.Control
 import javafx.scene.control.Menu
 
 /*
@@ -9,3 +11,6 @@ import javafx.scene.control.Menu
 interface ContextMenuContainer {
 	val menus: List<Menu>
 }
+
+fun Node.myContextMenus() =
+		(this as? ContextMenuContainer)?.menus ?: ((this as? Control)?.skin as? ContextMenuContainer)?.menus

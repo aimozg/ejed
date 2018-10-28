@@ -99,8 +99,8 @@ class EditorView : AModView() {
 				oldParents[it] != newParents[it]
 			} ?: minOf(oldParents.size, newParents.size)
 			for (removed in oldParents.slice(firstChange until oldParents.size)) {
-				if (removed !is ContextMenuContainer) continue
-				for (menu in removed.menus) {
+				val itemMenus = removed.myContextMenus() ?: continue
+				for (menu in itemMenus) {
 					val synonyms = menus[menu.text] ?: continue
 					synonyms.remove(menu)
 //					println("synonyms['${menu.text}'] -= $menu, remaining ${synonyms.size}")
@@ -113,8 +113,8 @@ class EditorView : AModView() {
 				}
 			}
 			for (added in newParents.slice(firstChange until newParents.size)) {
-				if (added !is ContextMenuContainer) continue
-				for (menu in added.menus) {
+				val itemMenus = added.myContextMenus() ?: continue
+				for (menu in itemMenus) {
 					val synonyms = menus.getOrPut(menu.text) { ArrayList() }
 //					println("synonyms['${menu.text}'] += $menu, was ${synonyms.size}")
 					val i = mainMenu.menus.indexOfOrNull(synonyms.lastOrNull())
