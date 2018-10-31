@@ -166,6 +166,11 @@ fun <T1, T2, T3, T4, T5, T6, T7, R> bindingN(prop1: ObservableValue<T1>,
 			op(prop1.value, prop2.value, prop3.value, prop4.value, prop5.value, prop6.value, prop7.value)
 		}, prop1, prop2, prop3, prop4, prop5, prop6, prop7)
 
+fun <E> ObservableValue<out E>.isEqualToAny(vararg values: E): BooleanBinding =
+		booleanBinding { me ->
+			values.any { it == me }
+		}
+
 @Suppress("UNCHECKED_CAST")
 inline fun <reified B> ObservableList<*>.filteredIsInstance(): FilteredList<B> {
 	return filtered { it is B } as FilteredList<B>

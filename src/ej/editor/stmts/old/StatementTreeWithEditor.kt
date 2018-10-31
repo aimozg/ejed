@@ -1,6 +1,7 @@
 package ej.editor.stmts.old
 
 import ej.editor.Styles
+import ej.editor.expr.KnownIds
 import ej.editor.utils.ContextualTreeSelection
 import ej.editor.utils.listBinding
 import ej.editor.utils.onChangeWeak
@@ -316,8 +317,14 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 				button("Set var") {
 					action {
 						insertStmtHere(XsSet().apply {
-							inobj = "state"
-							varname = mod.stateVars.firstOrNull()?.name ?: "flag1"
+							val modvar = mod.stateVars.firstOrNull()
+							if (modvar != null) {
+								inobj = KnownIds.MOD_STATE
+								varname = modvar.name
+							} else {
+								inobj = null
+								varname = "local1"
+							}
 							value = "1"
 						})
 					}

@@ -15,11 +15,11 @@ class ConstPlayer : ExpressionBuilder() {
 	}
 	
 	override fun text() = mktext("Player")
-	override fun build() = Identifier("player")
+	override fun build() = Identifier(KnownIds.PLAYER)
 	
 	companion object : PartialBuilderConverter<Identifier>{
 		override fun tryConvert(converter: BuilderConverter, expr: Identifier): ConstPlayer? =
-				if (expr.value == "player") ConstPlayer() else null
+				if (expr.value == KnownIds.PLAYER) ConstPlayer() else null
 		
 	}
 }

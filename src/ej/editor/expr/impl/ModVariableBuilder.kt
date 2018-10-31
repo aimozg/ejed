@@ -24,14 +24,14 @@ class ModVariableBuilder : ExpressionBuilder() {
 	override fun text() = mktext("Mod variable ", variable.value?.name)
 	override fun build(): Expression {
 		val value = variable.value ?: return nop()
-		return DotExpression(Identifier("state"), value.name)
+		return DotExpression(Identifier(KnownIds.MOD_STATE), value.name)
 	}
 	
 	val variable = SimpleObjectProperty<StateVar>()
 	
 	companion object : PartialBuilderConverter<DotExpression> {
 		override fun tryConvert(converter: BuilderConverter, expr: DotExpression): ModVariableBuilder? {
-			if (expr.obj.asId?.value != "state") return null
+			if (expr.obj.asId?.value != KnownIds.MOD_STATE) return null
 			return ModVariableBuilder().apply {
 				variable.value = controller.mod?.stateVars?.firstOrNull { it.name == expr.key } ?: return null
 			}

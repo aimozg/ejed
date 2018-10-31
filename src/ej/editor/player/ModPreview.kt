@@ -6,6 +6,7 @@ import ej.editor.Styles
 import ej.editor.expr.Evaluated
 import ej.editor.expr.Evaluator
 import ej.editor.expr.ExpressionTypes
+import ej.editor.expr.KnownIds
 import ej.editor.expr.external.Stdlib
 import ej.editor.expr.impl.CreatureStat
 import ej.editor.utils.escapeXml
@@ -56,7 +57,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 				Unit
 			}
 			when (id) {
-				"player" -> Evaluated.ObjectValue(
+				KnownIds.PLAYER -> Evaluated.ObjectValue(
 						CreatureStat.Stat.values().map {
 							it.name to Evaluated.IntValue(when (it) {
 								                              CreatureStat.Stat.STR,
