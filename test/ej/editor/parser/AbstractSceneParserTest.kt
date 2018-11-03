@@ -83,6 +83,12 @@ class AbstractSceneParserTest {
 		assertParser("Fake [name] takes [his] [weapon] and says, [--TODO reword to avoid DMCA issues--] [say: Hasta la vista, [name]]",
 		             "Fake Evelyn takes her railgun and says, <i>'Hasta la vista, Evelyn'</i>")
 	}
+	
+	@Test
+	fun testCaps() {
+		assertParser("[his] [His] [hIs] [HIS]",
+		             "her Her her HER")
+	}
 	@Test
 	fun testIf() {
 		assertParser("[if(true)[if(false)[he]1|[his]2]3|[if(true)[he]4|[his]5]6]7",

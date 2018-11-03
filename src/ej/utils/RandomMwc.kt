@@ -39,4 +39,5 @@ class RandomMwc(seed: Long) : Random(seed) {
 	}
 	
 	fun nextInt(range: IntRange) = range.first + nextInt(range.endInclusive + 1 - range.first)
+	fun <T> nextObject(vararg objects: T) = objects[nextInt(objects.indices)]
 }

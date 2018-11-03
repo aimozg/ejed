@@ -1,7 +1,7 @@
 package ej.editor.player
 
-import ej.editor.expr.Evaluated
 import ej.editor.expr.Evaluator
+import ej.editor.expr.KnownIds
 import ej.editor.expr.SimpleEvaluator
 import ej.editor.external.TagDecl
 import ej.editor.external.TagDeclVisitor
@@ -20,7 +20,8 @@ open class SceneParser : AbstractSceneParser() {
 	var tagProcessor: (tag: String, output: String) -> String = { _, output -> output }
 	var fnProcessor: (fn: String, source: String, output: String) -> String = { _, _, output -> output }
 	var evaluator: Evaluator = SimpleEvaluator(emptyMap())
-	var playerEvaluator: Evaluator? = null
+	var playerSpecificEvaluator: Evaluator? = null
+	val playerEvaluator get() = playerSpecificEvaluator ?: evaluator
 	
 	private inner class TagDeclVisitorImpl : TagDeclVisitor() {
 		val buffer = StringBuilder()
@@ -31,12 +32,8 @@ open class SceneParser : AbstractSceneParser() {
 		}
 		
 		override fun testCondition(decl: TagDecl, condition: String): Boolean {
-			val z: Evaluated
-			if (decl.context == TagDecl.Context.PLAYER) {
-				z = (playerEvaluator ?: evaluator).parseAndEvaluate(condition)
-			} else {
-				z = evaluator.parseAndEvaluate(condition)
-			}
+			val e = if (decl.context == TagDecl.Context.PLAYER) playerEvaluator else evaluator
+			val z = e.parseAndEvaluate(condition)
 			println("Condition $condition -> $z")
 			return z.isTrue()
 		}
@@ -76,21 +73,29 @@ open class SceneParser : AbstractSceneParser() {
 	}?.let { (op, cl) -> op + parseIfDelayed(content).trim() + cl }
 	
 	override fun evaluateFunction(name: String, rawArgument: String, rawContent: List<String>): String =
-			maybeWrap(name, rawContent.firstOrNull()?:"")
+			maybeWrap(name, rawContent.firstOrNull() ?: "")
 					?: fnProcessor(
-						name,
-						"[$name($rawArgument)]",
-						when (name) {
-							"if" -> if (rawContent.size !in 0..2) {
-								error("if block has wrong number of arguments")
-							} else {
-								val eval = evaluator.parseAndEvaluate(rawArgument)
-								val ridx = eval.isTrue().trueFalse(0, 1)
-								val rslt = rawContent.getOrNull(ridx) ?: ""
-								parse(rslt)
-							}
-							else -> error("Unknown function $name")
-						})
+							name,
+							"[$name($rawArgument)]",
+							when (name) {
+								"if" -> if (rawContent.size !in 0..2) {
+									error("if block has wrong number of arguments")
+								} else {
+									val eval = evaluator.parseAndEvaluate(rawArgument)
+									val ridx = eval.isTrue().trueFalse(0, 1)
+									val rslt = rawContent.getOrNull(ridx) ?: ""
+									parse(rslt)
+								}
+								"mf" -> if (rawContent.size !in 0..2) {
+									error("mf block has wrong number of arguments")
+								} else {
+									val eval = evaluator.parseAndEvaluate(KnownIds.PLAYER + "." + KnownIds.Creature.LOKS_MALE + "()")
+									val ridx = eval.isTrue().trueFalse(0, 1)
+									val rslt = rawContent.getOrNull(ridx) ?: ""
+									parse(rslt)
+								}
+								else -> error("Unknown function $name")
+							})
 	
 	override val delayedEvaluation: Boolean = true
 	

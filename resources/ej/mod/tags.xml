@@ -385,22 +385,37 @@
     <tag name="hair" sample="long, blue hair"> </tag>
     <tag name="haircolor" sample="blue"> </tag>
     <tag name="hairorfur" sample="hair/fur"> </tag>
-    <tag name="he" sample="(he/she)"> </tag>
-    <tag name="him" sample="(him/her)"> </tag>
+    <tag name="he" sample="(he/she)">
+        <description>"he/she" (player)</description>
+        <text parse="true">[mf:he|she]</text>
+    </tag>
+    <tag name="him" sample="(him/her)">
+        <description>"him/her" (player)</description>
+        <text parse="true">[mf:him|her]</text>
+    </tag>
     <alias name="himher" tag="him"/>
     <tag name="himself" sample="himself/herself"> </tag>
     <alias name="herself" tag="himself"/>
     <tag name="hips" sample="curvy thighs"> </tag>
-    <tag name="his" sample="(his/her)"> </tag>
+    <tag name="his" sample="(his/her)">
+        <description>"his/her" (player)</description>
+        <text parse="true">[mf:his|her]</text>
+    </tag>
     <alias name="hisher" tag="his"/>
     <tag name="horns" sample="demon horns"> </tag>
     <tag name="leg" sample="leg"> </tag>
     <tag name="legs" sample="legs"> </tag>
     <tag name="lowergarment" sample="dragonscale thong"> </tag>
-    <tag name="man" sample="(man/woman)"/>
+    <tag name="man" sample="(man/woman)">
+        <description>"man/woman" (player)</description>
+        <text parse="true">[mf:man|woman]</text>
+    </tag>
     <alias name="men" tag="man"/>
     <tag name="malefemaleherm" sample="hermaphrodite"> </tag>
-    <tag name="master" sample="(master/mistress)"> </tag>
+    <tag name="master" sample="(master/mistress)">
+        <description>"master/mistress" (player)</description>
+        <text parse="true">[mf:master|mistress]</text>
+    </tag>
     <alias name="multicock" tag="cocks"/>
     <alias name="multicockdescriptlight" tag="cocks"/>
     <tag name="name" sample="Zetaz"> </tag>
@@ -436,8 +451,14 @@
     <tag name="dickplural" sample="dick(s)"> </tag>
     <tag name="headplural" sample="head(s)"> </tag>
     <tag name="prickplural" sample="prick(s)"> </tag>
-    <tag name="boy" sample="(boy/girl)"> </tag>
-    <tag name="guy" sample="(guy/girl)"> </tag>
+    <tag name="boy" sample="(boy/girl)">
+        <description>"boy/girl" (player)</description>
+        <text parse="true">[mf:boy|girl]</text>
+    </tag>
+    <tag name="guy" sample="(guy/girl)">
+        <description>"guy/girl" (player)</description>
+        <text parse="true">[mf:guy|girl]</text>
+    </tag>
     <tag name="wings" sample="large, draconic wings"> </tag>
     <tag name="tail" sample="trio of kitsune tails"> </tag>
     <tag name="onetail" sample="your fox tail"> </tag>

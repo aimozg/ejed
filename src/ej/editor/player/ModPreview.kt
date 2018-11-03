@@ -16,6 +16,7 @@ import ej.mod.ModDataNode
 import ej.mod.StoryStmt
 import ej.mod.locate
 import ej.mod.visit
+import ej.utils.LazyConcatenatedMap
 import ej.utils.RandomMwc
 import ej.utils.appendIf
 import ej.utils.crop
@@ -46,8 +47,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	val playingVisitor = PlayingVisitor(this)
 	var rng = RandomMwc()
 	
-	val playerObject = Evaluated.ObjectValue(
-			CreatureStat.Stat.values().map {
+	val playerStats: Map<String, Evaluated> = CreatureStat.Stat.values().map {
 				it.impl to Evaluated.IntValue(
 						when (it) {
 							CreatureStat.Stat.STR,
@@ -68,9 +68,28 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 							CreatureStat.Stat.HIPRATING -> rng.nextInt(10) * rng.nextInt(1..2)
 						})
 			}.toMap() + mapOf(
-					"armorName" to Evaluated.StringValue("comfortable clothes")
-			)
+			KnownIds.Creature.ARMOR_NAME to Evaluated.StringValue("comfortable clothes"),
+			KnownIds.Creature.GENDER to Evaluated.IntValue(rng.nextObject(0, 1, 1, 1, 1, 2, 2, 2, 2, 3)))
+	@Suppress("PropertyName")
+	val playerMethodLooksFemale: () -> Evaluated = {
+		val g = this.playerObject.values[KnownIds.Creature.GENDER]?.coerceToNumber()?.intValue ?: 0
+		val f = this.playerObject.values[CreatureStat.Stat.FEMININITY.impl]?.coerceToNumber()?.intValue ?: 50
+		Evaluated.BoolValue(
+				when (g) {
+					2 -> f >= 20
+					1 -> f >= 80
+					else -> f >= 65
+				})
+	}
+	val playerMethodLooksMale: () -> Evaluated = {
+		Evaluated.BoolValue(playerMethodLooksFemale() == Evaluated.FalseValue)
+	}
+	val playerObject = Evaluated.ObjectValue(
+			LazyConcatenatedMap(playerStats, mapOf(
+					KnownIds.Creature.LOKS_MALE to Evaluated.FunctionValue(playerMethodLooksMale)
+			))
 	)
+	
 	override val evaluator: SimpleEvaluator = SimpleEvaluator(
 			Stdlib.functions.mapNotNull { func ->
 				val value: Evaluated? = when (func.returnTypeRaw) {
@@ -175,7 +194,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 			"""<abbr title="$source">$output</abbr>"""
 		}
 		evaluator = this@ModPreview.evaluator
-		playerEvaluator = this@ModPreview.evaluator.withInnerNamespace(
+		playerSpecificEvaluator = this@ModPreview.evaluator.withInnerNamespace(
 				playerObject.values
 		)
 	}

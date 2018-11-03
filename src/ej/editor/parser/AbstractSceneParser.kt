@@ -71,7 +71,20 @@ abstract class AbstractSceneParser : AbstractParser<String>() {
 					when {
 						eat(']') -> {
 							if (eval) {
-								rslt += evaluateTag(def)
+								if (def.isNotEmpty()) {
+									val id = def.toLowerCase()
+									val value = evaluateTag(id)
+									rslt += when {
+										def == id -> // all lower
+											value
+										def.all { it.isUpperCase() } ->  // all upper
+											value.toUpperCase()
+										def[0].isUpperCase() -> // first upper
+											value.capitalize()
+										else -> // ???
+											value
+									}
+								}
 							}
 						}
 						eat('(') -> {

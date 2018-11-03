@@ -123,7 +123,7 @@ sealed class Evaluated {
 		override fun call(arguments: List<Evaluated>): Evaluated = operatorCall(arguments)
 		
 		constructor(call: () -> Evaluated) : this(0, { call() })
-		constructor(call: (Evaluated) -> Evaluated) : this(0, { call(it[0]) })
+		constructor(call: (Evaluated) -> Evaluated) : this(1, { call(it[0]) })
 	}
 	
 	companion object {
