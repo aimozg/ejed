@@ -1,5 +1,6 @@
 package ej.editor.external
 
+import ej.mod.ModData
 import ej.xml.*
 import java.io.File
 import java.io.InputStream
@@ -10,8 +11,62 @@ import java.io.InputStream
  */
 
 class TagDecl : XmlAutoSerializable {
-	@Attribute var name:String = ""
-	@Attribute var sample:String = ""
+	enum class Context {
+		PLAYER,
+		GAME,
+		NPC
+	}
+	
+	@Attribute
+	var name: String = ""
+	
+	@Attribute
+	var sample: String = ""
+	
+	@Attribute
+	var context: Context = Context.PLAYER
+	
+	@Element
+	var description: String? = null
+	
+	@PolymorphicElements(polymorphisms = [
+		Polymorphism("pick-any", Part.PickAny::class),
+		Polymorphism("pick-first", Part.PickFirst::class),
+		Polymorphism("group", Part.Group::class),
+		Polymorphism("text", Part.Text::class)
+	])
+	val parts = ArrayList<Part>()
+	
+	sealed class Part : XmlAutoSerializable {
+		@Attribute("if")
+		var condition: String? = null
+		
+		@Attribute
+		var chance: Double = 1.0
+		
+		@Attribute
+		var weight: Double = 1.0
+		
+		abstract class Container : Part() {
+			@PolymorphicElements(polymorphisms = [
+				Polymorphism("pick-any", Part.PickAny::class),
+				Polymorphism("pick-first", Part.PickFirst::class),
+				Polymorphism("group", Part.Group::class),
+				Polymorphism("text", Part.Text::class)
+			])
+			val parts = ArrayList<Part>()
+		}
+		
+		class PickAny : Container()
+		class PickFirst : Container()
+		class Group : Container()
+		class Text : Part() {
+			@TextBody
+			var content: String = ""
+			@Attribute
+			var parse: Boolean = false
+		}
+	}
 }
 
 class TagAlias : XmlAutoSerializable {
@@ -45,7 +100,7 @@ val TagLib: TagLibClass by lazy {
 	} catch (e:Exception) {
 		e.printStackTrace()
 	}
-	loadTaglib(NativesClass::class.java.getResourceAsStream("tags.xml"))
+	loadTaglib(ModData::class.java.getResourceAsStream("tags.xml"))
 }
 
 fun loadTaglib(input: InputStream): TagLibClass {

@@ -67,6 +67,11 @@ class IntTextConverter : TextConverter<Int> {
 	override fun convert(s: String) = s.trim().toInt()
 }
 
+class DoubleTextConverter : TextConverter<Double> {
+	override fun toString(a: Double?) = a?.toString()
+	override fun convert(s: String) = s.trim().toDouble()
+}
+
 class BoolTextConverter : TextConverter<Boolean> {
 	override fun toString(a: Boolean?) = if (a == true) "true" else null
 	override fun convert(s: String) = s.trim() == "true"

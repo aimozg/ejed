@@ -188,6 +188,7 @@ private class PropertyTypeinfo(
 							property.findAnnotation<TextBodyWhitespacePolicy>()?.policy ?: WhitespacePolicy.KEEP
 					)
 				type == Int::class.starProjectedType -> IntTextConverter()
+				type == Double::class.starProjectedType -> DoubleTextConverter()
 				type == Boolean::class.starProjectedType ->
 					if (nullable) TristateBoolTextConverter() else BoolTextConverter()
 				type.isSubtypeOf(Enum::class.starProjectedType) -> {

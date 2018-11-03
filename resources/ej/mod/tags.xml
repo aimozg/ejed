@@ -1,16 +1,371 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <tags>
-    <tag name="allbreasts" sample="four rows of jugs"> </tag>
+    <tag name="allbreasts" sample="two rows of large breasts">
+        <description>
+            Breast rows: "breasts/tits/...", prefixed with row count and sometimes with size
+        </description>
+        <pick-any>
+            <group if="breastRowCount = 2">
+                <text>two rows of</text>
+            </group>
+            <group if="breastRowCount = 3">
+                <text>three rows of</text>
+                <text>multi-layered</text>
+            </group>
+            <group if="breastRowCount = 4">
+                <text>four rows of</text>
+                <text>four-tiered</text>
+            </group>
+            <group if="breastRowCount = 5">
+                <text>five rows of</text>
+                <text>five-tiered</text>
+            </group>
+        </pick-any>
+        <pick-any>
+            <text parse="true">[breasts]</text>
+        </pick-any>
+    </tag>
     <alias name="alltits" tag="allbreasts"/>
-    <tag name="armor" sample="comfortable clothes"> </tag>
+    <tag name="armor" sample="comfortable clothes">
+        <description>
+            Armor, if none - lower garments, if none too - "gear"
+        </description>
+        <pick-first>
+            <text parse="true" if="armorName != 'nothing'">[=armorName]</text>
+            <text parse="true" if="lowerGarmentName != 'nothing'">[=lowerGarmentName]</text>
+            <text>gear</text>
+        </pick-first>
+    </tag>
     <alias name="armorname" tag="armor"/>
-    <tag name="ass" sample="large ass"> </tag>
+    <alias name="ass" tag="butt"/>
     <tag name="asshole" sample="tight anus"> </tag>
     <tag name="balls" sample="pair of testicles"> </tag>
     <tag name="bodytype" sample="a normal waistline and decently visible muscles"> </tag>
     <tag name="boyfriend" sample="(boyfriend/girlfriend)"> </tag>
-    <tag name="breasts" sample="softball-sized breasts"> </tag>
-    <alias name="butt" tag="ass"/>
+    <tag name="breasts" sample="softball-sized breasts">
+        <description>
+            "breasts/tits/...", sometimes with size (50%)
+        </description>
+        <pick-first chance="0.5">
+            <group if="breastSize lt 1">
+                <text>flat</text>
+                <text>manly</text>
+            </group>
+            <group if="breastSize lt 2">
+                <text>palmable</text>
+                <text>tight</text>
+                <text>perky</text>
+                <text>baseball-sized</text>
+            </group>
+            <group if="breastSize lt 4">
+                <text>nice</text>
+                <text>hand-filling</text>
+                <text>well-rounded</text>
+                <text>supple</text>
+                <text>softball-sized</text>
+            </group>
+            <group if="breastSize lt 11">
+                <text>big</text>
+                <text>large</text>
+                <text>pillowy</text>
+                <text>jiggly</text>
+                <text>volleyball-sized</text>
+            </group>
+            <group if="breastSize lt 15">
+                <text>soccerball-sized</text>
+                <text>hand-overflowing</text>
+                <text>generous</text>
+                <text>jiggling</text>
+            </group>
+            <group if="breastSize lt 24">
+                <text>basketball-sized</text>
+                <text>whorish</text>
+                <text>cushiony</text>
+                <text>wobbling</text>
+            </group>
+            <group if="breastSize lt 35">
+                <text>massive motherly</text>
+                <text>luscious</text>
+                <text>smothering</text>
+                <text>prodigious</text>
+            </group>
+            <group if="breastSize lt 100">
+                <text>mountainous</text>
+                <text>monumental</text>
+                <text>back-breaking</text>
+                <text>exercise-ball-sized</text>
+                <text>immense</text>
+            </group>
+            <group>
+                <text>ludicrously-sized</text>
+                <text>hideously large</text>
+                <text>absurdly large</text>
+                <text>back-breaking</text>
+                <text>colossal</text>
+                <text>immense</text>
+            </group>
+        </pick-first>
+        <pick-any>
+            <text>breasts</text>
+            <group if="breastSize gte 1">
+                <text> tits</text>
+                <text> jugs</text>
+                <text> boobs</text>
+                <text if="lactation gt 1.5"> milty tits</text>
+                <text if="lactation gte 1"> milk jugs</text>
+                <text if="lactation gte 2.5"> udders</text>
+            </group>
+            <group if="breastSize gte 6">
+                <text> love-pillows</text>
+            </group>
+        </pick-any>
+    </tag>
+    <tag name="butt" sample="large ass">
+        <description>
+            Full description of butt (tone, size)
+        </description>
+        <pick-first>
+            <pick-any if="buttRating lt 2">
+                <text if="tone gte 60">incredibly tight, perky</text>
+                <group if="tone lt 60">
+                    <text>tiny</text>
+                    <text>very small</text>
+                    <text>dainty</text>
+                </group>
+                <group if="tone le 30">
+                    <text>tiny yet soft</text>
+                    <text>very small yet soft</text>
+                    <text>dainty yet soft</text>
+                </group>
+            </pick-any>
+            <pick-first if="buttRating lt 4">
+                <pick-any if="tone gte 65">
+                    <text>perky, muscular</text>
+                    <text>tight, toned</text>
+                    <text>compact, muscular</text>
+                    <text>tight</text>
+                    <text>muscular, toned</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>tight</text>
+                    <text>firm</text>
+                    <text>compact</text>
+                    <text>petite</text>
+                </pick-any>
+                <pick-any>
+                    <text>small, heart-shaped</text>
+                    <text>soft, compact</text>
+                    <text>soft, heart-shaped</text>
+                    <text>small, cushy</text>
+                    <text>small</text>
+                    <text>petite</text>
+                    <text>snug</text>
+                </pick-any>
+            </pick-first>
+            <pick-first if="buttRating lt 6">
+                <pick-any if="tone gte 65">
+                    <text>nicely muscled</text>
+                    <text>nice, toned</text>
+                    <text>muscly</text>
+                    <text>nice toned</text>
+                    <text>toned</text>
+                    <text>fair</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>nice</text>
+                    <text>fair</text>
+                </pick-any>
+                <pick-any>
+                    <text>nice, cushiony</text>
+                    <text>soft</text>
+                    <text>nicely-rounded, heart-shaped</text>
+                    <text>cushy</text>
+                    <text>soft, squeezable</text>
+                </pick-any>
+            </pick-first>
+            <pick-first if="buttRating lt 8">
+                <pick-any if="tone gte 65">
+                    <text>full, toned</text>
+                    <text>muscly handful of</text>
+                    <text>shapely, toned</text>
+                    <text>muscular, hand-filling</text>
+                    <text>shapely, chiseled</text>
+                    <text>full</text>
+                    <text>chiseled</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>handful of</text>
+                    <text>full</text>
+                    <text>shapely</text>
+                    <text>hand-filling</text>
+                </pick-any>
+                <pick-any>
+                    <text>somewhat jiggly</text>
+                    <text>soft, hand-filling</text>
+                    <text>cushiony, full</text>
+                    <text>plush, shapely</text>
+                    <text>full</text>
+                    <text>soft, shapely</text>
+                    <text>rounded, spongy</text>
+                </pick-any>
+            </pick-first>
+            <pick-first if="buttRating lt 10">
+                <pick-any if="tone gte 65">
+                    <text>large, muscular</text>
+                    <text>substantial, toned</text>
+                    <text>big-but-tight</text>
+                    <text>squeezable, toned</text>
+                    <text>large, brawny</text>
+                    <text>big-but-fit</text>
+                    <text>powerful, squeezable</text>
+                    <text>large</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>squeezable</text>
+                    <text>large</text>
+                    <text>substantial</text>
+                </pick-any>
+                <pick-any>
+                    <text>large, bouncy</text>
+                    <text>soft, eye-catching</text>
+                    <text>big, slappable</text>
+                    <text>soft, pinchable</text>
+                    <text>large, plush</text>
+                    <text>squeezable</text>
+                    <text>cushiony</text>
+                    <text>plush</text>
+                    <text>pleasantly plump</text>
+                </pick-any>
+            </pick-first>
+            <pick-first if="buttRating lt 13">
+                <pick-any if="tone gte 65">
+                    <text>thick, muscular</text>
+                    <text>big, burly</text>
+                    <text>heavy, powerful</text>
+                    <text>spacious, muscular</text>
+                    <text>toned, cloth-straining</text>
+                    <text>thick</text>
+                    <text>thick, strong</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>jiggling</text>
+                    <text>spacious</text>
+                    <text>heavy</text>
+                    <text>cloth-straining</text>
+                </pick-any>
+                <pick-any>
+                    <text>super-soft, jiggling</text>
+                    <text>spacious, cushy</text>
+                    <text>plush, cloth-straining</text>
+                    <text>squeezable, over-sized</text>
+                    <text>spacious</text>
+                    <text>heavy, cushiony</text>
+                    <text>slappable, thick</text>
+                    <text>jiggling</text>
+                    <text>spacious</text>
+                    <text>soft, plump</text>
+                </pick-any>
+            </pick-first>
+            <pick-first if="buttRating lt 16">
+                <pick-any if="tone gte 65">
+                    <text>expansive, muscled</text>
+                    <text>voluminous, rippling</text>
+                    <text>generous, powerful</text>
+                    <text>big, burly</text>
+                    <text>well-built, voluminous</text>
+                    <text>powerful</text>
+                    <text>muscular</text>
+                    <text>powerful, expansive</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>expansive</text>
+                    <text>generous</text>
+                    <text>voluminous</text>
+                    <text>wide</text>
+                </pick-any>
+                <pick-any>
+                    <text>pillow-like</text>
+                    <text>generous, cushiony</text>
+                    <text>wide, plush</text>
+                    <text>soft, generous</text>
+                    <text>expansive, squeezable</text>
+                    <text>slappable</text>
+                    <text>thickly-padded</text>
+                    <text>wide, jiggling</text>
+                    <text>wide</text>
+                    <text>voluminous</text>
+                    <text>soft, padded</text>
+                </pick-any>
+            </pick-first>
+            <pick-first if="buttRating lt 20">
+                <pick-any if="tone gte 65">
+                    <text>huge, toned</text>
+                    <text>vast, muscular</text>
+                    <text>vast, well-built</text>
+                    <text>huge, muscular</text>
+                    <text>strong, immense</text>
+                    <text>muscle-bound</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>huge</text>
+                    <text>vast</text>
+                    <text>giant</text>
+                </pick-any>
+                <pick-any>
+                    <text>vast, cushiony</text>
+                    <text>huge, plump</text>
+                    <text>expansive, jiggling</text>
+                    <text>huge, cushiony</text>
+                    <text>huge, slappable</text>
+                    <text>seam-bursting</text>
+                    <text>plush, vast</text>
+                    <text>giant, slappable</text>
+                    <text>giant</text>
+                    <text>huge</text>
+                    <text>swollen, pillow-like</text>
+                </pick-any>
+            </pick-first>
+            <pick-first>
+                <pick-any if="tone gte 65">
+                    <text>ginormous, muscle-bound</text>
+                    <text>colossal yet toned</text>
+                    <text>strong, tremdously large</text>
+                    <text>tremendous, muscled</text>
+                    <text>ginormous, toned</text>
+                    <text>colossal, well-defined</text>
+                </pick-any>
+                <pick-any if="tone gte 30">
+                    <text>ginormous</text>
+                    <text>colossal</text>
+                    <text>tremendous</text>
+                    <text>gigantic</text>
+                </pick-any>
+                <pick-any>
+                    <text>ginormous, jiggly</text>
+                    <text>plush, ginormous</text>
+                    <text>seam-destroying</text>
+                    <text>tremendous, rounded</text>
+                    <text>bouncy, colossal</text>
+                    <text>thong-devouring</text>
+                    <text>tremendous, thickly padded</text>
+                    <text>ginormous, slappable</text>
+                    <text>gigantic, rippling</text>
+                    <text>gigantic</text>
+                    <text>ginormous</text>
+                    <text>colossal</text>
+                    <text>tremendous</text>
+                </pick-any>
+            </pick-first>
+        </pick-first>
+        <pick-any>
+            <text weight="4"> butt</text>
+            <text weight="4"> ass</text>
+            <text weight="2"> backside</text>
+            <text> derriere</text>
+            <text> rump</text>
+            <text> bottom</text>
+        </pick-any>
+    </tag>
     <alias name="butthole" tag="asshole"/>
     <tag name="chest" sample="nice tits"> </tag>
     <tag name="claws" sample="short curved black claws"> </tag>

@@ -1,5 +1,6 @@
 package ej.editor.external
 
+import ej.mod.ModData
 import ej.xml.*
 import java.io.File
 import java.io.InputStream
@@ -65,7 +66,7 @@ val Natives: NativesClass by lazy {
 	} catch (e:Exception) {
 		e.printStackTrace()
 	}
-	loadNatives(NativesClass::class.java.getResourceAsStream("natives.xml"))
+	loadNatives(ModData::class.java.getResourceAsStream("natives.xml"))
 }
 
 fun loadNatives(input: InputStream): NativesClass {
