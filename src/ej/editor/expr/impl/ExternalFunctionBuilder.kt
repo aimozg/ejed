@@ -1,14 +1,14 @@
-package ej.editor.expr.external
+package ej.editor.expr.impl
 
 import ej.editor.expr.*
-import ej.editor.expr.impl.ConstBool
-import ej.editor.expr.impl.ConstFloat
-import ej.editor.expr.impl.ConstInt
-import ej.editor.expr.impl.ConstText
 import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.lists.CreatureChooser
 import ej.editor.expr.lists.SimpleExpressionChooser
+import ej.editor.external.ExpressionDecl
+import ej.editor.external.ExpressionEditorDecl
+import ej.editor.external.ParamDecl
+import ej.editor.external.Stdlib
 import ej.editor.utils.NullableDoubleStringConverter
 import ej.editor.utils.NullableIntStringConverter
 import javafx.beans.property.SimpleObjectProperty

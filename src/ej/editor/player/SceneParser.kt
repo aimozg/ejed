@@ -1,7 +1,7 @@
 package ej.editor.player
 
+import ej.editor.external.TagLib
 import ej.editor.parser.AbstractSceneParser
-import ej.mod.TagLib
 import java.util.*
 
 /*

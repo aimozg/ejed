@@ -3,6 +3,7 @@ package ej.editor.stmts
 import ej.editor.expr.lists.AnyExprChooser
 import ej.editor.expr.lists.BoolExprChooser
 import ej.editor.expr.valueLink
+import ej.editor.external.Natives
 import ej.editor.utils.nodeBinding
 import ej.mod.*
 import javafx.beans.property.SimpleObjectProperty

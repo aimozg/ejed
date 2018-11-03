@@ -10,6 +10,7 @@ import tornadofx.*
 
 val Expression.asId get() = (this as? Identifier)
 val Expression.asDot get() = (this as? DotExpression)
+val Expression.asStringLiteral get() = (this as? StringLiteral)
 
 
 fun simpleStringBinding(prop: ObservableValue<String>, prefix:String="", suffix:String="") =

@@ -1,6 +1,8 @@
-package ej.editor.expr.external
+package ej.editor.external
 
 import ej.editor.expr.*
+import ej.editor.expr.impl.ExternalEnumBuilder
+import ej.editor.expr.impl.ExternalFunctionBuilder
 import ej.mod.ModData
 import ej.utils.Validable
 import ej.utils.ValidationReport
@@ -73,8 +75,8 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression>,
 	}
 }
 
-val Stdlib:StdlibDecl by lazy<StdlibDecl> {
-	var sd:StdlibDecl? = null
+val Stdlib: StdlibDecl by lazy<StdlibDecl> {
+	var sd: StdlibDecl? = null
 	try {
 		val f = File("stdlib.xml")
 		if (f.exists() && f.canRead()) sd = loadStdlib(f.inputStream())
@@ -92,6 +94,6 @@ val Stdlib:StdlibDecl by lazy<StdlibDecl> {
 	sd
 }
 
-fun loadStdlib(input: InputStream):StdlibDecl {
+fun loadStdlib(input: InputStream): StdlibDecl {
 	return getSerializationInfo<StdlibDecl>().deserializeDocument(XmlExplorer(input))
 }

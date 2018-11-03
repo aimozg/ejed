@@ -1,4 +1,4 @@
-package ej.editor.expr.external
+package ej.editor.external
 
 import ej.utils.Validable
 import ej.utils.ValidationReport

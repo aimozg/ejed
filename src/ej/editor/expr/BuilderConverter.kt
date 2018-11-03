@@ -1,8 +1,7 @@
 package ej.editor.expr
 
-import ej.editor.expr.external.ExternalEnumBuilder
-import ej.editor.expr.external.Stdlib
 import ej.editor.expr.impl.*
+import ej.editor.external.Stdlib
 
 /*
  * Created by aimozg on 15.07.2018.
@@ -51,9 +50,10 @@ object DefaultBuilderConverter : BuilderConverter {
 			is CallExpression ->
 				Stdlib.tryConvert(this, expr)
 			is DotExpression ->
-				ModVariableBuilder.tryConvert(this, expr)
+				ModVariableBuilder.tryConvert(expr)
 						?: CreatureStat.tryConvert(this, expr)
-			is AccessExpression -> null
+			is AccessExpression ->
+				ModVariableBuilder.tryConvert(expr)
 			is ConditionalExpression -> null
 			is BinaryExpression ->
 				Comparison.tryConvert(this, expr)

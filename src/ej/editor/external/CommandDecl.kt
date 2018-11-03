@@ -1,4 +1,4 @@
-package ej.editor.expr.external
+package ej.editor.external
 
 /*
  * Created by aimozg on 23.07.2018.

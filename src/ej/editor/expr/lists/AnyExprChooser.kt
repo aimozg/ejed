@@ -2,9 +2,8 @@ package ej.editor.expr.lists
 
 import ej.editor.expr.ExpressionBuilder
 import ej.editor.expr.ExpressionChooser
-import ej.editor.expr.external.ExternalFunctionBuilder
-import ej.editor.expr.external.Stdlib
 import ej.editor.expr.impl.*
+import ej.editor.external.Stdlib
 
 object AnyExprChooser : ExpressionChooser() {
 	override fun list() = Stdlib.functions.map {

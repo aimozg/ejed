@@ -2,9 +2,9 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.expr.ExpressionTypes
-import ej.editor.expr.external.Stdlib
 import ej.editor.expr.lists.SimpleExpressionChooser
 import ej.editor.expr.valueLink
+import ej.editor.external.Stdlib
 import ej.mod.XsCommand
 import tornadofx.*
 

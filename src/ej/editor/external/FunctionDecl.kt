@@ -1,4 +1,4 @@
-package ej.editor.expr.external
+package ej.editor.external
 
 import ej.editor.expr.ExpressionTypes
 import ej.xml.Attribute

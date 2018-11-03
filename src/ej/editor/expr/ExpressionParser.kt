@@ -143,6 +143,10 @@ class ExpressionParser : AbstractParser<Expression>() {
 		}
 		return s.toString()
 	}
+	
+	companion object {
+		fun isValidId(s: String): Boolean = RX_ID.matches(s)
+	}
 }
 
 fun parseExpression(src:String): Expression {

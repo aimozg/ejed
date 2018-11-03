@@ -2,7 +2,7 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.editor.expr.valueLink
-import ej.mod.Natives
+import ej.editor.external.Natives
 import ej.mod.XsButton
 import ej.mod.acceptsMenu
 import tornadofx.*

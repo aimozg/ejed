@@ -1,4 +1,4 @@
-package ej.editor.expr.external
+package ej.editor.external
 
 import ej.utils.Validable
 import ej.utils.ValidationReport
@@ -22,7 +22,7 @@ class ExpressionEditorDecl : XmlAutoSerializable,Validable {
 	
 	@MixedToEitherBody(Polymorphism("param", ParamRef::class))
 	@MixedBodyWhitespacePolicy(WhitespacePolicy.COMPACT)
-	val parts = ArrayList<Either<String,ParamRef>>().observable()
+	val parts = ArrayList<Either<String, ParamRef>>().observable()
 
 	override fun validate() = ValidationReport.build {
 		validateAll(parts.asSequence().filterIsInstance<ParamRef>())
@@ -32,11 +32,11 @@ class ExpressionEditorDecl : XmlAutoSerializable,Validable {
 		@Attribute
 		var name:String = ""
 		@Attribute
-		var type:ParamEditorType = ParamEditorType.LINK
+		var type: ParamEditorType = ParamEditorType.LINK
 		@Attribute
 		var typedata: String? = null
 		
-		val decl:ParamDecl? get() = expression.paramByName(name)
+		val decl: ParamDecl? get() = expression.paramByName(name)
 		
 		override fun validate() = ValidationReport.build {
 			assertNotNull("param $name",decl)

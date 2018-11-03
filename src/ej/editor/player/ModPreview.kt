@@ -7,8 +7,8 @@ import ej.editor.expr.Evaluated
 import ej.editor.expr.Evaluator
 import ej.editor.expr.ExpressionTypes
 import ej.editor.expr.KnownIds
-import ej.editor.expr.external.Stdlib
 import ej.editor.expr.impl.CreatureStat
+import ej.editor.external.Stdlib
 import ej.editor.utils.escapeXml
 import ej.editor.utils.onChangeAndNow
 import ej.editor.views.ManagedWebView

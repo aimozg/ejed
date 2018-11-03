@@ -1,8 +1,8 @@
 package ej.editor.stmts
 
 import ej.editor.expr.AbstractListValueChooser
+import ej.editor.external.Natives
 import ej.mod.ModData
-import ej.mod.Natives
 
 /*
  * Created by aimozg on 16.07.2018.

@@ -1,4 +1,4 @@
-package ej.mod
+package ej.editor.external
 
 import ej.xml.*
 import java.io.File
@@ -58,7 +58,7 @@ class NativesClass : XmlAutoSerializable {
 	val places = ArrayList<NativePlace>()
 }
 
-val Natives:NativesClass by lazy {
+val Natives: NativesClass by lazy {
 	try {
 		val f = File("natives.xml")
 		if (f.exists() && f.canRead()) return@lazy loadNatives(f.inputStream())
@@ -68,6 +68,6 @@ val Natives:NativesClass by lazy {
 	loadNatives(NativesClass::class.java.getResourceAsStream("natives.xml"))
 }
 
-fun loadNatives(input: InputStream):NativesClass {
+fun loadNatives(input: InputStream): NativesClass {
 	return getSerializationInfo<NativesClass>().deserializeDocument(XmlExplorer(input))
 }

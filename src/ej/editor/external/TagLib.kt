@@ -1,4 +1,4 @@
-package ej.mod
+package ej.editor.external
 
 import ej.xml.*
 import java.io.File
@@ -26,7 +26,7 @@ class TagLibClass : XmlAutoSerializable {
 	@Elements("alias")
 	private val aliasList = ArrayList<TagAlias>()
 	
-	val tags: MutableMap<String,TagDecl> = HashMap()
+	val tags: MutableMap<String, TagDecl> = HashMap()
 	
 	@AfterLoad
 	private fun buildTags() {
@@ -38,7 +38,7 @@ class TagLibClass : XmlAutoSerializable {
 	}
 }
 
-val TagLib:TagLibClass by lazy {
+val TagLib: TagLibClass by lazy {
 	try {
 		val f = File("tags.xml")
 		if (f.exists() && f.canRead()) return@lazy loadTaglib(f.inputStream())
@@ -48,6 +48,6 @@ val TagLib:TagLibClass by lazy {
 	loadTaglib(NativesClass::class.java.getResourceAsStream("tags.xml"))
 }
 
-fun loadTaglib(input: InputStream):TagLibClass {
+fun loadTaglib(input: InputStream): TagLibClass {
 	return getSerializationInfo<TagLibClass>().deserializeDocument(XmlExplorer(input))
 }

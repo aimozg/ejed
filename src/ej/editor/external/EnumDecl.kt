@@ -1,4 +1,4 @@
-package ej.editor.expr.external
+package ej.editor.external
 
 import ej.editor.expr.WithReadableText
 import ej.editor.expr.parseExpressionSafe
