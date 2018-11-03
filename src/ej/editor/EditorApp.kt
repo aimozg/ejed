@@ -11,7 +11,10 @@ import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.input.KeyCombination
 import tornadofx.*
+import java.io.FileOutputStream
 import java.io.PrintStream
+import java.time.LocalDateTime
+import java.util.*
 
 
 /*
@@ -79,8 +82,12 @@ class EditorView : AModView() {
 					addClass("consola")
 					isWrapText = true
 					val taos = TextAreaOutputStream(this)
-					System.setErr(PrintStream(SplittingOutputStream(System.err, taos)))
-					System.setOut(PrintStream(SplittingOutputStream(System.out, taos)))
+					val t0 = LocalDateTime.now()
+					val fout = FileOutputStream("editor.${t0.toLocalDate()}.log", true)
+					System.setErr(PrintStream(SplittingOutputStream(System.err, taos, fout)))
+					System.setOut(PrintStream(SplittingOutputStream(System.out, taos, fout)))
+					System.out.print("\n=== Launched at $t0 ===\n\n")
+					text = ""
 				}
 				
 			}

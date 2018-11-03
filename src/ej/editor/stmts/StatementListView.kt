@@ -3,10 +3,7 @@ package ej.editor.stmts
 import ej.editor.Styles
 import ej.editor.stmts.old.DATAFORMAT_XSTATEMENT
 import ej.editor.stmts.old.hasStatement
-import ej.editor.utils.ContextMenuContainer
-import ej.editor.utils.boundFaGlyph
-import ej.editor.utils.fontAwesome
-import ej.editor.utils.presentWhen
+import ej.editor.utils.*
 import ej.editor.views.DecoratedSimpleListView
 import ej.mod.XStatement
 import ej.mod.XStatementFromXmlObject
@@ -157,9 +154,13 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 			cell.setOnDragOver { event ->
 				if (event.gestureSource != cell) {
 					if (event.dragboard.hasStatement()) {
-						event.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
-						for (p in generateSequence(parent) { it.parent }) {
-							p.removeClass(Styles.dragover, Styles.dragoverFromBottom, Styles.dragoverFromTop)
+						if (parents().none {
+									it.hasClass("dragged")
+								}) {
+							event.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
+							for (p in parents()) {
+								p.removeClass(Styles.dragover, Styles.dragoverFromBottom, Styles.dragoverFromTop)
+							}
 						}
 					}
 				}
@@ -250,7 +251,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 						list.deleteStmt(stmt)
 					}
 				}
-				item("Insert _After").apply {
+				menu("Insert _After").apply {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
 						else item(e.name) {
@@ -261,7 +262,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 						}
 					}
 				}
-				item("Insert _Before").apply {
+				menu("Insert _Before").apply {
 					for (e in StatementMetadata.entries) {
 						if (e == null) separator()
 						else item(e.name) {
