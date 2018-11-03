@@ -4,9 +4,9 @@ import com.sun.webkit.dom.HTMLElementImpl
 import ej.editor.AModView
 import ej.editor.Styles
 import ej.editor.expr.Evaluated
-import ej.editor.expr.Evaluator
 import ej.editor.expr.ExpressionTypes
 import ej.editor.expr.KnownIds
+import ej.editor.expr.SimpleEvaluator
 import ej.editor.expr.impl.CreatureStat
 import ej.editor.external.Stdlib
 import ej.editor.utils.escapeXml
@@ -33,7 +33,7 @@ import tornadofx.*
 class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	class MainText : ManagedWebView() {
 		override fun templatePartStyle(): String {
-			return super.templatePartStyle()+"\n"+Styles.PREVIEW_STYLE
+			return super.templatePartStyle() + "\n" + Styles.PREVIEW_STYLE
 		}
 		
 		override fun doSetInnerHtml(mainElement: HTMLElementImpl, it: String) {
@@ -45,54 +45,54 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	val uiButtons = ArrayList<Button>()
 	val playingVisitor = PlayingVisitor(this)
 	var rng = RandomMwc()
-	override val evaluator: Evaluator = object:Evaluator() {
-		override fun evalId(id: String): Evaluated {
-			Stdlib.functionByName(id)?.let { func ->
-				when (func.returnTypeRaw) {
+	
+	val playerObject = Evaluated.ObjectValue(
+			CreatureStat.Stat.values().map {
+				it.impl to Evaluated.IntValue(
+						when (it) {
+							CreatureStat.Stat.STR,
+							CreatureStat.Stat.TOU,
+							CreatureStat.Stat.SPE,
+							CreatureStat.Stat.INT,
+							CreatureStat.Stat.WIS,
+							CreatureStat.Stat.LIB -> rng.nextInt(1..200)
+							CreatureStat.Stat.SENS,
+							CreatureStat.Stat.FEMININITY,
+							CreatureStat.Stat.BODYTONE -> rng.nextInt(0..100)
+							CreatureStat.Stat.COR -> rng.nextInt(1..50) * rng.nextInt(
+									0..2)
+							CreatureStat.Stat.HP -> rng.nextInt(1..1000)
+							CreatureStat.Stat.LUST -> rng.nextInt(1..200)
+							CreatureStat.Stat.LEVEL -> rng.nextInt(1..60)
+							CreatureStat.Stat.BUTTRATING -> rng.nextInt(10) * rng.nextInt(1..2)
+							CreatureStat.Stat.HIPRATING -> rng.nextInt(10) * rng.nextInt(1..2)
+						})
+			}.toMap() + mapOf(
+					"armorName" to Evaluated.StringValue("comfortable clothes")
+			)
+	)
+	override val evaluator: SimpleEvaluator = SimpleEvaluator(
+			Stdlib.functions.mapNotNull { func ->
+				val value: Evaluated? = when (func.returnTypeRaw) {
 					ExpressionTypes.BOOLEAN -> {
 						val preset = Evaluated.BoolValue(rng.nextBoolean())
-						return Evaluated.FunctionValue(func.arity) { preset }
+						Evaluated.FunctionValue(func.arity) { preset }
 					}
+					else -> null
 				}
-				Unit
-			}
-			when (id) {
-				KnownIds.PLAYER -> Evaluated.ObjectValue(
-						CreatureStat.Stat.values().map {
-							it.name to Evaluated.IntValue(when (it) {
-								                              CreatureStat.Stat.STR,
-								                              CreatureStat.Stat.TOU,
-								                              CreatureStat.Stat.SPE,
-								                              CreatureStat.Stat.INT,
-								                              CreatureStat.Stat.WIS,
-								                              CreatureStat.Stat.LIB -> rng.nextInt(1..200)
-								                              CreatureStat.Stat.SENS,
-								                              CreatureStat.Stat.FEMININITY,
-								                              CreatureStat.Stat.BODYTONE -> rng.nextInt(0..100)
-								                              CreatureStat.Stat.COR -> rng.nextInt(1..50) * rng.nextInt(
-										                              0..2)
-								                              CreatureStat.Stat.HP -> rng.nextInt(1..1000)
-								                              CreatureStat.Stat.LUST -> rng.nextInt(1..200)
-								                              CreatureStat.Stat.LEVEL -> rng.nextInt(1..60)
-							                              })
-						}.toMap()
-				)
-			}
-			return Evaluated.NullValue
-		}
-		
-	}
-//	lateinit var mainText: TextFlow // TextFlow is not selectable
+				if (value != null) func.name to value else null
+			}.toMap() + mapOf(
+					KnownIds.PLAYER to playerObject
+			)
+	)
 	lateinit var mainText: MainText
-	
 	
 	fun clearOutput() {
 		mainText.htmlContent = ""
 	}
 	
-	
-	fun play(stmt:StoryStmt) {
-		outputContent("[scene: ${stmt.path}]",ContentType.CODE,false)
+	fun play(stmt: StoryStmt) {
+		outputContent("[scene: ${stmt.path}]", ContentType.CODE, false)
 		stmt.visit(playingVisitor)
 	}
 	
@@ -117,12 +117,12 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 				addClass("nogap")
 				selectedProperty().bindBidirectional(showCommentsProperty)
 			}
-			spacer(Priority.NEVER) {prefWidth=10.0}
+			spacer(Priority.NEVER) { prefWidth = 10.0 }
 			ToggleSwitch("Eval tags").attachTo(this) {
 				addClass("nogap")
 				selectedProperty().bindBidirectional(evalTagsProperty)
 			}
-			spacer(Priority.NEVER) {prefWidth=20.0}
+			spacer(Priority.NEVER) { prefWidth = 20.0 }
 			button("Clear") {
 				action { clearOutput() }
 			}
@@ -135,7 +135,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 			constraintsForColumn(0).hgrow = Priority.ALWAYS
 			constraintsForColumn(6).hgrow = Priority.ALWAYS
 			for (i in 1..3) row {
-				hbox{
+				hbox {
 				}
 				for (j in 1..5) {
 					button {
@@ -145,18 +145,18 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 						maxWidth = Double.MAX_VALUE
 					}
 				}
-				hbox{
+				hbox {
 				}
 			}
 		}
 		showSkippedProperty.onChangeAndNow { show ->
-			mainText.toggleMainElementClass("noskip",show == false)
+			mainText.toggleMainElementClass("noskip", show == false)
 		}
 		showCodeProperty.onChangeAndNow { show ->
-			mainText.toggleMainElementClass("nocode",show == false)
+			mainText.toggleMainElementClass("nocode", show == false)
 		}
 		showCommentsProperty.onChangeAndNow { show ->
-			mainText.toggleMainElementClass("nocomment",show == false)
+			mainText.toggleMainElementClass("nocomment", show == false)
 		}
 		evalTagsProperty.onChangeAndNow { show ->
 			mainText.toggleMainElementClass("rawtag", show == false)
@@ -174,22 +174,27 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 		fnProcessor = { _, source, output ->
 			"""<abbr title="$source">$output</abbr>"""
 		}
+		evaluator = this@ModPreview.evaluator
+		playerEvaluator = this@ModPreview.evaluator.withInnerNamespace(
+				playerObject.values
+		)
 	}
 	
-	fun runParser(s:String):String {
+	fun runParser(s: String): String {
 		return try {
 			parser.parse(s)
-		} catch (e:Throwable) {
-			runtimeError(e.message?:"")
+		} catch (e: Throwable) {
+			e.printStackTrace()
+			runtimeError(e.message ?: "")
 			""
 		}
 	}
 	
-	private var skipCounter:Int = 0
-	private var skipMax:Int = 200
+	private var skipCounter: Int = 0
+	private var skipMax: Int = 200
 	override fun outputContent(t: String, type: ContentType, skipped: Boolean) {
 		if (t.isEmpty()) return
-		var cc = "content-$type".appendIf(skipped," skipped").toLowerCase()
+		var cc = "content-$type".appendIf(skipped, " skipped").toLowerCase()
 		val remaining = skipMax - skipCounter
 		val s: String
 		if (!skipped) {
@@ -202,7 +207,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 				s = t
 			}
 		} else if (remaining > 0) {
-			s = t.crop(remaining,"…")
+			s = t.crop(remaining, "…")
 			skipCounter += s.length
 		} else {
 			s = ""
@@ -217,7 +222,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 	}
 	
 	override fun doMenu(from: StoryStmt, buttons: List<ButtonDecl>) {
-		for ((i,uib) in uiButtons.withIndex()) {
+		for ((i, uib) in uiButtons.withIndex()) {
 			val b = buttons.getOrNull(i)
 			uib.isVisible = b != null
 			if (b != null) {
@@ -227,7 +232,7 @@ class ModPreview : AModView("EJEd - mod preview"), PlayerInterface {
 				if (target == null) {
 					uib.isDisable = true
 					runtimeError("Unresolvable reference ${b.ref} in <button> in ${from.path}")
-				}  else {
+				} else {
 					uib.action {
 						play(target)
 					}

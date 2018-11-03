@@ -31,8 +31,8 @@
             Armor, if none - lower garments, if none too - "gear"
         </description>
         <pick-first>
-            <text parse="true" if="armorName != 'nothing'">[=armorName]</text>
-            <text parse="true" if="lowerGarmentName != 'nothing'">[=lowerGarmentName]</text>
+            <text parse="true" if="armorName != 'nothing'">[=player.armorName]</text>
+            <text parse="true" if="lowerGarmentName != 'nothing'">[=player.lowerGarmentName]</text>
             <text>gear</text>
         </pick-first>
     </tag>

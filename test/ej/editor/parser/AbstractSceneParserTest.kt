@@ -12,9 +12,16 @@ import org.junit.Test
 private class ParserImpl(
 		val tags: Map<String, String>,
 		val functions: Map<String, ParserImpl.(String, List<String>) -> String>,
+		val exprEval: (String) -> String,
 		override var delayedEvaluation: Boolean
 ) : AbstractSceneParser() {
 	var tagCount = HashMap<String,Int>()
+	val exprs = ArrayList<String>()
+	
+	override fun evaluateExpression(expr: String): String {
+		exprs += expr
+		return exprEval(expr)
+	}
 	
 	override fun evaluateTag(tag: String): String {
 		@Suppress("NAME_SHADOWING")
@@ -48,20 +55,21 @@ class AbstractSceneParserTest {
 				functions = mapOf(
 						"b" to { expr, args ->
 							if (expr.isNotBlank()) error("Expected no-arg in [b($expr)...]")
-							"<b>"+parseIfNeeded(args[0]).trim()+"</b>"
+							"<b>" + parseIfDelayed(args[0]).trim() + "</b>"
 						},
 						"say" to { expr, args ->
 							if (expr.isNotBlank()) error("Expected no-arg in [b($expr)...]")
-							"<i>'"+parseIfNeeded(args[0]).trim()+"'</i>"
+							"<i>'" + parseIfDelayed(args[0]).trim() + "'</i>"
 						},
 						"if" to { expr, args ->
-							parseIfNeeded(when {
+							parseIfDelayed(when {
 								expr.contains("true") -> args[0]
 								args.size == 2 -> args[1]
 								else -> ""
 							})
 						}
 				),
+				exprEval = { expr -> expr.reversed() },
 				delayedEvaluation = true
 		)
 	}
@@ -91,6 +99,24 @@ class AbstractSceneParserTest {
 		             "her237")
 		assertEquals(2, parser.tagCount["his"]?:0)
 		assertEquals(2, parser.tagCount["he"]?:0)
+	}
+	
+	@Test
+	fun testEvalExpr() {
+		assertParser("[if(true)[=if(true)]|[=false]]",
+		             ")eurt(fi")
+		assertEquals(1, parser.exprs.size)
+		assertEquals("if(true)", parser.exprs[0])
+	}
+	
+	@Test
+	fun testEvalExprDE() {
+		parser.delayedEvaluation = false
+		assertParser("[if(true)[=if(true)]|[=false]]",
+		             ")eurt(fi")
+		assertEquals(2, parser.exprs.size)
+		assertEquals("if(true)", parser.exprs[0])
+		assertEquals("false", parser.exprs[1])
 	}
 	//@Test TODO implement short if
 	fun testShortIf() {

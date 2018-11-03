@@ -1,5 +1,6 @@
 package ej.editor.expr
 
+import ej.utils.LazyConcatenatedMap
 import ej.utils.escapeJs
 
 /*
@@ -91,6 +92,11 @@ sealed class Evaluated {
 		override fun isTrue(): Boolean = false
 		override fun repr() = values.joinToString(prefix = "[", postfix = "]") { it.repr() }
 		override fun coerceToString(): IStringValue = StringValue(values.joinToString(",") { it.coerceToString().stringValue })
+		override fun getOrNull(key: String): Evaluated? {
+			val k = key.toIntOrNull()
+			if (k != null) return values.getOrNull(k) ?: super.getOrNull(key)
+			return super.getOrNull(key)
+		}
 	}
 	
 	class ObjectValue(val values: Map<String, Evaluated>) : Evaluated() {
@@ -99,11 +105,16 @@ sealed class Evaluated {
 			"\"" + it.key.escapeJs() + "\": " + it.value.repr()
 		}
 		override fun coerceToString(): IStringValue = StringValue("[object Object]")
+		override fun getOrNull(key: String): Evaluated? {
+			return values[key] ?: super.getOrNull(key)
+		}
 	}
 	
 	class ProxyValue(val operatorGet: (String) -> Evaluated) : Evaluated() {
 		override fun coerceToString(): IStringValue = operatorGet("toString").call().coerceToString()
-		
+		override fun getOrNull(key: String): Evaluated? {
+			return operatorGet(key)
+		}
 	}
 	
 	class FunctionValue(val arity: Int,
@@ -120,7 +131,11 @@ sealed class Evaluated {
 	}
 }
 
-abstract class Evaluator {
+typealias EvaluationNamespace = Map<String, Evaluated>
+
+open class Evaluator(
+		val evalId: (String) -> Evaluated
+) {
 	private val stack = ArrayList<Any>()
 	fun evaluate(e: Expression): Evaluated {
 		val rslt = when (e) {
@@ -133,7 +148,8 @@ abstract class Evaluator {
 			is CallExpression -> evaluate(e.function).call(
 					e.arguments.map { evaluate(it) }
 			)
-			is DotExpression -> evaluate(e.obj).get(e.key)
+			is DotExpression ->
+				evaluate(e.obj).get(e.key)
 			is AccessExpression -> evaluate(e.obj).get(evaluate(e.index).coerceToString().stringValue)
 			is ConditionalExpression ->
 				if (evaluate(e.condition).isTrue()) evaluate(e.ifTrue)
@@ -215,10 +231,21 @@ abstract class Evaluator {
 				}
 			is InvalidExpression -> Evaluated.ErrorValue("InvalidExpression ${e.source}")
 		}
-		println("Evaluator $e -> $rslt")
+		if (e !is ConstLiteral<*>) {
+			println("Evaluator $e -> $rslt")
+		}
 		return rslt
 	}
 	
-	abstract fun evalId(id: String): Evaluated
+	fun parseAndEvaluate(s: String) = evaluate(parseExpression(s))
+}
+
+class SimpleEvaluator(val namespace: EvaluationNamespace) : Evaluator(
+		{ id -> namespace[id] ?: Evaluated.ErrorValue("Unknown ID $id") }
+) {
+	fun withInnerNamespace(ns: EvaluationNamespace) =
+			SimpleEvaluator(LazyConcatenatedMap(namespace).plusAtHighestPriority(ns))
 	
+	fun withOuterNamespace(ns: EvaluationNamespace) =
+			SimpleEvaluator(LazyConcatenatedMap(namespace).plusAtLowestPriority(ns))
 }

@@ -47,7 +47,9 @@ class CreatureStat : ExpressionBuilder() {
 		LEVEL("level", "Level"),
 		
 		FEMININITY("femininity", "Femininity"),
-		BODYTONE("tone", "Body tone")
+		BODYTONE("tone", "Body tone"),
+		BUTTRATING("buttRating", "Butt rating"),
+		HIPRATING("hipRating", "Hip rating"),
 		;
 		
 		override fun text() = shortName

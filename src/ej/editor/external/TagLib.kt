@@ -47,7 +47,7 @@ class TagDecl : XmlAutoSerializable {
 		@Attribute
 		var weight: Double = 1.0
 		
-		abstract class Container : Part() {
+		class PickAny : Part() {
 			@PolymorphicElements(polymorphisms = [
 				Polymorphism("pick-any", Part.PickAny::class),
 				Polymorphism("pick-first", Part.PickFirst::class),
@@ -57,9 +57,25 @@ class TagDecl : XmlAutoSerializable {
 			val parts = ArrayList<Part>()
 		}
 		
-		class PickAny : Container()
-		class PickFirst : Container()
-		class Group : Container()
+		class PickFirst : Part() {
+			@PolymorphicElements(polymorphisms = [
+				Polymorphism("pick-any", Part.PickAny::class),
+				Polymorphism("pick-first", Part.PickFirst::class),
+				Polymorphism("group", Part.Group::class),
+				Polymorphism("text", Part.Text::class)
+			])
+			val parts = ArrayList<Part>()
+		}
+		
+		class Group : Part() {
+			@PolymorphicElements(polymorphisms = [
+				Polymorphism("pick-any", Part.PickAny::class),
+				Polymorphism("pick-first", Part.PickFirst::class),
+				Polymorphism("group", Part.Group::class),
+				Polymorphism("text", Part.Text::class)
+			])
+			val parts = ArrayList<Part>()
+		}
 		class Text : Part() {
 			@TextBody
 			var content: String = ""

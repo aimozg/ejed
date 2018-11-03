@@ -15,8 +15,9 @@ private val REX_SPACE_BEFORE_PUNCTUATION = Regex(""" ++(?=[,.!?])""")
 abstract class AbstractSceneParser : AbstractParser<String>() {
 	abstract fun evaluateTag(tag: String): String
 	abstract fun evaluateFunction(name: String, rawArgument: String, rawContent:List<String>): String
+	abstract fun evaluateExpression(expr: String): String
 	abstract val delayedEvaluation:Boolean
-	fun parseIfNeeded(s:String):String = if (delayedEvaluation) parse(s) else s
+	fun parseIfDelayed(s: String): String = if (delayedEvaluation) parse(s) else s
 	open fun postprocess(s:StringBuilder):String {
 		return s.replace(REX_SPACEBARS," ").replace(REX_SPACE_BEFORE_PUNCTUATION,"")
 	}
@@ -52,6 +53,15 @@ abstract class AbstractSceneParser : AbstractParser<String>() {
 				rslt += eaten(1)
 			}
 			eat('[') -> when {
+				eat('=') -> {
+					val expr = eatenUntilAnyBackslashEscaped('\\', ']')
+							?.unescapeBackslashes()
+							?: parserError("Unterminated [=")
+					if (eval) {
+						rslt += evaluateExpression(expr)
+					}
+					if (!eat(']')) parserError("Unterminated [=")
+				}
 				eat("--") -> {
 					eatUntil("--]")
 					eat("--]")
