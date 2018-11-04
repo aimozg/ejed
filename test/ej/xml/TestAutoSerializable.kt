@@ -620,7 +620,7 @@ class TestAutoSerializable {
 				@TextBodyWhitespacePolicy(WhitespacePolicy.TRIM)
 				var things: String = ""
 		) : XmlAutoSerializable
-		assertDeserialization(MockTrim("skidaddle\n    skidoodle"), src)
+		assertDeserialization(MockTrim("skidaddle\nskidoodle"), src)
 	}
 	
 	@Test
@@ -766,7 +766,7 @@ class TestAutoSerializable {
 			@BeforeLoad
 			private fun f3(parent:Any?) {
 				assertNotNull(parent)
-				assertEquals("mock", parent!!.toString())
+				assertEquals("mock", parent.toString())
 				tmpParent = parent
 				log += "bli"
 			}

@@ -10,7 +10,6 @@ import java.io.File
 import java.io.InputStream
 import java.io.Reader
 import java.io.Writer
-import kotlin.coroutines.experimental.buildSequence
 
 /*
  * Created by aimozg on 25.06.2018.
@@ -78,7 +77,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 	
 	override val lib: ObservableList<StoryStmt> = ArrayList<StoryStmt>().observable()
 	
-	fun allStories() = buildSequence {
+	fun allStories() = sequence {
 		val run = ArrayList(lib)
 		while(run.isNotEmpty()) {
 			val e = run.removeAt(0)

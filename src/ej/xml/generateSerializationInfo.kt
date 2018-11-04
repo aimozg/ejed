@@ -2,7 +2,6 @@ package ej.xml
 
 import ej.utils.ifEmpty
 import org.funktionale.either.Either
-import kotlin.coroutines.experimental.buildSequence
 import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.isAccessible
@@ -221,7 +220,7 @@ private class PropertyTypeinfo(
 
 internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T>): XmlSerializationInfo<T> = serializationInfo(
 		clazz) {
-	for (superclass in buildSequence {
+	for (superclass in sequence {
 		val run = ArrayList(clazz.superclasses)
 		while (run.isNotEmpty()) {
 			val e = run.removeAt(0)

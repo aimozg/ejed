@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="Editor" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="GRADLE" external.system.module.group="" external.system.module.version="0.1.7" type="JAVA_MODULE" version="4">
+<module external.linked.project.id="Editor" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="GRADLE" external.system.module.group="" external.system.module.version="0.1.8" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="TornadoFX" name="TornadoFX">
       <configuration />
@@ -9,14 +9,15 @@
         <compilerSettings />
         <compilerArguments>
           <option name="destination" value="$MODULE_DIR$/build/classes/kotlin/main" />
+          <option name="classpath" value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/no.tornado/tornadofx/1.7.16/11a4b4636b390f582e61cf7b6cf25024712d2e47/tornadofx-1.7.16.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.3.0/6fd129fd9ba8581f2cb9c58bfd431dda4ee0457e/kotlin-reflect-1.3.0.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.funktionale/funktionale-either/1.2/f8dea0a71f47e5692f48bc0c732f9dd1dae46804/funktionale-either-1.2.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.2.41/5e34ca185bbea7452d704ed3537a22314a809383/kotlin-stdlib-jdk8-1.2.41.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.funktionale/funktionale-option/1.2/8d4476c4b2de7b4def3dadd6e30734598429d1d8/funktionale-option-1.2.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.2.41/d0cfb3ef897c00449e5e696355db9506225fb507/kotlin-stdlib-jdk7-1.2.41.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.funktionale/funktionale-collections/1.2/82ed681063798c68f56abd9e447574b3047ce90d/funktionale-collections-1.2.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.funktionale/funktionale-utils/1.2/7170c75bd854372fdb505fc93c4a13f41e957a3/funktionale-utils-1.2.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.0/a134b0cfe9bb44f98b0b3e889cda07923eea9428/kotlin-stdlib-1.3.0.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.controlsfx/controlsfx/8.40.14/7338f13794b82c77ea152803df56a15d376c3b0e/controlsfx-8.40.14.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.fxmisc.richtext/richtextfx/0.9.1/cc1bbfc4f4232a0cd929e7135c7ac2db5916c094/richtextfx-0.9.1.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.0/84a2e0288dc17cd64d692eb1e5e0de8cd5ff0846/kotlin-stdlib-common-1.3.0.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.glassfish/javax.json/1.1.2/a507518970d55e9de24665af06d70aae91b4aaa1/javax.json-1.1.2.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.fxmisc.undo/undofx/2.1.0/e50ee1e30ce5ac1817d35f56c79099201211c76c/undofx-2.1.0.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.fxmisc.flowless/flowless/0.6/e4aca4b88cd363488db4e9e7392e3c0049a9aeaf/flowless-0.6.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.reactfx/reactfx/2.0-M5/aa02bc40ebbb87a76d4b188516294612c8972b80/reactfx-2.0-M5.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/org.fxmisc.wellbehaved/wellbehavedfx/0.3.3/c69c986469f23feee75f09812357e6b6a0657d57/wellbehavedfx-0.3.3.jar;C:/Users/aimozg/.gradle/caches/modules-2/files-2.1/javax.json/javax.json-api/1.1.2/b38c52a6e180359108bd5e35dbeec7d1be45c535/javax.json-api-1.1.2.jar" />
           <option name="noStdlib" value="true" />
           <option name="noReflect" value="true" />
           <option name="moduleName" value="Editor" />
           <option name="jvmTarget" value="1.8" />
           <option name="addCompilerBuiltIns" value="true" />
           <option name="loadBuiltInsFromDependencies" value="true" />
-          <option name="languageVersion" value="1.2" />
-          <option name="apiVersion" value="1.2" />
+          <option name="languageVersion" value="1.3" />
+          <option name="apiVersion" value="1.3" />
           <option name="pluginOptions">
             <array />
           </option>
@@ -24,7 +25,6 @@
             <array />
           </option>
           <option name="multiPlatform" value="true" />
-          <option name="coroutinesState" value="enable" />
         </compilerArguments>
       </configuration>
     </facet>
@@ -43,18 +43,18 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: org.funktionale:funktionale-either:1.2" level="project" />
     <orderEntry type="library" name="Gradle: no.tornado:tornadofx:1.7.16" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-reflect:1.3.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.funktionale:funktionale-either:1.2" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.41" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-reflect:1.2.41" level="project" />
     <orderEntry type="library" name="Gradle: org.funktionale:funktionale-option:1.2" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.2.41" level="project" />
     <orderEntry type="library" name="Gradle: org.funktionale:funktionale-collections:1.2" level="project" />
     <orderEntry type="library" name="Gradle: org.funktionale:funktionale-utils:1.2" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.2.51" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.3.0" level="project" />
     <orderEntry type="library" name="Gradle: org.controlsfx:controlsfx:8.40.14" level="project" />
     <orderEntry type="library" name="Gradle: org.fxmisc.richtext:richtextfx:0.9.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.2.51" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.3.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Gradle: org.glassfish:javax.json:1.1.2" level="project" />
     <orderEntry type="library" name="Gradle: org.fxmisc.undo:undofx:2.1.0" level="project" />
@@ -62,11 +62,11 @@
     <orderEntry type="library" name="Gradle: org.reactfx:reactfx:2.0-M5" level="project" />
     <orderEntry type="library" name="Gradle: org.fxmisc.wellbehaved:wellbehavedfx:0.3.3" level="project" />
     <orderEntry type="library" name="Gradle: javax.json:javax.json-api:1.1.2" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-junit:1.2.51" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test:1.2.51" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-junit:1.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test:1.3.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.12" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-annotations-common:1.2.51" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-common:1.2.51" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-annotations-common:1.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-test-common:1.3.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
   </component>
 </module>
