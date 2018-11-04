@@ -19,6 +19,10 @@
     -fx-inner-border-vertical: derive(-fx-color, 30%);
 }
 
+TextFlow Text, VBox Text, HBox Text, Pane Text {
+    -fx-fill: -fx-text-base-color;
+}
+
 .menu-bar {
     -fx-background-color: -fx-base;
 }

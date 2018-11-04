@@ -138,6 +138,11 @@ class ModView: AModView() {
 				}
 			}
 		}
+		right = drawer(Side.RIGHT) {
+			addClass("tag-help-drawer")
+			fixedContentSize = 300
+			this += find<TagHelper>()
+		}
 	}
 	
 	fun removeSelected() {

@@ -27,6 +27,7 @@ class TagDecl : XmlAutoSerializable {
 	var context: Context = Context.PLAYER
 	
 	@Element
+	@TextBodyWhitespacePolicy(WhitespacePolicy.TRIM)
 	var description: String? = null
 	
 	@PolymorphicElements(polymorphisms = [
@@ -93,9 +94,9 @@ class TagAlias : XmlAutoSerializable {
 @RootElement("tags")
 class TagLibClass : XmlAutoSerializable {
 	@Elements("tag")
-	private val taglist = ArrayList<TagDecl>()
+	val taglist = ArrayList<TagDecl>()
 	@Elements("alias")
-	private val aliasList = ArrayList<TagAlias>()
+	val aliasList = ArrayList<TagAlias>()
 	
 	val tags: MutableMap<String, TagDecl> = HashMap()
 	

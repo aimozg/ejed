@@ -285,3 +285,21 @@ TextFlow.xlogic, TextFlow.xcommand, TextFlow.xcomment, TextFlow.xnext {
     !*-fx-background-color: -fx-background;*!
     -fx-font-size: 14px;
 }*/
+
+.italic {
+    -fx-font-style: italic;
+}
+
+.bold {
+    -fx-font-weight: bold;
+}
+
+.tag-help {
+    -fx-spacing: 4;
+    -fx-fill-width: true;
+}
+
+.tag-help TextFlow, .tag-help Text {
+    -fx-wrap-text: true;
+    -fx-font-size: 14;
+}
