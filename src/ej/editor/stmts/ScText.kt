@@ -1,6 +1,7 @@
 package ej.editor.stmts
 
 import ej.editor.Styles
+import ej.editor.utils.forceTabTraversal
 import ej.editor.views.FlashTextEditor
 import ej.mod.XcText
 import javafx.scene.layout.Priority
@@ -20,6 +21,7 @@ class ScText(stmt: XcText) : StatementControl<XcText>(stmt) {
 			hgrow = Priority.ALWAYS
 			isAutoStretch = true
 			disableScrollEvents()
+			forceTabTraversal()
 		}
 		children += editor
 	})

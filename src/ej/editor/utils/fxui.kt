@@ -1,9 +1,13 @@
 package ej.editor.utils
 
 import com.sun.javafx.font.PrismFontLoader
+import ej.utils.indexOfOrNull
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -200,3 +204,37 @@ val Region.totalPaddingVert
 	get() =
 		if (isSnapToPixel) 0.0 + Math.round(insets.top) + Math.round(insets.bottom) else insets.top + insets.bottom
 
+internal fun Node.treeNextPrev(d: Int): Node? {
+	var e = this
+	while (true) {
+		val c = (this as? Parent)?.childrenUnmodifiable?.firstOrNull()
+		if (c != null) return c
+		val p = e.parent ?: return null
+		val siblings = p.childrenUnmodifiable
+		val i = siblings.indexOfOrNull(e) ?: return null
+		if (i + d in siblings.indices) {
+			return siblings[i + d]
+		} else {
+			e = p
+		}
+	}
+}
+
+fun Node.treeNext(): Node? = treeNextPrev(+1)
+fun Node.treePrev(): Node? = treeNextPrev(-1)
+fun Node.treeForward() = generateSequence(treeNext()) { it.treeNext() }
+fun Node.treeBackward() = generateSequence(treePrev()) { it.treePrev() }
+
+fun Node.forceTabTraversal() {
+	addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+		if (event.code == KeyCode.TAB) {
+			event.consume()
+			val dir = if (event.isShiftDown) {
+				treeBackward()
+			} else {
+				treeForward()
+			}
+			dir.find { it.isManaged && it.isFocusTraversable }?.requestFocus()
+		}
+	}
+}
