@@ -208,6 +208,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 					button().apply {
 						addClass("small-button")
 						graphic = fontAwesome.create(FontAwesome.Glyph.REORDER)
+						isFocusTraversable = false
 						setOnDragDetected { event ->
 							val db = cell.startDragAndDrop(TransferMode.MOVE)
 							val content = stmt.toXmlObject()

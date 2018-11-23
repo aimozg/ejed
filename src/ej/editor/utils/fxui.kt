@@ -204,26 +204,49 @@ val Region.totalPaddingVert
 	get() =
 		if (isSnapToPixel) 0.0 + Math.round(insets.top) + Math.round(insets.bottom) else insets.top + insets.bottom
 
-internal fun Node.treeNextPrev(d: Int): Node? {
-	var e = this
-	while (true) {
-		val c = (this as? Parent)?.childrenUnmodifiable?.firstOrNull()
-		if (c != null) return c
-		val p = e.parent ?: return null
-		val siblings = p.childrenUnmodifiable
-		val i = siblings.indexOfOrNull(e) ?: return null
-		if (i + d in siblings.indices) {
-			return siblings[i + d]
-		} else {
-			e = p
+fun Node.treeForward() = sequence<Node> {
+	var e: Node? = this@treeForward
+	while (e != null) {
+		val c = (e as? Parent)?.childrenUnmodifiable?.firstOrNull()
+		if (c != null) {
+			e = c
+			yield(c)
+			continue
+		}
+		while (e != null) {
+			val p = e.parent
+			val siblings = p?.childrenUnmodifiable
+			val i = siblings?.indexOfOrNull(e)?.plus(1)
+			if (siblings != null && i != null && i in siblings.indices) {
+				e = siblings[i]
+				yield(siblings[i])
+				break
+			} else {
+				e = p
+			}
 		}
 	}
 }
 
-fun Node.treeNext(): Node? = treeNextPrev(+1)
-fun Node.treePrev(): Node? = treeNextPrev(-1)
-fun Node.treeForward() = generateSequence(treeNext()) { it.treeNext() }
-fun Node.treeBackward() = generateSequence(treePrev()) { it.treePrev() }
+fun Node.treeBackward() = sequence<Node> {
+	var e: Node? = this@treeBackward
+	while (e != null) {
+		val p = e.parent
+		val siblings = p?.childrenUnmodifiable
+		val i = siblings?.indexOfOrNull(e)?.minus(1)
+		if (siblings != null && i != null && i in siblings.indices) {
+			var prev = siblings[i]
+			while (true) {
+				val lastChild = (prev as? Parent)?.childrenUnmodifiable?.lastOrNull() ?: break
+				prev = lastChild
+			}
+			e = prev
+		} else {
+			e = p
+		}
+		e?.also { yield(it) }
+	}
+}
 
 fun Node.forceTabTraversal() {
 	addEventFilter(KeyEvent.KEY_PRESSED) { event ->
