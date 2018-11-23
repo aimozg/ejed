@@ -1,5 +1,6 @@
 package ej.editor.views
 
+import com.sun.javafx.scene.control.skin.ScrollBarSkin
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
 import ej.editor.utils.ContextMenuContainer
@@ -51,6 +52,7 @@ class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 		scrollpane(true, false) {
 			hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
 			vgrow = Priority.ALWAYS
+			prefViewportWidthProperty().bind(widthProperty() - ScrollBarSkin.DEFAULT_WIDTH)
 			stmtList.attachTo(this)
 		}
 	}

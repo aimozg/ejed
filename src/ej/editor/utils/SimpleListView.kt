@@ -67,7 +67,7 @@ open class SimpleListView<T : Any> : Region() {
 				cells.remove(from, from + removed)
 			}
 			if (change.wasAdded()) {
-				val added = change.addedSubList.map(::cellFactory)
+				val added = change.addedSubList.map(::createCell)
 				println("Adding cells $from .. ${from + added.size}")
 				cells.addAll(from, added)
 			}
@@ -78,6 +78,12 @@ open class SimpleListView<T : Any> : Region() {
 	
 	protected open fun cellFactory(item: T): SimpleListCell<T> {
 		return SimpleListCell(this, item)
+	}
+	
+	protected fun createCell(item: T): SimpleListCell<T> = cellFactory(item).also { cell ->
+		cell.managedProperty().addListener { _ ->
+			requestLayout()
+		}
 	}
 	
 	var graphicFactory: (SimpleListCell<T>) -> Node = { cell ->
@@ -100,32 +106,32 @@ open class SimpleListView<T : Any> : Region() {
 	
 	override fun computeMinWidth(height: Double) =
 			totalPaddingHoriz + maxOf(
-					beforeCells.maxOf(0.0) { it.minWidth(-1.0) },
-					cells.maxOf(0.0) { it.minWidth(-1.0) },
-					afterCells.maxOf(0.0) { it.minWidth(-1.0) }
+					beforeCells_managed.maxOf(0.0) { it.minWidth(-1.0) },
+					cells_managed.maxOf(0.0) { it.minWidth(-1.0) },
+					afterCells_managed.maxOf(0.0) { it.minWidth(-1.0) }
 			)
 	
 	protected open fun extraNodesMinHeight(width: Double): Double {
 		return maxOf(
-				beforeCells.maxOf(0.0) { it.minHeight(width) },
-				afterCells.maxOf(0.0) { it.minHeight(width) }
+				beforeCells_managed.maxOf(0.0) { it.minHeight(width) },
+				afterCells_managed.maxOf(0.0) { it.minHeight(width) }
 		)
 	}
 	
 	override fun computeMinHeight(width: Double) =
-			totalPaddingVert + cells.sumByDouble { it.minHeight(width) } + extraNodesMinHeight(width) + (cells.size - 1) * spacing
+			totalPaddingVert + cells_managed.sumByDouble { it.minHeight(width) } + extraNodesMinHeight(width) + (cells_managed.size - 1) * spacing
 	
 	override fun computePrefWidth(height: Double) =
 			totalPaddingHoriz + maxOf(
-					beforeCells.maxOf(0.0) { it.prefWidth(-1.0) },
-					cells.maxOf(0.0) { it.prefWidth(-1.0) },
-					afterCells.maxOf(0.0) { it.prefWidth(-1.0) }
+					beforeCells_managed.maxOf(0.0) { it.prefWidth(-1.0) },
+					cells_managed.maxOf(0.0) { it.prefWidth(-1.0) },
+					afterCells_managed.maxOf(0.0) { it.prefWidth(-1.0) }
 			)
 	
 	protected open fun extraNodesPrefHeight(width: Double): Double {
 		return maxOf(
-				beforeCells.maxOf(0.0) { it.prefHeight(width) },
-				afterCells.maxOf(0.0) { it.prefHeight(width) }
+				beforeCells_managed.maxOf(0.0) { it.prefHeight(width) },
+				afterCells_managed.maxOf(0.0) { it.prefHeight(width) }
 		)
 	}
 	
@@ -134,7 +140,7 @@ open class SimpleListView<T : Any> : Region() {
 	}
 	
 	override fun computePrefHeight(width: Double) =
-			totalPaddingVert + cells.sumByDouble { it.prefHeight(width) } + extraNodesPrefHeight(width) + (cells.size - 1) * spacing
+			totalPaddingVert + cells_managed.sumByDouble { it.prefHeight(width) } + extraNodesPrefHeight(width) + (cells_managed.size - 1) * spacing
 	
 	private var performingLayout = false
 	override fun layoutChildren() {
@@ -155,8 +161,7 @@ open class SimpleListView<T : Any> : Region() {
 	
 	protected open fun layoutExtraBeforeCells(x0: Double, y0: Double, contentWidth: Double): Double {
 		var y1 = y0
-		for (c in beforeCells) {
-			if (!c.isManaged) continue
+		for (c in beforeCells_managed) {
 			val cellheight = c.prefHeight(contentWidth)
 			layoutInArea(c, x0, y0, contentWidth, cellheight, cellheight, HPos.LEFT, VPos.TOP)
 			y1 = maxOf(y1, y0 + cellheight)
@@ -165,8 +170,7 @@ open class SimpleListView<T : Any> : Region() {
 	}
 	
 	protected open fun layoutExtraAfterCells(x0: Double, y0: Double, contentWidth: Double) {
-		for (c in afterCells) {
-			if (!c.isManaged) continue
+		for (c in afterCells_managed) {
 			val cellheight = c.prefHeight(contentWidth)
 			layoutInArea(c, x0, y0, contentWidth, cellheight, cellheight, HPos.LEFT, VPos.TOP)
 		}
@@ -175,8 +179,7 @@ open class SimpleListView<T : Any> : Region() {
 	protected fun layoutCells(x0: Double, y0: Double, contentWidth: Double): Double {
 		val spacing = spacing
 		var y = y0
-		for (c in cells) {
-			if (!c.isManaged) continue
+		for (c in cells_managed) {
 			val cellheight = c.prefHeight(contentWidth)
 			layoutInArea(c, x0, y, contentWidth, cellheight, cellheight, HPos.LEFT, VPos.TOP)
 			y += spacing + cellheight
@@ -185,8 +188,11 @@ open class SimpleListView<T : Any> : Region() {
 	}
 	
 	protected val beforeCells = ArrayList<Node>().observable()
+	protected val beforeCells_managed get() = beforeCells.filter { it.isManaged }
 	protected val cells = ArrayList<Node>().observable()
+	protected val cells_managed get() = cells.filter { it.isManaged }
 	protected val afterCells = ArrayList<Node>().observable()
+	protected val afterCells_managed get() = afterCells.filter { it.isManaged }
 	
 	init {
 		vgrow = Priority.NEVER
@@ -226,7 +232,7 @@ open class SimpleListView<T : Any> : Region() {
 	private fun bindTo(list: ObservableList<T>?) {
 		list?.addListener(itemsListener)
 		cells.clear()
-		cells.addAll(list?.map(::cellFactory) ?: emptyList())
+		cells.addAll(list?.map(::createCell) ?: emptyList())
 		togglePseudoClass("empty", list?.isEmpty() ?: true)
 		requestLayout()
 	}

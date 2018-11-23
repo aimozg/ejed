@@ -11,9 +11,10 @@
 *.tar.gz
 *.rar
 hs_err_pid*
-.idea/workspace.xml
 out
 gen
 mods/*
+.idea/**/*.xml
+*.iml
 
 !/gradle/wrapper/gradle-wrapper.jar

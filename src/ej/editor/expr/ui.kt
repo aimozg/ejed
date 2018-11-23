@@ -1,6 +1,5 @@
 package ej.editor.expr
 
-import com.sun.javafx.binding.DoubleConstant
 import ej.editor.Styles
 import ej.editor.expr.impl.RawExpressionBuilder
 import ej.editor.utils.nodeBinding
@@ -12,7 +11,6 @@ import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextFlow
 import tornadofx.*
@@ -28,11 +26,13 @@ inline fun defaultEditorTextFlow(cssClass: CssRule? = Styles.xexpr, init: TextFl
 	return TextFlow().apply {
 		hgrow = Priority.ALWAYS
 		if (cssClass != null) addClass(cssClass)
+		/*
 		minWidthProperty().bind(parentProperty().select {
 			if (it is Region) {
 				it.widthProperty().minus(it.paddingHorizontalProperty)
 			} else DoubleConstant.valueOf(-1.0)
 		})
+		*/
 		init()
 	}
 }
