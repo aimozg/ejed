@@ -1,6 +1,6 @@
 package ej.editor.parser
 
-import ej.editor.utils.AbstractParser
+import ej.utils.AbstractParser
 import ej.utils.plusAssign
 import ej.utils.unescapeBackslashes
 
@@ -60,7 +60,7 @@ abstract class AbstractSceneParser : AbstractParser<String>() {
 					if (eval) {
 						rslt += evaluateExpression(expr)
 					}
-					if (!eat(']')) parserError("Unterminated [=")
+					eatOrFail(']', "Unterminated [=")
 				}
 				eat("--") -> {
 					eatUntil("--]")

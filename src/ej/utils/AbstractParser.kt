@@ -1,7 +1,4 @@
-package ej.editor.utils
-
-import ej.utils.indexOfAnyOrNull
-import ej.utils.indexOfOrNull
+package ej.utils
 
 
 /*
@@ -31,40 +28,72 @@ abstract class AbstractParser<O> {
 		fun eatch():Char? {
 			return eaten(1).getOrNull(0)
 		}
-		fun eat(prefix:String):Boolean {
-			return eaten(prefix) != null
-		}
-		fun eat(prefix:Char):Boolean {
-			return eaten(prefix) != null
-		}
 		fun eatAll() = eat(str.length)
 		fun eatenAll() = eaten(str.length)
+		
+		fun peek(prefix: String): Boolean {
+			return str.startsWith(prefix)
+		}
 		fun eaten(prefix:String):String? {
-			if (str.startsWith(prefix)) {
+			if (peek(prefix)) {
 				return eaten(prefix.length)
 			}
 			return null
 		}
+		
+		fun eat(prefix: String): Boolean {
+			return eaten(prefix) != null
+		}
+		
+		fun eatOrFail(prefix: String, cause: String = "'$prefix' expected"): String {
+			return eaten(prefix) ?: parserError(cause)
+		}
+		
+		fun peek(prefix: Char): Boolean {
+			return str.startsWith(prefix)
+		}
 		fun eaten(prefix:Char):String? {
-			if (str.startsWith(prefix)) {
+			if (peek(prefix)) {
 				return eaten(1)
 			}
 			return null
 		}
+		
+		fun eat(prefix: Char): Boolean {
+			return eaten(prefix) != null
+		}
+		
+		fun eatOrFail(prefix: Char, cause: String = "'$prefix' expected"): String {
+			return eaten(prefix) ?: parserError(cause)
+		}
+		
+		fun peek(rex: Regex): Boolean {
+			match = rex.find(str) ?: return false
+			return true
+		}
 		fun eaten(rex:Regex):MatchResult? {
-			match = rex.find(str) ?: return null
+			if (!peek(rex)) return null
 			eat(match.value.length)
 			return match
 		}
 		fun eat(rex:Regex):Boolean {
 			return eaten(rex) != null
 		}
-		fun eatUntil(sub:String):Boolean {
-			return eatenUntil(sub) != null
+		
+		fun eatOrFail(prefix: Regex, cause: String = "/${prefix.pattern}/ expected"): MatchResult {
+			return eaten(prefix) ?: parserError(cause)
 		}
 		fun eatenUntil(sub:String):String? {
 			val i = str.indexOfOrNull(sub) ?: return null
 			return eaten(i)
+		}
+		
+		fun eatUntil(sub: String): Boolean {
+			return eatenUntil(sub) != null
+		}
+		
+		fun eatUntilOrFail(sub: String, cause: String = "...'$sub' expected"): String {
+			return eatenUntil(sub) ?: parserError(cause)
 		}
 		fun eatenUntilAny(vararg delimiters:Char):String? {
 			val i = str.indexOfAnyOrNull(delimiters) ?: return null
@@ -72,6 +101,10 @@ abstract class AbstractParser<O> {
 		}
 		fun eatUntilAny(vararg delimiters:Char):Boolean {
 			return eatenUntilAny(*delimiters) != null
+		}
+		
+		fun eatUntilAnyOrFail(vararg delimiters: Char, cause: String = "(${delimiters.joinToString("|")})"): String {
+			return eatenUntilAny(*delimiters) ?: parserError(cause)
 		}
 		
 		/**
@@ -104,10 +137,29 @@ abstract class AbstractParser<O> {
 		}
 		var eaten:String = ""
 		var match:MatchResult = Regex(".*").matchEntire("")!!
+		fun isEof() = str.isEmpty()
 		fun isEmpty() = str.isEmpty()
 		fun isNotEmpty() = str.isNotEmpty()
-		fun parserError(message:String):Nothing = throw ParserException(source,pos,message)
+		fun parserError(message: String): Nothing {
+			val n = parserExceptionCaptureSize()
+			if (source.length <= n) throw ParserException(source, pos, message)
+			/*
+			 * source_souce_source_source_source
+			 *                 ^--pos
+			 *            |<-- n -->|
+			 * |<--skip-->|
+			 * |<-- ---- source.length ---- -->|
+			 *
+			 * skip + n/2 = pos
+			 */
+			val skip = maxOf(0, pos - n / 2)
+			val cut = source.substring(skip, skip + n)
+			if (skip == 0) throw ParserException(cut, pos, message)
+			throw ParserException("($skip+)$cut", pos, message)
+		}
 	}
+	
+	protected open fun parserExceptionCaptureSize(): Int = 80
 }
 class ParserException(val source: String, val pos:Int,message:String) :
-		Exception("$message at $pos in $source")
+		Exception("$message at $pos in ${source.replace(Regex("""[\t\r\n]"""), " ")}")

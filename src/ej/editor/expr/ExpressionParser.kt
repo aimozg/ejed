@@ -1,7 +1,7 @@
 package ej.editor.expr
 
-import ej.editor.utils.AbstractParser
-import ej.editor.utils.ParserException
+import ej.utils.AbstractParser
+import ej.utils.ParserException
 import ej.utils.affixNonEmpty
 
 private val RX_FLOAT= Regex("""^[+\-]?(\d+(\.\d++)?|\.\d++)(e[+\-]?\d++)?$""")
@@ -44,7 +44,7 @@ class ExpressionParser : AbstractParser<Expression>() {
 				if (!eat("]")) {
 					list.add(evalExpr())
 					while(eat(",")) list.add(evalExpr())
-					if (!eat("]")) parserError("Expected ',' or ']'")
+					eatOrFail("]", "Expected ',' or ']'")
 				}
 				return ListExpression(list)
 			}
@@ -60,12 +60,12 @@ class ExpressionParser : AbstractParser<Expression>() {
 							else -> parserError("Key expected")
 						}
 						eatWs()
-						if (!eat(":")) parserError("Expected ':' after key")
+						eatOrFail(":", "Expected ':' after key")
 						eatWs()
 						val value = evalExpr()
 						map[key] = value
 						if (eat("}")) break
-						if (!eat(",")) parserError("Expected ',' or '}'")
+						eatOrFail(",", "Expected ',' or '}'")
 					}
 				}
 				x = ObjectExpression(map)
@@ -91,11 +91,11 @@ class ExpressionParser : AbstractParser<Expression>() {
 				while(true) {
 					args.add(evalExpr())
 					if (eat(")")) break
-					if (!eat(",")) parserError("Expected ')' or ','")
+					eatOrFail(",", "Expected ')' or ','")
 				}
 				x = CallExpression(x, args)
 			} else if (eat(".")) {
-				if (!eat(LA_ID)) parserError("Identifier expected")
+				eatOrFail(LA_ID, "Identifier expected")
 				x = DotExpression(x, eaten)
 			} else if (eat("[")) {
 				val y = evalUntil("]")

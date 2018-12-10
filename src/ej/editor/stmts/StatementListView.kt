@@ -65,6 +65,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	val expandButton: Button by lazy {
 		Button().apply {
 			addClass("small-button")
+			isFocusTraversable = false
 			graphic = boundFaGlyph(expandedProperty.stringBinding { expanded ->
 				if (expanded == true) FontAwesome.Glyph.CARET_DOWN.char.toString()
 				else FontAwesome.Glyph.CARET_RIGHT.char.toString()

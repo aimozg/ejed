@@ -1,5 +1,6 @@
 package ej.editor.utils
 
+import ej.utils.AbstractParser
 import ej.utils.crop
 
 /*
