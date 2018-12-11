@@ -51,7 +51,7 @@ class ExpressionParser : AbstractParser() {
 					while(eat(",")) list.add(evalExpr())
 					eatOrFail("]", "Expected ',' or ']'")
 				}
-				return ListExpression(list)
+				x = ListExpression(list)
 			}
 			eat("{") -> {
 				val map = HashMap<String,Expression>()

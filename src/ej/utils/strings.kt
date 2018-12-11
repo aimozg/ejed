@@ -45,13 +45,34 @@ private val JS_ESCAPES = mapOf(
 		"\t" to """\t""",
 		"\\" to """\\"""
 )
+private val JS_NOSQ_ESCAPABLE_TOKENS = Regex("""["\r\n\t\\]""")
+private val JS_NODQ_ESCAPABLE_TOKENS = Regex("""['\r\n\t\\]""")
 
 fun String.escapeJs() = JS_ESCAPABLE_TOKENS.replace(this) {
 	JS_ESCAPES[it.value] ?: it.value
 }
 
+internal fun String.escapeJsKeepSingleQuote() = JS_NOSQ_ESCAPABLE_TOKENS.replace(this) {
+	JS_ESCAPES[it.value] ?: it.value
+}
 
-fun String.toJsString():String = "'${escapeJs()}'"
+internal fun String.escapeJsKeepDoubleQuote() = JS_NOSQ_ESCAPABLE_TOKENS.replace(this) {
+	JS_ESCAPES[it.value] ?: it.value
+}
+
+
+fun String.toJsString(smart: Boolean = true): String = when {
+	!smart -> "'" + escapeJs() + "'"
+	contains('"') -> "'" + escapeJsKeepDoubleQuote() + "'"
+	else -> "\"" + escapeJsKeepSingleQuote() + "\""
+}
+
+fun String.fromJsString(): String {
+	if (!(startsWith('"') && endsWith('"') || startsWith('\'') && endsWith('\''))) {
+		error("Not a JS string")
+	}
+	return substring(1, length - 1).unescapeBackslashes()
+}
 
 fun CharSequence.indexOfOrNull(char: Char, startIndex: Int = 0, ignoreCase: Boolean = false):Int? =
 		this.indexOf(char, startIndex, ignoreCase).takeIf { it >= 0 }

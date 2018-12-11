@@ -3,12 +3,18 @@ package ej.as3.parser
 import ej.as3.ast.*
 import ej.editor.expr.ExpressionParser
 import ej.utils.AbstractParser
+import ej.utils.fromJsString
 import org.intellij.lang.annotations.Language
 
 /*
  * Created by aimozg on 10.12.2018.
  * Confidential until published on GitHub
  */
+// TODO dynamic, get, set, final, override, static
+// maybe: include
+// very maybe: Vector<> stuff
+// very maybe: XML
+// very very maybe: namespaces, native, labels
 open class ActionScriptParser : AbstractParser() {
 	companion object {
 		@Language("RegExp")
@@ -20,26 +26,55 @@ open class ActionScriptParser : AbstractParser() {
 		@Language("RegExp")
 		private const val REX_XMLCOMMENT = """<!--(?:[^-]|\n|-(?!->))*-->"""
 		
+		private val LA_STRING = Regex("""^(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*)"""")
 		private val LA_ID = ExpressionParser.LA_ID
+		private val LA_NUMBER = ExpressionParser.LA_FLOAT
+		private val LA_OBJECT_KEY = Regex("""^[\w$]++""")
 		private val LA_PACKAGE_PATH = Regex("""^(\w++)(\.\w++)*+""")
 		private val LA_LONG_ID = LA_PACKAGE_PATH
 		private val LA_PACKAGE_PATH_WILDCARDS = Regex("""^(\w++)(\.\w++)*+(\.\*)?""")
-		private val LA_VISIBILITY_OR_DECL = Regex("""^(public|private|protected|internal|class|interface|const|function|var)\b""")
-		private val LAW_CLASS = Regex("""^class\b""")
-		private val LAW_CONST = Regex("""^const\b""")
-		private val LAW_EXTENDS = Regex("""^extends\b""")
-		private val LAW_FUNCTION = Regex("""^function\b""")
-		private val LAW_IMPLEMENTS = Regex("""^implements\b""")
-		private val LAW_IMPORT = Regex("""^import\b""")
-		private val LAW_INTERFACE = Regex("""^interface\b""")
-		private val LAW_INTERNAL = Regex("""^internal\b""")
-		private val LAW_NAMESPACE = Regex("""^namespace\b""")
-		private val LAW_PACKAGE = Regex("""^package\b""")
-		private val LAW_PRIVATE = Regex("""^private\b""")
-		private val LAW_PROTECTED = Regex("""^protected\b""")
-		private val LAW_PUBLIC = Regex("""^public\b""")
-		private val LAW_USE = Regex("""^use\b""")
-		private val LAW_VAR = Regex("""^var\b""")
+		
+		private val LA_BINARY_OPERATOR = Regex("""^(?:={1,3}|!==?|&&|\|\||(?:<{1,2}|>{1,3}|[*/%+\-&^|])=?|[.,]|as\b|in\b|instanceof\b|is\b)""")
+		private val LA_UNARY_OPERATOR = Regex("""^(?:\+\+?|--?|~|!|delete\b|typeof\b|void\b)""")
+		private val LA_POSTFIX_OPERATOR = Regex("""^(?:\+\+|--)""")
+		
+		private val LA_VISIBILITY_OR_DECL = Regex("""^(?:public|private|protected|internal|class|interface|const|function|var)\b""")
+		
+		private val LAW_BREAK = word("break")
+		private val LAW_CASE = word("case")
+		private val LAW_CLASS = word("class")
+		private val LAW_CONST = word("const")
+		private val LAW_CONTINUE = word("continue")
+		private val LAW_DEFAULT = word("default")
+		private val LAW_DO = word("do")
+		private val LAW_EACH = word("each")
+		private val LAW_ELSE = word("else")
+		private val LAW_EXTENDS = word("extends")
+		private val LAW_FOR = word("for")
+		private val LAW_FUNCTION = word("function")
+		private val LAW_IF = word("if")
+		private val LAW_IMPLEMENTS = word("implements")
+		private val LAW_IMPORT = word("import")
+		private val LAW_IN = word("in")
+		private val LAW_INTERFACE = word("interface")
+		private val LAW_INTERNAL = word("internal")
+		private val LAW_NAMESPACE = word("namespace")
+		private val LAW_NEW = word("new")
+		private val LAW_PACKAGE = word("package")
+		private val LAW_PRIVATE = word("private")
+		private val LAW_PROTECTED = word("protected")
+		private val LAW_PUBLIC = word("public")
+		private val LAW_RETURN = word("return")
+		private val LAW_SUPER = word("super")
+		private val LAW_SWITCH = word("switch")
+		private val LAW_THROW = word("throw")
+		private val LAW_TRY = word("try")
+		private val LAW_USE = word("use")
+		private val LAW_VAR = word("var")
+		private val LAW_WHILE = word("while")
+		private val LAW_WITH = word("with")
+		
+		private fun word(word: String) = Regex("^$word\\b")
 	}
 	
 	override val LA_WHITESPACE: Regex =
@@ -67,12 +102,156 @@ open class ActionScriptParser : AbstractParser() {
 		return AS3UseNamespace(namespace)
 	}
 	
-	private fun Context.parseStatement(): AS3Statement {
-		parserError("Not implemented parseStatement")
+	/** Expects no whitespace before. Does not remove whitespace after */
+	private fun Context.parseStatement(inSwitch: Boolean = false): AS3Statement {
+		when {
+			eat(LAW_BREAK) -> parserError("Statement not supported")
+			eat(LAW_CASE) -> if (inSwitch) {
+				parserError("Statement not supported")
+			} else {
+				parserError("'case' outside of 'switch'")
+			}
+			eat(LAW_CONTINUE) -> parserError("Statement not supported")
+			eat(LAW_DEFAULT) -> if (inSwitch) {
+				parserError("Statement not supported")
+			} else {
+				parserError("'default' outside of 'switch'")
+			}
+			eat(LAW_DO) -> parserError("Statement not supported")
+			eat(LAW_FOR) -> parserError("Statement not supported")
+			eat(LAW_IF) -> parserError("Statement not supported")
+			eat(LAW_RETURN) -> parserError("Statement not supported")
+			eat(LAW_SUPER) -> parserError("Statement not supported")
+			eat(LAW_SWITCH) -> parserError("Statement not supported")
+			eat(LAW_THROW) -> parserError("Statement not supported")
+			eat(LAW_TRY) -> parserError("Statement not supported")
+			eat(LAW_WHILE) -> parserError("Statement not supported")
+			eat(LAW_WITH) -> parserError("Statement not supported")
+			eat(';') -> return AS3EmptyStatement
+			else -> return parseExpression()
+		}
 	}
 	
-	private fun Context.parseExpression(): AS3Expression {
-		parserError("Not implemented parseStatement")
+	private fun Context.parseBlock(block: MutableList<AS3Statement>,
+	                               allowClassDecl: Boolean,
+	                               allowVisibility: Boolean) {
+		eatOrFail('{')
+		eatWs()
+		while (!eat('}')) {
+			when {
+				peek(LA_VISIBILITY_OR_DECL) -> {
+					block += parseDeclaration(allowClassDecl, allowVisibility)
+				}
+				else -> {
+					block += parseStatement()
+					eatWs()
+					eat(';')
+				}
+			}
+			eatWs()
+		}
+	}
+	
+	private fun Context.parseStringLiteral(): String {
+		return eatOrFail(LA_STRING, "String expected").value
+	}
+	
+	/** Expects no whitespace. Guaranteed to eat whitespace after */
+	private fun Context.postExpression(expr: AS3Expression, minPrio: Int): AS3Expression {
+		var x = expr
+		while (true) {
+			when {
+				minPrio > AS3Priority.PRIMARY -> return x
+				
+				eat('(') -> {
+					val call = AS3CallExpr(x)
+					if (!eat(')')) {
+						while (true) {
+							call.arguments += parseExpression(AS3Priority.NOT_COMMA)
+							if (eat(')')) break
+							eatOrFail(',', "Expected ',' or ')'")
+						}
+					}
+					x = call
+				}
+				
+				eat('[') -> {
+					val index = parseExpression()
+					eatOrFail(']')
+					x = AS3AccessExpr(x, index)
+				}
+				
+				peek(LA_BINARY_OPERATOR) -> {
+					val op = match.value
+					val prio = AS3Priority.of(op)
+					if (prio < minPrio) return x
+					eat(match.value)
+					// TODO L/R associativity
+					val y = parseExpression(prio)
+					x = AS3BinaryOperation(x, op, y)
+				}
+				
+				peek(LA_POSTFIX_OPERATOR) -> {
+					parserError("Not supported postfix operator") // TODO
+				}
+				
+				else -> return x
+			}
+			eatWs()
+		}
+	}
+	
+	/** Guaranteed to eat whitespace before and after */
+	private fun Context.parseExpression(minPrio: Int = AS3Priority.ANYTHING): AS3Expression {
+		eatWs()
+		val x: AS3Expression
+		when {
+			isEmpty() -> parserError("Unexpected end of input")
+			eat("(") -> {
+				val y = parseExpression()
+				eatOrFail(")")
+				x = AS3WrappedExpression(y)
+			}
+			eat("[") -> {
+				x = AS3ArrayLiteral()
+				if (!eat("]")) {
+					while (true) {
+						x.items += parseExpression(AS3Priority.NOT_COMMA)
+						if (eat("]")) break
+						eatOrFail(",", "Expected ',' or ']'")
+					}
+				}
+			}
+			eat("{") -> {
+				x = AS3ObjectLiteral()
+				if (!eat("}")) {
+					while (true) {
+						val k: String = when {
+							peek('"') || peek('\'') -> parseStringLiteral().fromJsString()
+							else -> eatOrFail(LA_OBJECT_KEY, "Expected object key").value
+						}
+						eatWs()
+						eatOrFail(':')
+						val v = parseExpression()
+						x.items[k] = v
+						if (eat("}")) break
+					}
+				}
+			}
+			eat(LAW_NEW) -> {
+				val y = parseExpression(AS3Priority.PRIMARY)
+				x = AS3NewExpr(y)
+			}
+			peek(LA_UNARY_OPERATOR) -> {
+				parserError("Not supported unary operator") // TODO
+			}
+			eat(LA_STRING) || eat(LA_ID) || eat(LA_NUMBER) -> {
+				x = AS3Literal(eaten)
+			}
+			else -> parserError("Not a start of expression: '${str[0]}'")
+		}
+		eatWs()
+		return postExpression(x, minPrio)
 	}
 	
 	private fun Context.parseClassDeclaration(visibility: AS3Declaration.Visibility): AS3Class {
@@ -82,7 +261,7 @@ open class ActionScriptParser : AbstractParser() {
 		val klass = AS3Class(name)
 		klass.visibility = visibility
 		eatWs()
-		while (!eat('{')) {
+		while (!peek('{')) {
 			when {
 				eat(LAW_EXTENDS) -> {
 					if (klass.superclass != null) parserError("Multiple 'extends'")
@@ -104,17 +283,7 @@ open class ActionScriptParser : AbstractParser() {
 				else -> parserError("Expected extends,implements,or '{'")
 			}
 		}
-		eatWs()
-		while (!eat('}')) {
-			when {
-				eat(LA_VISIBILITY_OR_DECL) -> {
-					eatWs()
-					klass.body += parseDeclaration(allowClass = false, allowVisibility = true)
-				}
-				else -> klass.body += parseStatement()
-			}
-			eatWs()
-		}
+		parseBlock(klass.body, allowClassDecl = false, allowVisibility = true)
 		return klass
 	}
 	
@@ -148,8 +317,58 @@ open class ActionScriptParser : AbstractParser() {
 		return decl
 	}
 	
-	private fun Context.parseFunctionDeclaration(visibility: AS3Declaration.Visibility = AS3Declaration.Visibility.UNSPECIFIED): AS3Function {
-		parserError("Not implemented parseFunctionDeclaration")
+	private fun Context.parseFunctionExpression(requireName: Boolean): AS3FunctionExpr {
+		eatOrFail(LAW_FUNCTION)
+		eatWs()
+		val fname: String? = eaten(LA_ID)?.value
+		if (fname == null && requireName) parserError("Expected function with name")
+		val func = AS3FunctionExpr(fname)
+		eatWs()
+		eatOrFail('(')
+		if (!eat(')')) {
+			do {
+				eatWs()
+				val isRest: Boolean
+				if (eat("...")) {
+					isRest = true
+					eatWs()
+				} else {
+					isRest = false
+				}
+				val pname = eatOrFail(LA_ID, "Parameter name").value
+				eatWs()
+				val ptype: String?
+				if (eat(':')) {
+					eatWs()
+					ptype = eatOrFail(LA_LONG_ID, "Parameter type").value
+					eatWs()
+				} else {
+					ptype = null
+				}
+				val pinit: AS3Expression?
+				if (eat('=')) {
+					pinit = parseExpression()
+				} else {
+					pinit = null
+				}
+				func.parameters += AS3Parameter(pname, ptype, pinit, isRest)
+			} while (eat(','))
+			eatOrFail(')')
+		}
+		eatWs()
+		if (eat(':')) {
+			func.returnType = eatOrFail(LA_LONG_ID, "Return type").value
+			eatWs()
+		}
+		parseBlock(func.body, false, false)
+		return func
+	}
+	
+	private fun Context.parseFunctionDeclaration(visibility: AS3Declaration.Visibility = AS3Declaration.Visibility.UNSPECIFIED): AS3FunctionDeclaration {
+		val body = parseFunctionExpression(requireName = true)
+		val fd = AS3FunctionDeclaration(body)
+		fd.visibility = visibility
+		return fd
 	}
 	
 	private fun Context.parseDeclaration(allowClass: Boolean, allowVisibility: Boolean): AS3Declaration {
