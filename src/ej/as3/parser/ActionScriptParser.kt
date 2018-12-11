@@ -1,6 +1,7 @@
 package ej.as3.parser
 
 import ej.as3.ast.*
+import ej.editor.expr.ExpressionParser
 import ej.utils.AbstractParser
 import org.intellij.lang.annotations.Language
 
@@ -8,7 +9,7 @@ import org.intellij.lang.annotations.Language
  * Created by aimozg on 10.12.2018.
  * Confidential until published on GitHub
  */
-open class ActionScriptParser : AbstractParser<AS3File>() {
+open class ActionScriptParser : AbstractParser() {
 	companion object {
 		@Language("RegExp")
 		private const val REX_WHITESPACE = """\s++"""
@@ -19,7 +20,7 @@ open class ActionScriptParser : AbstractParser<AS3File>() {
 		@Language("RegExp")
 		private const val REX_XMLCOMMENT = """<!--(?:[^-]|\n|-(?!->))*-->"""
 		
-		private val LA_ID = Regex("""^\w[\w\d]*+""")
+		private val LA_ID = ExpressionParser.LA_ID
 		private val LA_PACKAGE_PATH = Regex("""^(\w++)(\.\w++)*+""")
 		private val LA_LONG_ID = LA_PACKAGE_PATH
 		private val LA_PACKAGE_PATH_WILDCARDS = Regex("""^(\w++)(\.\w++)*+(\.\*)?""")
@@ -199,10 +200,13 @@ open class ActionScriptParser : AbstractParser<AS3File>() {
 		if (!isEof()) parserError("Package expected")
 	}
 	
-	override fun Context.doParse(): AS3File {
+	private fun Context.parseFile(): AS3File {
 		val file = AS3File()
 		parseFileContent(file)
 		return file
 	}
 	
+	fun parseFile(s: String): AS3File {
+		return Context(s).parseFile()
+	}
 }

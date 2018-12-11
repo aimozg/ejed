@@ -4,19 +4,24 @@ import ej.utils.AbstractParser
 import ej.utils.ParserException
 import ej.utils.affixNonEmpty
 
-private val RX_FLOAT= Regex("""^[+\-]?(\d+(\.\d++)?|\.\d++)(e[+\-]?\d++)?$""")
-private val RX_INT= Regex("""^[+\-]?(0x)?\d++$""")
-private val RX_ID= Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+$""")
-private val LA_BLOCK_COMMENT= Regex("""^/\*([^*/]|\*[^/]|[^*]/)*\*++/""")
-private val LA_FLOAT= Regex("""^[+\-]?(\d++(\.\d++)?|\.\d++)(e[+\-]?\d++)?""")
-private val LA_INT= Regex("""^[+\-]?(0x)?\d++""")
-private val LA_ID= Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+""")
-private val LA_OPERATOR = Regex("""^(>=?|<=?|!==?|={1,3}|\|\||&&|or|and|eq|neq?|[lg](te?|eq?)|[-+*/%])""")
-private val LA_DOUBLE_QUOTED_STRING_CONTENT = Regex("""^[^"\\]++""")
-private val LA_SINGLE_QUOTED_STRING_CONTENT = Regex("""^[^'\\]++""")
-
-class ExpressionParser : AbstractParser<Expression>() {
-	override fun Context.doParse(): Expression {
+class ExpressionParser : AbstractParser() {
+	companion object {
+		val RX_FLOAT = Regex("""^[+\-]?(\d+(\.\d++)?|\.\d++)(e[+\-]?\d++)?$""")
+		val RX_INT = Regex("""^[+\-]?(0x)?\d++$""")
+		val RX_ID = Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+$""")
+		val LA_BLOCK_COMMENT = Regex("""^/\*([^*/]|\*[^/]|[^*]/)*\*++/""")
+		val LA_FLOAT = Regex("""^[+\-]?(\d++(\.\d++)?|\.\d++)(e[+\-]?\d++)?""")
+		val LA_INT = Regex("""^[+\-]?(0x)?\d++""")
+		val LA_ID = Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+""")
+		val LA_OPERATOR = Regex("""^(>=?|<=?|!==?|={1,3}|\|\||&&|or|and|eq|neq?|[lg](te?|eq?)|[-+*/%])""")
+		val LA_DOUBLE_QUOTED_STRING_CONTENT = Regex("""^[^"\\]++""")
+		val LA_SINGLE_QUOTED_STRING_CONTENT = Regex("""^[^'\\]++""")
+		
+		fun isValidId(s: String): Boolean = RX_ID.matches(s)
+	}
+	
+	fun parse(s: String): Expression = Context(s).doParse()
+	private fun Context.doParse(): Expression {
 		return when {
 			eat(RX_INT) -> IntLiteral(source.toInt())
 			eat(RX_FLOAT) -> FloatLiteral(source.toDouble())
@@ -144,9 +149,6 @@ class ExpressionParser : AbstractParser<Expression>() {
 		return s.toString()
 	}
 	
-	companion object {
-		fun isValidId(s: String): Boolean = RX_ID.matches(s)
-	}
 }
 
 fun parseExpression(src:String): Expression {

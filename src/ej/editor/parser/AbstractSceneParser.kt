@@ -12,15 +12,18 @@ import ej.utils.unescapeBackslashes
 private val REX_SPACEBARS = Regex("""[ \t]{2}""")
 private val REX_SPACE_BEFORE_PUNCTUATION = Regex(""" ++(?=[,.!?])""")
 
-abstract class AbstractSceneParser : AbstractParser<String>() {
+abstract class AbstractSceneParser : AbstractParser() {
 	abstract fun evaluateTag(tag: String): String
 	abstract fun evaluateFunction(name: String, rawArgument: String, rawContent:List<String>): String
 	abstract fun evaluateExpression(expr: String): String
 	abstract val delayedEvaluation:Boolean
+	fun parse(s: String): String = postprocess(Context(s).parseAll())
 	fun parseIfDelayed(s: String): String = if (delayedEvaluation) parse(s) else s
 	open fun postprocess(s:StringBuilder):String {
 		return s.replace(REX_SPACEBARS," ").replace(REX_SPACE_BEFORE_PUNCTUATION,"")
 	}
+	
+	private fun Context.parseAll() = readUntil(true, charArrayOf())
 	private fun Context.readFunctionBody(eval:Boolean):ArrayList<String> {
 		val arguments = ArrayList<String>()
 		while (true) {
@@ -149,10 +152,6 @@ abstract class AbstractSceneParser : AbstractParser<String>() {
 			}
 		}
 		return rslt
-	}
-	
-	override fun Context.doParse(): String {
-		return postprocess(readUntil(true, charArrayOf()))
 	}
 	
 }

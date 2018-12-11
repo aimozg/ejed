@@ -7,5 +7,5 @@ import java.io.File
  * Confidential until published on GitHub
  */
 fun main(args: Array<String>) {
-	println(ActionScriptParser().parse(File(args[0]).readText()))
+	println(ActionScriptParser().parseFile(File(args[0]).readText()))
 }

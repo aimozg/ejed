@@ -7,7 +7,7 @@ import ej.utils.crop
  * Created by aimozg on 11.10.2018.
  * Confidential until published on GitHub
  */
-abstract class XmlParser<OUT> : AbstractParser<OUT>() {
+abstract class XmlParser<OUT> : AbstractParser() {
 	protected interface StreamProcessor<OUT> {
 		fun doText(text: String) //
 		fun doBegin(tag: String) // <tag
@@ -38,7 +38,8 @@ abstract class XmlParser<OUT> : AbstractParser<OUT>() {
 	
 	protected abstract fun begin(source: String): StreamProcessor<OUT>
 	
-	override fun Context.doParse(): OUT {
+	fun parse(s: String): OUT = Context(s).doParse()
+	private fun Context.doParse(): OUT {
 		val state = begin(source)
 		while (isNotEmpty()) {
 			val text = eatenUntil("<")
