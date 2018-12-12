@@ -17,16 +17,21 @@ import org.intellij.lang.annotations.Language
 // very very maybe: namespaces, native, labels
 open class ActionScriptParser : AbstractParser() {
 	companion object {
+		@Suppress("unused", "UNUSED_PARAMETER")
+		private inline fun Context.trace(s: () -> String) {
+			// println("[$pos] "+s())
+		}
+		
 		@Language("RegExp")
-		private const val REX_WHITESPACE = """\s++"""
+		private const val REX_WHITESPACE = """[\s\xA0]++"""
 		@Language("RegExp")
 		private const val REX_LINECOMMENT = """//[^\n]*+"""
 		@Language("RegExp")
-		private const val REX_BLOCKCOMMENT = """/\*(?:[^*]|\n|\*(?!/))*\*++/"""
+		private const val REX_BLOCKCOMMENT = """/\*(?:[^*]++|\n|\*(?!/))*+\*++/"""
 		@Language("RegExp")
-		private const val REX_XMLCOMMENT = """<!--(?:[^-]|\n|-(?!->))*-->"""
+		private const val REX_XMLCOMMENT = """<!--(?:[^-]|\n|-(?!->))*+-->"""
 		
-		private val LA_STRING = Regex("""^(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*)"""")
+		private val LA_STRING = Regex("""^(?:'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*")""")
 		private val LA_ID = ExpressionParser.LA_ID
 		private val LA_NUMBER = ExpressionParser.LA_FLOAT
 		private val LA_OBJECT_KEY = Regex("""^[\w$]++""")
@@ -171,7 +176,9 @@ open class ActionScriptParser : AbstractParser() {
 					block += parseDeclaration(allowClassDecl, allowVisibility)
 				}
 				else -> {
-					block += parseStatement()
+					val stmt = parseStatement()
+					trace { "$stmt" }
+					block += stmt
 					eatWs()
 					eat(';')
 				}
@@ -209,6 +216,22 @@ open class ActionScriptParser : AbstractParser() {
 					x = AS3AccessExpr(x, index)
 				}
 				
+				peek(LA_POSTFIX_OPERATOR) -> {
+					val op = match.value
+					if (minPrio > AS3Priority.POSTFIX) return x
+					eat(match.value)
+					if (x is AS3BinaryOperation && AS3Priority.POSTFIX > AS3Priority.of(x.op)) {
+						// a+b++  x=a+b  op=++  -> a+(b++)  because postfix > +
+						// a.b++  x=a.b  op=++  -> (a+b)++  because postfix < .
+						x = AS3BinaryOperation(x.left, x.op, AS3PostfixOperation(x.right, op))
+					} else if (x is AS3UnaryOperation) {
+						// !a++  x=!a  op=++  -> !(a++)  because postfix > unary
+						x = AS3UnaryOperation(x.op, AS3PostfixOperation(x.expr, op))
+					} else {
+						x = AS3PostfixOperation(x, op)
+					}
+				}
+				
 				peek(LA_BINARY_OPERATOR) -> {
 					val op = match.value
 					val prio = AS3Priority.of(op)
@@ -216,11 +239,13 @@ open class ActionScriptParser : AbstractParser() {
 					eat(match.value)
 					// TODO L/R associativity
 					val y = parseExpression(prio)
-					x = AS3BinaryOperation(x, op, y)
-				}
-				
-				peek(LA_POSTFIX_OPERATOR) -> {
-					parserError("Not supported postfix operator") // TODO
+					if (x is AS3UnaryOperation && prio > AS3Priority.UNARY) {
+						// !a+b  x=!a  y=b  op=+  -> (!a)+b  because + < unary
+						// !a.b  x=!a  y=b  op=.  -> !(a.b)  because . > unary
+						x = AS3UnaryOperation(x.op, AS3BinaryOperation(x.expr, op, y))
+					} else {
+						x = AS3BinaryOperation(x, op, y)
+					}
 				}
 				
 				peek('?') -> {
@@ -282,8 +307,10 @@ open class ActionScriptParser : AbstractParser() {
 			eat(LA_STRING) || eat(LA_ID) || eat(LA_NUMBER) -> {
 				x = AS3Literal(eaten)
 			}
-			peek(LA_UNARY_OPERATOR) -> {
-				parserError("Not supported unary operator") // TODO
+			eat(LA_UNARY_OPERATOR) -> {
+				val op = match.value
+				val y = parseExpression(AS3Priority.UNARY)
+				x = AS3UnaryOperation(op, y)
 			}
 			else -> parserError("Not a start of expression: '${str[0]}'")
 		}
@@ -452,6 +479,7 @@ open class ActionScriptParser : AbstractParser() {
 		eatWs()
 		if (peek(LAW_PACKAGE)) {
 			file.packageDecl = parsePackageDefinition()
+			eatWs()
 		}
 		if (!isEof()) parserError("Package expected")
 	}

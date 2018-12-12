@@ -54,22 +54,40 @@ class AS3FunctionDeclaration(val fn: AS3FunctionExpr) : AS3Declaration() {
 
 sealed class AS3Statement : AS3Node()
 
-object AS3EmptyStatement : AS3Statement()
+object AS3EmptyStatement : AS3Statement() {
+	override fun toString() = ";"
+}
 
 class AS3BlockStatement : AS3Statement() {
 	val items = ArrayList<AS3Statement>()
+	override fun toString() = if (items.isEmpty()) "{}" else "{ /* ${items.size} statements */ }"
 }
 
-class AS3ReturnStatement(val expr: AS3Expression?) : AS3Statement()
+class AS3ReturnStatement(val expr: AS3Expression?) : AS3Statement() {
+	override fun toString() = "return $expr;"
+}
 class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
 	var thenStmt: AS3Statement = AS3EmptyStatement
 	var elseStmt: AS3Statement? = null
+	override fun toString() =
+			"if ($condition) $thenStmt" + (elseStmt?.let { " else $it" } ?: "")
 }
 
 sealed class AS3Expression : AS3Statement()
 
+class AS3UnaryOperation(val op: String, val expr: AS3Expression) : AS3Expression() {
+	override fun toString() = "$op$expr"
+}
+
+class AS3PostfixOperation(val expr: AS3Expression, val op: String) : AS3Expression() {
+	override fun toString() = "$expr$op"
+}
+
 class AS3BinaryOperation(val left: AS3Expression, val op: String, val right: AS3Expression) : AS3Expression() {
-	override fun toString() = "$left $op $right"
+	override fun toString() = when (op) {
+		"." -> "$left.$right"
+		else -> "$left $op $right"
+	}
 }
 
 class AS3ConditionalExpression(val ifExpr: AS3Expression,

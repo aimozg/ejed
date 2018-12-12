@@ -151,7 +151,7 @@ abstract class AbstractParser {
 			 * skip + n/2 = pos
 			 */
 			val skip = maxOf(0, pos - n / 2)
-			val cut = source.substring(skip, skip + n)
+			val cut = source.substring(skip, minOf(skip + n, source.length))
 			if (skip == 0) throw ParserException(cut, pos, message)
 			throw ParserException("($skip+)$cut", pos, message)
 		}
