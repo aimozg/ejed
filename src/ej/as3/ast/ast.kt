@@ -56,10 +56,26 @@ sealed class AS3Statement : AS3Node()
 
 object AS3EmptyStatement : AS3Statement()
 
+class AS3BlockStatement : AS3Statement() {
+	val items = ArrayList<AS3Statement>()
+}
+
+class AS3ReturnStatement(val expr: AS3Expression?) : AS3Statement()
+class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
+	var thenStmt: AS3Statement = AS3EmptyStatement
+	var elseStmt: AS3Statement? = null
+}
+
 sealed class AS3Expression : AS3Statement()
 
 class AS3BinaryOperation(val left: AS3Expression, val op: String, val right: AS3Expression) : AS3Expression() {
 	override fun toString() = "$left $op $right"
+}
+
+class AS3ConditionalExpression(val ifExpr: AS3Expression,
+                               val thenExpr: AS3Expression,
+                               val elseExpr: AS3Expression) : AS3Expression() {
+	override fun toString() = "$ifExpr ? $thenExpr : $elseExpr"
 }
 
 class AS3WrappedExpression(val wrapped: AS3Expression) : AS3Expression() {

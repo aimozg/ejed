@@ -105,6 +105,11 @@ open class ActionScriptParser : AbstractParser() {
 	/** Expects no whitespace before. Does not remove whitespace after */
 	private fun Context.parseStatement(inSwitch: Boolean = false): AS3Statement {
 		when {
+			peek('{') -> {
+				val block = AS3BlockStatement()
+				parseBlock(block.items, allowClassDecl = false, allowVisibility = false)
+				return block
+			}
 			eat(LAW_BREAK) -> parserError("Statement not supported")
 			eat(LAW_CASE) -> if (inSwitch) {
 				parserError("Statement not supported")
@@ -119,8 +124,31 @@ open class ActionScriptParser : AbstractParser() {
 			}
 			eat(LAW_DO) -> parserError("Statement not supported")
 			eat(LAW_FOR) -> parserError("Statement not supported")
-			eat(LAW_IF) -> parserError("Statement not supported")
-			eat(LAW_RETURN) -> parserError("Statement not supported")
+			eat(LAW_IF) -> {
+				eatWs()
+				eatOrFail('(')
+				val condition = parseExpression()
+				eatOrFail(')')
+				eatWs()
+				val thenStmt = parseStatement()
+				eatWs()
+				val stmt = AS3IfStatement(condition)
+				stmt.thenStmt = thenStmt
+				if (eat(LAW_ELSE)) {
+					eatWs()
+					stmt.elseStmt = parseStatement()
+				}
+				return stmt
+			}
+			eat(LAW_RETURN) -> {
+				eatWs()
+				val expr = if (eat(';') || peek('}')) {
+					null
+				} else {
+					parseExpression()
+				}
+				return AS3ReturnStatement(expr)
+			}
 			eat(LAW_SUPER) -> parserError("Statement not supported")
 			eat(LAW_SWITCH) -> parserError("Statement not supported")
 			eat(LAW_THROW) -> parserError("Statement not supported")
@@ -195,6 +223,15 @@ open class ActionScriptParser : AbstractParser() {
 					parserError("Not supported postfix operator") // TODO
 				}
 				
+				peek('?') -> {
+					if (minPrio > AS3Priority.CONDITIONAL) return x
+					eat('?')
+					val thenExpr = parseExpression(AS3Priority.CONDITIONAL)
+					eatOrFail(':')
+					val elseExpr = parseExpression(AS3Priority.CONDITIONAL)
+					x = AS3ConditionalExpression(x, thenExpr, elseExpr)
+				}
+				
 				else -> return x
 			}
 			eatWs()
@@ -242,11 +279,11 @@ open class ActionScriptParser : AbstractParser() {
 				val y = parseExpression(AS3Priority.PRIMARY)
 				x = AS3NewExpr(y)
 			}
-			peek(LA_UNARY_OPERATOR) -> {
-				parserError("Not supported unary operator") // TODO
-			}
 			eat(LA_STRING) || eat(LA_ID) || eat(LA_NUMBER) -> {
 				x = AS3Literal(eaten)
+			}
+			peek(LA_UNARY_OPERATOR) -> {
+				parserError("Not supported unary operator") // TODO
 			}
 			else -> parserError("Not a start of expression: '${str[0]}'")
 		}
