@@ -481,7 +481,7 @@ open class ActionScriptParser : AbstractParser() {
 			file.packageDecl = parsePackageDefinition()
 			eatWs()
 		}
-		if (!isEof()) parserError("Package expected")
+		if (!isEof()) parserError("EOF expected")
 	}
 	
 	private fun Context.parseFile(): AS3File {
@@ -492,5 +492,13 @@ open class ActionScriptParser : AbstractParser() {
 	
 	fun parseFile(s: String): AS3File {
 		return Context(s).parseFile()
+	}
+	
+	fun parseFunction(s: String): AS3FunctionDeclaration {
+		val c = Context(s)
+		val f = c.parseDeclaration(allowClass = false, allowVisibility = true) as AS3FunctionDeclaration
+		c.eatWs()
+		if (!c.isEof()) c.parserError("EOF expected")
+		return f
 	}
 }
