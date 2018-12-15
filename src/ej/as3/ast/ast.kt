@@ -18,23 +18,44 @@ class AS3Package(val fullname: String) : AS3Node() {
 
 sealed class AS3Directive() : AS3Node()
 
-class AS3Import(val fullname: String) : AS3Directive()
-class AS3UseNamespace(val namespace: String) : AS3Directive()
+class AS3Import(val fullname: String) : AS3Directive() {
+	override fun toString() = "import $fullname;"
+}
+
+class AS3UseNamespace(val namespace: String) : AS3Directive() {
+	override fun toString() = "use namespace $namespace;"
+}
 
 sealed class AS3Declaration() : AS3Statement() {
 	abstract val name: String
 	abstract val visibility: Visibility
 	
 	enum class Visibility {
-		UNSPECIFIED, PRIVATE, INTERNAL, PROTECTED, PUBLIC
+		UNSPECIFIED, PRIVATE, INTERNAL, PROTECTED, PUBLIC;
+		
+		fun toCodePrefix(): String =
+				if (this == UNSPECIFIED) ""
+				else name.toLowerCase() + " "
 	}
 }
 
 class AS3Class(override val name: String) : AS3Declaration() {
 	var superclass: String? = null
 	val interfaces = ArrayList<String>()
-	val body = ArrayList<AS3Statement>()
+	val body = AS3BlockStatement()
 	override var visibility: AS3Declaration.Visibility = AS3Declaration.Visibility.UNSPECIFIED
+	override fun toString() = buildString {
+		append(visibility.toCodePrefix())
+		append("class ", name)
+		if (superclass != null) {
+			append(" extends ", superclass)
+		}
+		if (interfaces.isNotEmpty()) {
+			append(" implements ")
+			interfaces.joinTo(this, separator = ", ")
+		}
+		append(" ", body)
+	}
 }
 
 class AS3Interface(override val name: String) : AS3Declaration() {
@@ -45,11 +66,22 @@ class AS3Var(val isConst: Boolean, override val name: String) : AS3Declaration()
 	override var visibility: AS3Declaration.Visibility = AS3Declaration.Visibility.UNSPECIFIED
 	var type: String? = null
 	var initializer: AS3Statement? = null
+	
+	override fun toString() = buildString {
+		append(visibility.toCodePrefix())
+		if (isConst) append("const ") else append("var ")
+		append(name)
+		if (type != null) append(": ", type)
+		if (initializer != null) append(" = ", initializer)
+		append(";")
+	}
 }
 
 class AS3FunctionDeclaration(val fn: AS3FunctionExpr) : AS3Declaration() {
 	override var visibility: AS3Declaration.Visibility = AS3Declaration.Visibility.UNSPECIFIED
 	override val name = fn.name ?: error("Declaration must have a name")
+	override fun toString() =
+			visibility.toCodePrefix() + fn.toString()
 }
 
 sealed class AS3Statement : AS3Node()
@@ -66,6 +98,7 @@ class AS3BlockStatement : AS3Statement() {
 class AS3ReturnStatement(val expr: AS3Expression?) : AS3Statement() {
 	override fun toString() = "return $expr;"
 }
+
 class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
 	var thenStmt: AS3Statement = AS3EmptyStatement
 	var elseStmt: AS3Statement? = null
@@ -73,68 +106,107 @@ class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
 			"if ($condition) $thenStmt" + (elseStmt?.let { " else $it" } ?: "")
 }
 
-sealed class AS3Expression : AS3Statement()
-
-class AS3UnaryOperation(val op: String, val expr: AS3Expression) : AS3Expression() {
-	override fun toString() = "$op$expr"
-}
-
-class AS3PostfixOperation(val expr: AS3Expression, val op: String) : AS3Expression() {
-	override fun toString() = "$expr$op"
-}
-
-class AS3BinaryOperation(val left: AS3Expression, val op: String, val right: AS3Expression) : AS3Expression() {
-	override fun toString() = when (op) {
-		"." -> "$left.$right"
-		else -> "$left $op $right"
+sealed class AS3Expression : AS3Statement() {
+	companion object {
+		@JvmStatic
+		protected fun wrapToString(s: String) =
+				if (EXPLICIT_PARENTHESES_IN_TOSTRING) "($s)" else s
+		
+		var EXPLICIT_PARENTHESES_IN_TOSTRING = false
 	}
 }
 
-class AS3ConditionalExpression(val ifExpr: AS3Expression,
-                               val thenExpr: AS3Expression,
-                               val elseExpr: AS3Expression) : AS3Expression() {
-	override fun toString() = "$ifExpr ? $thenExpr : $elseExpr"
+data class AS3UnaryOperation(
+		val op: String,
+		val expr: AS3Expression
+) : AS3Expression() {
+	override fun toString() = wrapToString("$op$expr")
 }
 
-class AS3WrappedExpression(val wrapped: AS3Expression) : AS3Expression() {
+data class AS3PostfixOperation(
+		val expr: AS3Expression,
+		val op: String
+) : AS3Expression() {
+	override fun toString() = wrapToString("$expr$op")
+}
+
+data class AS3BinaryOperation(
+		val left: AS3Expression,
+		val op: String,
+		val right: AS3Expression
+) : AS3Expression() {
+	override fun toString() = wrapToString(when (op) {
+		"." -> "$left.$right"
+		else -> "$left $op $right"
+	                                       })
+}
+
+data class AS3ConditionalExpression(
+		val ifExpr: AS3Expression,
+		val thenExpr: AS3Expression,
+		val elseExpr: AS3Expression
+) : AS3Expression() {
+	override fun toString() = wrapToString("$ifExpr ? $thenExpr : $elseExpr")
+}
+
+data class AS3WrappedExpression(
+		val wrapped: AS3Expression
+) : AS3Expression() {
 	override fun toString() = "($wrapped)"
 }
 
-class AS3AccessExpr(val obj: AS3Expression, val index: AS3Expression) : AS3Expression() {
-	override fun toString() = "$obj[$index]"
+data class AS3AccessExpr(
+		val obj: AS3Expression,
+		val index: AS3Expression
+) : AS3Expression() {
+	override fun toString() = wrapToString("$obj[$index]")
 }
 
-class AS3CallExpr(val func: AS3Expression) : AS3Expression() {
-	val arguments = ArrayList<AS3Expression>()
-	override fun toString() = func.toString() + arguments.joinToString(prefix = "(", separator = ", ", postfix = ")")
+data class AS3CallExpr(
+		val func: AS3Expression,
+		val arguments: ArrayList<AS3Expression> = ArrayList()
+) : AS3Expression() {
+	override fun toString() = wrapToString(
+			func.toString() + arguments.joinToString(prefix = "(", separator = ", ", postfix = ")"))
 }
 
-class AS3NewExpr(val konstructor: AS3Expression) : AS3Expression() {
-	override fun toString() = "new $konstructor"
+data class AS3NewExpr(
+		val konstructor: AS3Expression
+) : AS3Expression() {
+	override fun toString() = wrapToString("new $konstructor")
 }
 
-class AS3Literal(val src: String) : AS3Expression() {
+data class AS3Literal(
+		val src: String
+) : AS3Expression() {
 	override fun toString() = src
 }
 
-class AS3ArrayLiteral : AS3Expression() {
-	val items = ArrayList<AS3Expression>()
+data class AS3ArrayLiteral(
+		val items: ArrayList<AS3Expression> = ArrayList()
+) : AS3Expression() {
+	
 	override fun toString(): String = items.joinToString(prefix = "[", separator = ", ", postfix = "]")
 }
 
-class AS3ObjectLiteral : AS3Expression() {
-	val items = HashMap<String, AS3Expression>()
-	override fun toString(): String = items.entries.joinToString(prefix = "{",
-	                                                             separator = ", ",
-	                                                             postfix = "}") { (k, v) ->
-		"${k.toJsString()}: $v"
-	}
+data class AS3ObjectLiteral(
+		val items: HashMap<String, AS3Expression> = HashMap()
+) : AS3Expression() {
+	override fun toString(): String =
+			items.entries.joinToString(
+					prefix = "{",
+					separator = ", ",
+					postfix = "}") { (k, v) ->
+				"${k.toJsString()}: $v"
+			}
 }
 
-class AS3Parameter(val name: String,
-                   val type: String?,
-                   val defaultValue: AS3Expression?,
-                   val isRest: Boolean = false) : AS3Node() {
+data class AS3Parameter(
+		val name: String,
+		val type: String?,
+		val defaultValue: AS3Expression?,
+		val isRest: Boolean = false
+) : AS3Node() {
 	override fun toString() = buildString {
 		if (isRest) append("...")
 		append(name)
@@ -143,15 +215,20 @@ class AS3Parameter(val name: String,
 	}
 }
 
-class AS3FunctionExpr(val name: String?) : AS3Expression() {
-	override fun toString() =
-			"function " + (if (name != null) "$name " else name) +
-					parameters.joinToString(prefix = "(", separator = ", ", postfix = ")") +
-					body.joinToString(prefix = " { ", separator = " ", postfix = " }")
-	
-	var returnType: String? = null
-	val parameters = ArrayList<AS3Parameter>()
-	val body = ArrayList<AS3Statement>()
+data class AS3FunctionExpr(
+		val name: String?,
+		var returnType: String? = null,
+		val parameters: ArrayList<AS3Parameter> = ArrayList(),
+		val body: AS3BlockStatement = AS3BlockStatement()
+) : AS3Expression() {
+	override fun toString() = buildString {
+		append("function ")
+		if (name != null) append(name, " ")
+		append("(")
+		parameters.joinTo(this, separator = ", ")
+		append(") ")
+		append(body)
+	}
 	
 }
 
@@ -194,6 +271,10 @@ object AS3Priority {
 	
 	const val ANYTHING = 0
 	
+	fun isRightAssociative(operator: String) = when (operator) {
+		"=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|=" -> true
+		else -> false
+	}
 	fun of(operator: String): Int = when (operator) {
 		"." -> PRIMARY
 		"*", "/", "%" -> MULTIPLICATIVE

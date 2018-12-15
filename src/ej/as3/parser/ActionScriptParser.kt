@@ -237,8 +237,17 @@ open class ActionScriptParser : AbstractParser() {
 					val prio = AS3Priority.of(op)
 					if (prio < minPrio) return x
 					eat(match.value)
-					// TODO L/R associativity
-					val y = parseExpression(prio)
+					val y: AS3Expression
+					y = if (AS3Priority.isRightAssociative(op)) {
+						// e.g. in a=b=c after a= we allow same-priority operator capture
+						// so it'll yield (b=c) and result expr will be a=(b=c)
+						parseExpression(prio)
+					} else {
+						// e.g. in a+b+c after a+ we forbid same-priority operator capture
+						// so it'll yield (b) only and result expr will be  (a+b)
+						// and +c will be captured on next iteration
+						parseExpression(prio + 1)
+					}
 					if (x is AS3UnaryOperation && prio > AS3Priority.UNARY) {
 						// !a+b  x=!a  y=b  op=+  -> (!a)+b  because + < unary
 						// !a.b  x=!a  y=b  op=.  -> !(a.b)  because . > unary
@@ -301,7 +310,7 @@ open class ActionScriptParser : AbstractParser() {
 				}
 			}
 			eat(LAW_NEW) -> {
-				val y = parseExpression(AS3Priority.PRIMARY)
+				val y = parseExpression(AS3Priority.PRIMARY + 1)
 				x = AS3NewExpr(y)
 			}
 			eat(LA_STRING) || eat(LA_ID) || eat(LA_NUMBER) -> {
@@ -347,7 +356,7 @@ open class ActionScriptParser : AbstractParser() {
 				else -> parserError("Expected extends,implements,or '{'")
 			}
 		}
-		parseBlock(klass.body, allowClassDecl = false, allowVisibility = true)
+		parseBlock(klass.body.items, allowClassDecl = false, allowVisibility = true)
 		return klass
 	}
 	
@@ -424,7 +433,7 @@ open class ActionScriptParser : AbstractParser() {
 			func.returnType = eatOrFail(LA_LONG_ID, "Return type").value
 			eatWs()
 		}
-		parseBlock(func.body, false, false)
+		parseBlock(func.body.items, false, false)
 		return func
 	}
 	
@@ -492,6 +501,13 @@ open class ActionScriptParser : AbstractParser() {
 	
 	fun parseFile(s: String): AS3File {
 		return Context(s).parseFile()
+	}
+	
+	fun parseExpression(s: String): AS3Expression {
+		val c = Context(s)
+		val x = c.parseExpression()
+		if (!c.isEof()) c.parserError("EOF expected")
+		return x
 	}
 	
 	fun parseFunction(s: String): AS3FunctionDeclaration {
