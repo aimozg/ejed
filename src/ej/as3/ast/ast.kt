@@ -107,6 +107,7 @@ class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
 }
 
 sealed class AS3Expression : AS3Statement() {
+	open fun toSource() = toString()
 	companion object {
 		@JvmStatic
 		protected fun wrapToString(s: String) =

@@ -2,6 +2,7 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.expr.lists.CreatureChooser
+import ej.editor.utils.EnumChooser
 import ej.editor.utils.withPropertiesFrom
 import javafx.beans.property.SimpleObjectProperty
 import tornadofx.*

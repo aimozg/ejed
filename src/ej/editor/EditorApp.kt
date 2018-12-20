@@ -58,6 +58,12 @@ class EditorView : AModView() {
 					}.action {
 						controller.saveModAs()
 					}
+					separator()
+					item("Import from Flash...") {
+						enableWhen(controller.modProperty.isNotNull)
+					}.action {
+						controller.importFromFlash(this@EditorView)
+					}
 				}
 				menu("View") {
 					item("Dark theme").action {

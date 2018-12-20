@@ -101,6 +101,11 @@ class XlElseIf() : PartOfIf(), XmlAutoSerializable {
 	constructor(test:String):this() {
 		this.test = test
 	}
+	
+	constructor(test: String, content: Collection<XStatement>) : this() {
+		this.test = test
+		this.content += content
+	}
 	val testProperty = ExpressionProperty("")
 	var testExpression: Expression by testProperty.expressionProperty
 	@Attribute

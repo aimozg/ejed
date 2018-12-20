@@ -1,6 +1,7 @@
 package ej.editor.expr
 
 import ej.editor.Styles
+import ej.editor.utils.ValueChooser
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.input.KeyCode

@@ -1,6 +1,6 @@
 package ej.editor.stmts
 
-import ej.editor.expr.AbstractListValueChooser
+import ej.editor.utils.AbstractListValueChooser
 import ej.mod.ModData
 import ej.mod.StoryStmt
 import ej.mod.XComplexStatement

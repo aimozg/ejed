@@ -517,4 +517,10 @@ open class ActionScriptParser : AbstractParser() {
 		if (!c.isEof()) c.parserError("EOF expected")
 		return f
 	}
+	
+	fun parseWord(s: String): String? {
+		val c = Context(s)
+		c.eatWs()
+		return c.eaten(LA_ID)?.value
+	}
 }

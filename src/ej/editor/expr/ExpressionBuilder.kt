@@ -1,8 +1,9 @@
 package ej.editor.expr
 
 import ej.editor.EditorController
+import ej.editor.utils.ListValueChooser
+import ej.editor.utils.ValueChooser
 import javafx.beans.property.Property
-import javafx.beans.value.WritableValue
 import javafx.scene.layout.Pane
 import tornadofx.*
 import kotlin.reflect.KProperty1
@@ -62,27 +63,6 @@ abstract class ExpressionBuilder : VisualBuilder<Expression>() {
 	}
 }
 
-abstract class ValueChooser<T:Any> {
-	abstract fun pickValue(title:String,initial:T?=null):T?
-	fun pickValueFor(title:String,prop:WritableValue<T?>):T? {
-		val v = pickValue(title,prop.value)
-		if (v != null) prop.value = v
-		return v
-	}
-}
-abstract class AbstractListValueChooser<T:Any>(val items: List<T>): ValueChooser<T>() {
-	open fun formatter(item:T?):String = item?.toString()?:"<???>"
-	override fun pickValue(title:String,initial: T?): T? {
-		return find<ListChooserDialog<T>>().showModal(title,initial,items) {
-			text = formatter(item)
-		}
-	}
-}
-open class ListValueChooser<T:Any>(items: List<T>,
-                                   val formatterFn: (T?) -> String) : AbstractListValueChooser<T>(items) {
-	override fun formatter(item: T?): String = formatterFn(item)
-	
-}
 abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){
 	abstract fun list(): List<ExpressionBuilder>
 	/*fun pickFromList(title:String,initial:ExpressionBuilder?,items:List<ExpressionBuilder>):ExpressionBuilder? {
@@ -107,6 +87,4 @@ abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){
 open class EnumChooser<E:Enum<E>>(val enumConsts:Array<E>,val nameProperty: KProperty1<E, String>) : ListValueChooser<E>(enumConsts.asList(),{
 	it?.let{ e -> nameProperty.get(e) } ?: "<Choose value>"
 })
-inline fun<reified E:Enum<E>> EnumChooser(nameProperty:KProperty1<E, String>) =
-		EnumChooser(enumValues(),nameProperty)
 

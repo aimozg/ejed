@@ -1,6 +1,7 @@
 package ej.editor.expr.impl
 
 import ej.editor.expr.*
+import ej.editor.utils.ListValueChooser
 import ej.editor.utils.withPropertiesFrom
 import ej.mod.StateVar
 import javafx.beans.property.SimpleObjectProperty

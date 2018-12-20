@@ -1,8 +1,16 @@
 package ej.editor
 
+import ej.as3.ast.AS3Class
+import ej.as3.ast.AS3FunctionDeclaration
+import ej.as3.ast.AS3Interface
+import ej.as3.ast.AS3Var
+import ej.as3.parser.ActionScriptParser
+import ej.editor.utils.FlashToMod
 import ej.editor.utils.onChangeAndNow
 import ej.mod.ModData
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.scene.control.Alert
 import javafx.stage.FileChooser
 import tornadofx.*
 import java.io.File
@@ -74,6 +82,77 @@ class EditorController : Controller() {
 			else file.createNewFile()
 			mod?.sourceFile = file
 			saveMod()
+		}
+	}
+	
+	fun doImportFromFunction(fn: AS3FunctionDeclaration): Boolean {
+		val scene = FlashToMod.functionToScene(fn)
+		mod!!.lib += scene
+		println("Converted ${scene.name}")
+		return true
+	}
+	
+	fun doImportFromFlash(source: String): Boolean {
+		val parser = ActionScriptParser()
+		when (parser.parseWord(source)) {
+			"package" -> {
+				val file = parser.parseFile(source)
+				val topLevelDeclarations = file.packageDecl?.declarations
+				if (topLevelDeclarations == null) {
+					alert(Alert.AlertType.ERROR, "No declaarations")
+					return false
+				}
+				var imported = 0
+				for (tld in topLevelDeclarations) when (tld) {
+					is AS3Class -> {
+						for (stmt in tld.body.items) when (stmt) {
+							is AS3FunctionDeclaration -> {
+								if (doImportFromFunction(stmt)) imported++
+							}
+							else -> println("Skipping $stmt")
+						}
+					}
+					is AS3Interface -> println("Skipping interface ${tld.name}")
+					is AS3Var -> println("Skipping var ${tld.name}")
+					is AS3FunctionDeclaration -> println("Skipping function ${tld.name}")
+				}
+				if (imported == 0) {
+					alert(Alert.AlertType.WARNING, "Nothing imported!")
+					return false
+				}
+				return true
+			}
+			"public", "private", "protected", "internal", "function", "final", "override" -> {
+				val fn = parser.parseFunction(source)
+				TODO("Not implemented yet")
+			}
+			else -> alert(Alert.AlertType.ERROR, "Unknown file structure")
+		}
+		return false
+	}
+	
+	fun importFromFlash(uiComponent: UIComponent) {
+		uiComponent.dialog("Import from Flash") {
+			val source = SimpleStringProperty("")
+			field("ActionScript Source") {
+				textarea(source)
+			}
+			buttonbar {
+				button("Import") {
+					isDefaultButton = true
+					action {
+						if (doImportFromFlash(source.value)) {
+							close()
+						}
+					}
+				}
+				button("Cancel") {
+					isCancelButton = true
+					action {
+						close()
+					}
+				}
+			}
 		}
 	}
 	

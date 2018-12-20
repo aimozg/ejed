@@ -2,6 +2,7 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.expr.lists.AnyExprChooser
+import ej.editor.utils.EnumChooser
 import javafx.scene.layout.Pane
 import tornadofx.*
 

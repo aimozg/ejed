@@ -1,7 +1,7 @@
 package ej.editor.stmts
 
-import ej.editor.expr.AbstractListValueChooser
 import ej.editor.external.Natives
+import ej.editor.utils.AbstractListValueChooser
 import ej.mod.ModData
 
 /*
