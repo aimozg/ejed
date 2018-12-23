@@ -197,6 +197,38 @@
          COMMANDS
          ******** -->
     <!-- stats -->
+    <!-- public function DrainStat(statname:String, value:Number):void -->
+    <command name="DrainStat">
+        <listname>Player: Drain stat</listname>
+        <param name="Statname" type="BuffableStatName" default="'str'"/>
+        <param name="Value" type="float" default="5"/>
+        <editor>
+            Drain
+            <param name="Value"/>
+            points of player's
+            <param name="Statname" type="SELECT"/>
+        </editor>
+        <editor-hint>
+            Will create or increase "Drain" debuff.
+            Negative values would reduce debuff instead, however, "Player: Recover drained stat" command is preferred.
+        </editor-hint>
+    </command>
+    <!-- public function RecoverStat(statname:String, value:Number):void -->
+    <command name="RecoverStat">
+        <listname>Player: Recover drained stat</listname>
+        <param name="Statname" type="BuffableStatName" default="'str'"/>
+        <param name="Value" type="float" default="5"/>
+        <editor>
+            Recover up to
+            <param name="Value"/>
+            points of player's
+            <param name="Statname" type="SELECT"/>
+        </editor>
+        <editor-hint>
+            Will reduce "Drain" debuff, removing if it goes to 0.
+            Negative values would increase debuff instead, however, "Player: Drain stat" command is preferred.
+        </editor-hint>
+    </command>
     <!-- public function BuffOrRecover(statname:String, value:Number, tag:String, text:String, tick: int, rate:int):void { -->
     <command name="BuffOrRecover">
         <listname>Player: Buff/Recover stat</listname>
@@ -221,7 +253,7 @@
         </editor>
         <editor-hint>
             If player has "Drain" debuff applied, stat will be recovered by the value specified.
-            Otherwise, add temporary buff.
+            Otherwise, add temporary buff. Negative values are not allowed.
             Existing buff for same stat with same tag will be replaced.
             Recommended tag name is 'context name/buff name', e.g. "templeOfAimozg/superBlessing"
         </editor-hint>
@@ -251,6 +283,7 @@
         </editor>
         <editor-hint>
             Existing buff for same stat with same tag will be increased.
+            Negative values are allowed.
             Recommended tag name is 'context name/buff name', e.g. "templeOfAimozg/superBlessing"
         </editor-hint>
     </command>
