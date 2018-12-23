@@ -819,5 +819,35 @@ class TestAutoSerializable {
 	fun clearLog() {
 		log = ""
 	}
+	
+	@Test
+	fun testDefaultElementConsumer() {
+		@RootElement("mock")
+		data class Mock(
+				var a: String = "",
+				var b: String = ""
+		) : XmlAutoSerializable {
+			override fun toString() = "mock"
+			
+			
+			@DefaultElementConsumer
+			private fun unknownElement(tag: String, attrs: Map<String, String>, input: XmlExplorerController) {
+				when (tag) {
+					"a" -> a = input.text()
+					"attr" -> b = attrs["b"]!!
+					else -> error("Unknown tag")
+				}
+			}
+		}
+		assertDeserialization(
+				Mock(a = "foo", b = "bar"),
+				"""<mock><a>foo</a><attr b="bar"/></mock>"""
+		)
+		assertFails {
+			getSerializationInfo<Mock>().deserializeDocument(XmlExplorer(StringReader(
+					"<mock><c></c></mock>"
+			)))
+		}
+	}
 }
 var log = ""

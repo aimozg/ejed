@@ -158,6 +158,13 @@ annotation class AfterSave
 @Retention(AnnotationRetention.RUNTIME)
 annotation class AfterLoad
 
+/**
+ * Target: `fun(tag:String, attrs:Map<String,String>, input:XmlExplorerController)`
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class DefaultElementConsumer
+
 interface XmlAutoSerializable : XmlSerializable
 
 private class PropertyTypeinfo(
@@ -400,6 +407,19 @@ internal fun <T : XmlAutoSerializable> generateSerializationInfo(clazz: KClass<T
 						1 -> function.call(this)
 						2 -> function.call(this, it)
 					}
+				}
+			}
+			is DefaultElementConsumer -> {
+				if (function.parameters.size != 4) error("Wrong @DefaultElementConsumer signature $function")
+				function.isAccessible = true
+				info.defaultElementConsumer = object : ElementConsumer<T> {
+					override fun consumeElement(obj: T,
+					                            tag: String,
+					                            attrs: Map<String, String>,
+					                            input: XmlExplorerController) {
+						function.call(obj, tag, attrs, input)
+					}
+					
 				}
 			}
 		}

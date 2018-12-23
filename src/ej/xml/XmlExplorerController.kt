@@ -9,6 +9,13 @@ abstract class XmlExplorerController {
 	open fun error(msg: String): Nothing {
 		kotlin.error(msg)
 	}
+	
+	/**
+	 * Before: inside element
+	 * After: outside element
+	 * Returns text content, empty string if none.
+	 * Throws error if encountered non-text.
+	 */
 	fun text(): String {
 		val s = StringBuilder()
 		forEachNode { (l, r) ->
