@@ -90,18 +90,23 @@ object AS3EmptyStatement : AS3Statement() {
 	override fun toString() = ";"
 }
 
-class AS3BlockStatement : AS3Statement() {
-	val items = ArrayList<AS3Statement>()
+data class AS3BlockStatement(
+		val items: ArrayList<AS3Statement> = ArrayList()
+) : AS3Statement() {
 	override fun toString() = if (items.isEmpty()) "{}" else "{ /* ${items.size} statements */ }"
 }
 
-class AS3ReturnStatement(val expr: AS3Expression?) : AS3Statement() {
+data class AS3ReturnStatement(val expr: AS3Expression?) : AS3Statement() {
 	override fun toString() = "return $expr;"
 }
 
-class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
-	var thenStmt: AS3Statement = AS3EmptyStatement
-	var elseStmt: AS3Statement? = null
+data class AS3IfStatement(
+		val condition: AS3Expression,
+		var thenStmt: AS3Statement = AS3EmptyStatement,
+		var elseStmt: AS3Statement? = null
+) : AS3Statement() {
+	
+	
 	override fun toString() =
 			"if ($condition) $thenStmt" + (elseStmt?.let { " else $it" } ?: "")
 }
@@ -113,6 +118,7 @@ sealed class AS3Expression : AS3Statement() {
 		if (this is AS3BinaryOperation && op == "+") return left.asSum() + right.asSum()
 		else return listOf(this)
 	}
+	
 	companion object {
 		@JvmStatic
 		protected fun wrapToString(s: String) =
@@ -142,8 +148,8 @@ data class AS3BinaryOperation(
 		val right: AS3Expression
 ) : AS3Expression() {
 	override fun toString() = wrapToString(when (op) {
-		"." -> "$left.$right"
-		else -> "$left $op $right"
+		                                       "." -> "$left.$right"
+		                                       else -> "$left $op $right"
 	                                       })
 }
 

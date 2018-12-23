@@ -45,6 +45,40 @@ open class ActionScriptParser : AbstractParser() {
 		
 		private val LA_VISIBILITY_OR_DECL = Regex("""^(?:public|private|protected|internal|class|interface|const|function|var)\b""")
 		
+		private val RESERVED_WORDS = setOf(
+				"break",
+				"case",
+				"class",
+				"const",
+				"continue",
+				"default",
+				"do",
+				"each",
+				"else",
+				"extends",
+				"for",
+				"function",
+				"if",
+				"implements",
+				"import",
+				"in",
+				"interface",
+				"internal",
+				"namespace",
+				"new",
+				"package",
+				"private",
+				"protected",
+				"public",
+				"return",
+				"super",
+				"switch",
+				"throw",
+				"try",
+				"use",
+				"var",
+				"while",
+				"with")
 		private val LAW_BREAK = word("break")
 		private val LAW_CASE = word("case")
 		private val LAW_CLASS = word("class")
@@ -86,6 +120,19 @@ open class ActionScriptParser : AbstractParser() {
 			Regex(
 					"^(?:(?:$REX_WHITESPACE)|(?:$REX_LINECOMMENT)|(?:$REX_BLOCKCOMMENT)|(?:$REX_XMLCOMMENT))++"
 			)
+	
+	private fun Context.checkId(id: String): String {
+		if (id in RESERVED_WORDS) parserError("Invalid id $id")
+		return id
+	}
+	
+	private fun Context.eatId(cause: String = "Identifier expected"): String {
+		return checkId(eatOrFail(LA_ID, cause).value)
+	}
+	
+	private fun Context.eatLongId(cause: String = "Identifier expected"): String {
+		return checkId(eatOrFail(LA_LONG_ID, cause).value)
+	}
 	
 	private fun Context.parseImportDirective(): AS3Import {
 		eatOrFail(LAW_IMPORT)
@@ -147,11 +194,11 @@ open class ActionScriptParser : AbstractParser() {
 			}
 			eat(LAW_RETURN) -> {
 				eatWs()
-				val expr = if (eat(';') || peek('}')) {
-					null
-				} else {
-					parseExpression()
+				if (eat(';') || peek('}')) {
+					return AS3ReturnStatement(null)
 				}
+				val expr = parseExpression()
+				eat(";")
 				return AS3ReturnStatement(expr)
 			}
 			eat(LAW_SUPER) -> parserError("Statement not supported")
@@ -161,30 +208,39 @@ open class ActionScriptParser : AbstractParser() {
 			eat(LAW_WHILE) -> parserError("Statement not supported")
 			eat(LAW_WITH) -> parserError("Statement not supported")
 			eat(';') -> return AS3EmptyStatement
-			else -> return parseExpression()
+			else -> {
+				val e = parseExpression()
+				eat(";")
+				return e
+			}
 		}
 	}
 	
+	private fun Context.parseStatements(to: MutableList<AS3Statement>,
+	                                    allowClassDecl: Boolean,
+	                                    allowVisibility: Boolean) {
+		while (!isEof() && !peek('}')) {
+			when {
+				peek(LA_VISIBILITY_OR_DECL) -> {
+					to += parseDeclaration(allowClassDecl, allowVisibility)
+				}
+				else -> {
+					val stmt = parseStatement()
+					trace { "$stmt" }
+					to += stmt
+					eatWs()
+				}
+			}
+			eatWs()
+		}
+	}
 	private fun Context.parseBlock(block: MutableList<AS3Statement>,
 	                               allowClassDecl: Boolean,
 	                               allowVisibility: Boolean) {
 		eatOrFail('{')
 		eatWs()
-		while (!eat('}')) {
-			when {
-				peek(LA_VISIBILITY_OR_DECL) -> {
-					block += parseDeclaration(allowClassDecl, allowVisibility)
-				}
-				else -> {
-					val stmt = parseStatement()
-					trace { "$stmt" }
-					block += stmt
-					eatWs()
-					eat(';')
-				}
-			}
-			eatWs()
-		}
+		parseStatements(block, allowClassDecl, allowVisibility)
+		eatOrFail('}')
 	}
 	
 	private fun Context.parseStringLiteral(): String {
@@ -317,7 +373,7 @@ open class ActionScriptParser : AbstractParser() {
 				x = AS3StringLiteral(eaten)
 			}
 			eat(LA_ID) -> {
-				x = AS3Identifier(eaten)
+				x = AS3Identifier(checkId(eaten))
 			}
 			eat(LA_NUMBER) -> {
 				x = AS3NumberLiteral(eaten)
@@ -336,7 +392,7 @@ open class ActionScriptParser : AbstractParser() {
 	private fun Context.parseClassDeclaration(visibility: AS3Declaration.Visibility): AS3Class {
 		eatOrFail(LAW_CLASS)
 		eatWs()
-		val name = eatOrFail(LA_ID, "Expected id").value
+		val name = eatId()
 		val klass = AS3Class(name)
 		klass.visibility = visibility
 		eatWs()
@@ -345,17 +401,17 @@ open class ActionScriptParser : AbstractParser() {
 				eat(LAW_EXTENDS) -> {
 					if (klass.superclass != null) parserError("Multiple 'extends'")
 					eatWs()
-					klass.superclass = eatOrFail(LA_LONG_ID, "Superclass name expected").value
+					klass.superclass = eatLongId("Superclass name expected")
 					eatWs()
 				}
 				eat(LAW_IMPLEMENTS) -> {
 					if (klass.interfaces.isNotEmpty()) parserError("Multiple 'implements'")
 					eatWs()
-					klass.interfaces += eatOrFail(LA_LONG_ID, "Interface name expected").value
+					klass.interfaces += eatLongId("Interface name expected")
 					eatWs()
 					while (eat(',')) {
 						eatWs()
-						klass.interfaces += eatOrFail(LA_LONG_ID, "Interface name expected").value
+						klass.interfaces += eatLongId("Interface name expected")
 						eatWs()
 					}
 				}
@@ -378,7 +434,7 @@ open class ActionScriptParser : AbstractParser() {
 			else -> parserError("Expected var or const")
 		}
 		eatWs()
-		val name = eatOrFail(LA_ID, "Identifier expected").value
+		val name = eatId()
 		val decl = AS3Var(isConst, name)
 		decl.visibility = visibility
 		eatWs()
@@ -401,6 +457,7 @@ open class ActionScriptParser : AbstractParser() {
 		eatWs()
 		val fname: String? = eaten(LA_ID)?.value
 		if (fname == null && requireName) parserError("Expected function with name")
+		if (fname != null) checkId(fname)
 		val func = AS3FunctionExpr(fname)
 		eatWs()
 		eatOrFail('(')
@@ -414,12 +471,12 @@ open class ActionScriptParser : AbstractParser() {
 				} else {
 					isRest = false
 				}
-				val pname = eatOrFail(LA_ID, "Parameter name").value
+				val pname = eatId("Parameter name expected")
 				eatWs()
 				val ptype: String?
 				if (eat(':')) {
 					eatWs()
-					ptype = eatOrFail(LA_LONG_ID, "Parameter type").value
+					ptype = eatLongId("Parameter type expected")
 					eatWs()
 				} else {
 					ptype = null
@@ -436,7 +493,7 @@ open class ActionScriptParser : AbstractParser() {
 		}
 		eatWs()
 		if (eat(':')) {
-			func.returnType = eatOrFail(LA_LONG_ID, "Return type").value
+			func.returnType = eatLongId("Return type expected")
 			eatWs()
 		}
 		parseBlock(func.body.items, false, false)
@@ -514,6 +571,15 @@ open class ActionScriptParser : AbstractParser() {
 		val x = c.parseExpression()
 		if (!c.isEof()) c.parserError("EOF expected")
 		return x
+	}
+	
+	fun parseStatements(s: String): List<AS3Statement> {
+		val c = Context(s)
+		val list = ArrayList<AS3Statement>()
+		c.parseStatements(list, false, false)
+		c.eatWs()
+		if (!c.isEof()) c.parserError("EOF expected")
+		return list
 	}
 	
 	fun parseFunction(s: String): AS3FunctionDeclaration {

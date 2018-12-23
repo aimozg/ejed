@@ -130,10 +130,13 @@ class EditorController : Controller() {
 					alert(Alert.AlertType.WARNING, "Nothing imported!")
 					return false
 				}
+				return true
 			}
-			else -> alert(Alert.AlertType.ERROR, "Unknown file structure")
+			else -> {
+				alert(Alert.AlertType.ERROR, "Unknown file structure")
+				return false
+			}
 		}
-		return false
 	}
 	
 	fun importFromFlash(uiComponent: UIComponent) {

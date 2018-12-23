@@ -1,9 +1,11 @@
 package ej.as3.parser
 
 import ej.as3.ast.*
+import ej.utils.ParserException
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertFailsWith
 
 /*
  * Created by aimozg on 15.12.2018.
@@ -14,6 +16,7 @@ class ActionScriptParserTest {
 	private val parser = ActionScriptParser()
 	
 	private fun parseExpression(s: String) = parser.parseExpression(s)
+	private fun parseStatements(s: String) = parser.parseStatements(s)
 	
 	@Before
 	fun setUp() {
@@ -74,5 +77,20 @@ class ActionScriptParserTest {
 				unary("!", postfix(a, "++")),
 				parseExpression("!a++")
 		)
+	}
+	
+	@Test
+	fun testIfs() {
+		assertEquals(
+				listOf(AS3IfStatement(lit("a"), lit("b"), lit("c"))),
+				parseStatements("if(a) b else c")
+		)
+		assertEquals(
+				listOf(AS3IfStatement(lit("a"), lit("b"), lit("c"))),
+				parseStatements("if(a) b; else c")
+		)
+		assertFailsWith<ParserException> {
+			parseStatements("if(a) b;; else c")
+		}
 	}
 }
