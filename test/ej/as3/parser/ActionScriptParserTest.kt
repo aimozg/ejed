@@ -20,7 +20,7 @@ class ActionScriptParserTest {
 		AS3Expression.EXPLICIT_PARENTHESES_IN_TOSTRING = true
 	}
 	
-	private fun lit(src: String) = AS3Literal(src)
+	private fun lit(src: String) = AS3Identifier(src)
 	private val a = lit("a")
 	private val b = lit("b")
 	private val c = lit("c")

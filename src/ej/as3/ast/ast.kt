@@ -108,6 +108,11 @@ class AS3IfStatement(val condition: AS3Expression) : AS3Statement() {
 
 sealed class AS3Expression : AS3Statement() {
 	open fun toSource() = toString()
+	
+	fun asSum(): List<AS3Expression> {
+		if (this is AS3BinaryOperation && op == "+") return left.asSum() + right.asSum()
+		else return listOf(this)
+	}
 	companion object {
 		@JvmStatic
 		protected fun wrapToString(s: String) =
@@ -177,7 +182,19 @@ data class AS3NewExpr(
 	override fun toString() = wrapToString("new $konstructor")
 }
 
-data class AS3Literal(
+data class AS3NumberLiteral(
+		val src: String
+) : AS3Expression() {
+	override fun toString() = src
+}
+
+data class AS3StringLiteral(
+		val src: String
+) : AS3Expression() {
+	override fun toString() = src
+}
+
+data class AS3Identifier(
 		val src: String
 ) : AS3Expression() {
 	override fun toString() = src
@@ -233,7 +250,7 @@ data class AS3FunctionExpr(
 	
 }
 
-object AS3Priority {
+object AS3Operators {
 	const val NOTHING = 999
 	// Primary     [] {x:y} () f(x) new x.y x[y] <></> @ :: ..
 	const val PRIMARY = 150
@@ -272,10 +289,12 @@ object AS3Priority {
 	
 	const val ANYTHING = 0
 	
-	fun isRightAssociative(operator: String) = when (operator) {
+	fun isAssignment(operator: String) = when (operator) {
 		"=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|=" -> true
 		else -> false
 	}
+	
+	fun isRightAssociative(operator: String) = isAssignment(operator)
 	fun of(operator: String): Int = when (operator) {
 		"." -> PRIMARY
 		"*", "/", "%" -> MULTIPLICATIVE

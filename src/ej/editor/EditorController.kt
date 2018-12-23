@@ -107,7 +107,9 @@ class EditorController : Controller() {
 					is AS3Class -> {
 						for (stmt in tld.body.items) when (stmt) {
 							is AS3FunctionDeclaration -> {
-								if (doImportFromFunction(stmt)) imported++
+								if (stmt.name != tld.name) {
+									if (doImportFromFunction(stmt)) imported++
+								}
 							}
 							else -> println("Skipping $stmt")
 						}
@@ -124,7 +126,10 @@ class EditorController : Controller() {
 			}
 			"public", "private", "protected", "internal", "function", "final", "override" -> {
 				val fn = parser.parseFunction(source)
-				TODO("Not implemented yet")
+				if (!doImportFromFunction(fn)) {
+					alert(Alert.AlertType.WARNING, "Nothing imported!")
+					return false
+				}
 			}
 			else -> alert(Alert.AlertType.ERROR, "Unknown file structure")
 		}

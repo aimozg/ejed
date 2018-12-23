@@ -46,7 +46,11 @@ class XsForward : XStatement {
 	}
 }
 
-class XsCommand : XStatement, XmlAutoSerializable {
+class XsCommand() : XStatement, XmlAutoSerializable {
+	constructor(value: String) : this() {
+		this.value = value
+	}
+	
 	val valueProperty = ExpressionProperty("", DefaultCommandConverter, ExpressionTypes.VOID)
 	@TextBody
 	@TextBodyWhitespacePolicy(WhitespacePolicy.COMPACT)
@@ -98,7 +102,12 @@ class XsSet : XStatement, XmlAutoSerializable {
 	*/
 }
 
-class XsOutput : XStatement, XmlAutoSerializable {
+class XsOutput() : XStatement, XmlAutoSerializable {
+	
+	constructor(value: String) : this() {
+		this.value = value
+	}
+	
 	val valueProperty = ExpressionProperty("")
 	@TextBody
 	var value: String by valueProperty

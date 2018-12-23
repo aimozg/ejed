@@ -196,13 +196,13 @@ open class ActionScriptParser : AbstractParser() {
 		var x = expr
 		while (true) {
 			when {
-				minPrio > AS3Priority.PRIMARY -> return x
+				minPrio > AS3Operators.PRIMARY -> return x
 				
 				eat('(') -> {
 					val call = AS3CallExpr(x)
 					if (!eat(')')) {
 						while (true) {
-							call.arguments += parseExpression(AS3Priority.NOT_COMMA)
+							call.arguments += parseExpression(AS3Operators.NOT_COMMA)
 							if (eat(')')) break
 							eatOrFail(',', "Expected ',' or ')'")
 						}
@@ -218,9 +218,9 @@ open class ActionScriptParser : AbstractParser() {
 				
 				peek(LA_POSTFIX_OPERATOR) -> {
 					val op = match.value
-					if (minPrio > AS3Priority.POSTFIX) return x
+					if (minPrio > AS3Operators.POSTFIX) return x
 					eat(match.value)
-					if (x is AS3BinaryOperation && AS3Priority.POSTFIX > AS3Priority.of(x.op)) {
+					if (x is AS3BinaryOperation && AS3Operators.POSTFIX > AS3Operators.of(x.op)) {
 						// a+b++  x=a+b  op=++  -> a+(b++)  because postfix > +
 						// a.b++  x=a.b  op=++  -> (a+b)++  because postfix < .
 						x = AS3BinaryOperation(x.left, x.op, AS3PostfixOperation(x.right, op))
@@ -234,11 +234,11 @@ open class ActionScriptParser : AbstractParser() {
 				
 				peek(LA_BINARY_OPERATOR) -> {
 					val op = match.value
-					val prio = AS3Priority.of(op)
+					val prio = AS3Operators.of(op)
 					if (prio < minPrio) return x
 					eat(match.value)
 					val y: AS3Expression
-					y = if (AS3Priority.isRightAssociative(op)) {
+					y = if (AS3Operators.isRightAssociative(op)) {
 						// e.g. in a=b=c after a= we allow same-priority operator capture
 						// so it'll yield (b=c) and result expr will be a=(b=c)
 						parseExpression(prio)
@@ -248,7 +248,7 @@ open class ActionScriptParser : AbstractParser() {
 						// and +c will be captured on next iteration
 						parseExpression(prio + 1)
 					}
-					if (x is AS3UnaryOperation && prio > AS3Priority.UNARY) {
+					if (x is AS3UnaryOperation && prio > AS3Operators.UNARY) {
 						// !a+b  x=!a  y=b  op=+  -> (!a)+b  because + < unary
 						// !a.b  x=!a  y=b  op=.  -> !(a.b)  because . > unary
 						x = AS3UnaryOperation(x.op, AS3BinaryOperation(x.expr, op, y))
@@ -258,11 +258,11 @@ open class ActionScriptParser : AbstractParser() {
 				}
 				
 				peek('?') -> {
-					if (minPrio > AS3Priority.CONDITIONAL) return x
+					if (minPrio > AS3Operators.CONDITIONAL) return x
 					eat('?')
-					val thenExpr = parseExpression(AS3Priority.CONDITIONAL)
+					val thenExpr = parseExpression(AS3Operators.CONDITIONAL)
 					eatOrFail(':')
-					val elseExpr = parseExpression(AS3Priority.CONDITIONAL)
+					val elseExpr = parseExpression(AS3Operators.CONDITIONAL)
 					x = AS3ConditionalExpression(x, thenExpr, elseExpr)
 				}
 				
@@ -273,7 +273,7 @@ open class ActionScriptParser : AbstractParser() {
 	}
 	
 	/** Guaranteed to eat whitespace before and after */
-	private fun Context.parseExpression(minPrio: Int = AS3Priority.ANYTHING): AS3Expression {
+	private fun Context.parseExpression(minPrio: Int = AS3Operators.ANYTHING): AS3Expression {
 		eatWs()
 		val x: AS3Expression
 		when {
@@ -287,7 +287,7 @@ open class ActionScriptParser : AbstractParser() {
 				x = AS3ArrayLiteral()
 				if (!eat("]")) {
 					while (true) {
-						x.items += parseExpression(AS3Priority.NOT_COMMA)
+						x.items += parseExpression(AS3Operators.NOT_COMMA)
 						if (eat("]")) break
 						eatOrFail(",", "Expected ',' or ']'")
 					}
@@ -310,15 +310,21 @@ open class ActionScriptParser : AbstractParser() {
 				}
 			}
 			eat(LAW_NEW) -> {
-				val y = parseExpression(AS3Priority.PRIMARY + 1)
+				val y = parseExpression(AS3Operators.PRIMARY + 1)
 				x = AS3NewExpr(y)
 			}
-			eat(LA_STRING) || eat(LA_ID) || eat(LA_NUMBER) -> {
-				x = AS3Literal(eaten)
+			eat(LA_STRING) -> {
+				x = AS3StringLiteral(eaten)
+			}
+			eat(LA_ID) -> {
+				x = AS3Identifier(eaten)
+			}
+			eat(LA_NUMBER) -> {
+				x = AS3NumberLiteral(eaten)
 			}
 			eat(LA_UNARY_OPERATOR) -> {
 				val op = match.value
-				val y = parseExpression(AS3Priority.UNARY)
+				val y = parseExpression(AS3Operators.UNARY)
 				x = AS3UnaryOperation(op, y)
 			}
 			else -> parserError("Not a start of expression: '${str[0]}'")
@@ -512,6 +518,7 @@ open class ActionScriptParser : AbstractParser() {
 	
 	fun parseFunction(s: String): AS3FunctionDeclaration {
 		val c = Context(s)
+		c.eatWs()
 		val f = c.parseDeclaration(allowClass = false, allowVisibility = true) as AS3FunctionDeclaration
 		c.eatWs()
 		if (!c.isEof()) c.parserError("EOF expected")
