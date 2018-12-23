@@ -78,11 +78,17 @@ open class XContentContainer : XComplexStatement {
 			}
 			mixedBody(XContentContainer::contentRaw,
 			          { (it as? XcText)?.text },
-			          { XcText(it) },
+			          { if (it.isBlank()) XcText("") else XcText(it) },
 			          statementMappings
 			)
 			afterLoad {
-				content.addAll(contentRaw.map { e -> (e as? XmlFlatIf)?.grouped()?:e })
+				content.addAll(contentRaw.mapNotNull { e ->
+					when (e) {
+						is XmlFlatIf -> e.grouped()
+						is XcText -> if (e.isEmpty()) null else e
+						else -> e
+					}
+				})
 				contentRaw.clear()
 			}
 		}
