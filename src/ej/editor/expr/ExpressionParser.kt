@@ -10,7 +10,8 @@ class ExpressionParser : AbstractParser() {
 		val RX_INT = Regex("""^[+\-]?(0x)?\d++$""")
 		val RX_ID = Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+$""")
 		val LA_BLOCK_COMMENT = Regex("""^/\*([^*/]|\*[^/]|[^*]/)*\*++/""")
-		val LA_FLOAT = Regex("""^[+\-]?(\d++(\.\d++)?|\.\d++)(e[+\-]?\d++)?""")
+		val LA_NUMBER = Regex("""^[+\-]?(\d++(\.\d++)?|\.\d++)(e[+\-]?\d++)?""")
+		val LA_FLOAT = Regex("""^[+\-]?((\d++)?\.\d++)(e[+\-]?\d++)?""")
 		val LA_INT = Regex("""^[+\-]?(0x)?\d++""")
 		val LA_ID = Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+""")
 		val LA_OPERATOR = Regex("""^(>=?|<=?|!==?|={1,3}|\|\||&&|or|and|eq|neq?|[lg](te?|eq?)|[-+*/%])""")
@@ -75,8 +76,8 @@ class ExpressionParser : AbstractParser() {
 				}
 				x = ObjectExpression(map)
 			}
-			eat(LA_INT) -> x = IntLiteral(eaten.toInt())
 			eat(LA_FLOAT) -> x = FloatLiteral(eaten.toDouble())
+			eat(LA_INT) -> x = IntLiteral(eaten.toInt())
 			eat(LA_ID) -> x = Identifier.valueOf(eaten)
 			eat("'") || eat("\"") -> {
 				x = StringLiteral(evalStringLiteral(eaten))

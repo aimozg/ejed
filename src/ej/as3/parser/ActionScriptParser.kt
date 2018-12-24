@@ -33,7 +33,7 @@ open class ActionScriptParser : AbstractParser() {
 		
 		private val LA_STRING = Regex("""^(?:'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*")""")
 		private val LA_ID = ExpressionParser.LA_ID
-		private val LA_NUMBER = ExpressionParser.LA_FLOAT
+		private val LA_NUMBER = ExpressionParser.LA_NUMBER
 		private val LA_OBJECT_KEY = Regex("""^[\w$]++""")
 		private val LA_PACKAGE_PATH = Regex("""^(\w++)(\.\w++)*+""")
 		private val LA_LONG_ID = LA_PACKAGE_PATH

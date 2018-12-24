@@ -99,7 +99,8 @@ internal fun XContentContainer.defaultToString(tagname: String, attrs: String=""
 		defaultToString(tagname,attrs,content.joinToString(" ",limit=5))
 
 
-class XcText(text:String):XStatement {
+class XcText(text: String) : XStatement, XmlAutoSerializable {
+	@TextBody
 	var text:String by property(text)
 	fun textProperty() = getProperty(XcText::text)
 	
@@ -110,11 +111,21 @@ class XcText(text:String):XStatement {
 	
 	override fun toString() = "\""+text.crop(40).escapeXmlAttr()+"\""
 	
-	companion object : XmlSerializableCompanion<XcText> {
-		override val szInfoClass = XcText::class
-		
-		override fun XmlSzInfoBuilder<XcText>.buildSzInfo() {
-			textBody(XcText::text)
+	@DefaultElementConsumer
+	@Suppress("unused")
+	private fun unknownElement(tag: String, attrs: Map<String, String>, input: XmlExplorerController) {
+		when (tag.toLowerCase()) {
+			"u", "i", "b", "font" -> {
+				text += "<$tag"
+				if (attrs.isNotEmpty()) text += attrs.entries.joinToString { (k, v) -> " $k=\"${v.escapeXmlAttr()}\"" }
+				text += ">"
+				input.forEachNode { (textNode, elementNode) ->
+					if (textNode != null) text += textNode
+					if (elementNode != null) unknownElement(elementNode.first, elementNode.second, input)
+				}
+				text += "</tag>"
+			}
+			else -> input.error("unexpected element t.$tag")
 		}
 	}
 }
