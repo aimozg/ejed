@@ -1,7 +1,6 @@
 package ej.editor.views
 
 import ej.editor.utils.WritableExpression
-import ej.utils.crop
 import javafx.beans.property.Property
 import javafx.geometry.Orientation
 import javafx.scene.input.Clipboard
@@ -49,7 +48,7 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 		}
 		
 		override fun doSet(value: String) {
-			println("doSet " + value.crop(80))
+//			println("doSet " + value.crop(80))
 			loadText(value)
 		}
 		
