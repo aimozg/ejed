@@ -50,11 +50,16 @@ class XmlSerializationInfo<T : Any>(internal val klass: KClass<T>):AXmlSerializa
 	                       output: XmlBuilder,
 	                       attrModifier: (Map<String, String>) -> Map<String, String>) {
 		beforeSave?.invoke(obj)
-		output.element(tag,
-		               attrModifier(attro.mapNotNull { it.produce(obj) }.toMap())
-		) {
-			for (producer in producers) {
-				producer.produce(this, obj)
+		if (producers.isEmpty()) {
+			output.emptyElement(tag,
+			                    attrModifier(attro.mapNotNull { it.produce(obj) }.toMap()))
+		} else {
+			output.element(tag,
+			               attrModifier(attro.mapNotNull { it.produce(obj) }.toMap())
+			) {
+				for (producer in producers) {
+					producer.produce(this, obj)
+				}
 			}
 		}
 		afterSave?.invoke(obj)

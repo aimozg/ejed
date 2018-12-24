@@ -30,6 +30,9 @@ open class PolymorphicListIO<T:Any,E:Any>(
 		}
 	}
 	
+	override fun producesText(): Boolean = false
+	override fun producesElements(): Boolean = true
+	
 	override fun consumeElement(obj: T, tag: String, attrs: Map<String, String>, input: XmlExplorerController) {
 		val list = prop.get(obj)
 		for ((mtag,szinfo) in mappings) {
@@ -49,6 +52,8 @@ class MixedListIO<T:Any,E:Any>(
 		val s = textConverter.toString(e)
 		if (s != null) builder.text(s)
 	}
+	
+	override fun producesText(): Boolean = true
 	
 	override fun consumeText(obj: T, data: String, input: XmlExplorerController) {
 		val a = textConverter.convert(data)

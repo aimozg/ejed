@@ -10,6 +10,8 @@ import kotlin.reflect.jvm.isAccessible
  */
 interface XmlProducer<in T:Any> {
 	fun produce(builder: XmlBuilder, obj: T)
+	fun producesText(): Boolean
+	fun producesElements(): Boolean
 }
 interface ElementConsumer<in T: Any> {
 	fun consumeElement(obj: T,
@@ -37,6 +39,9 @@ abstract class AbstractElementIO<in T : Any, A : Any>(
 		val v = getValue(obj)
 		if (v != null) converter.write(builder, v)
 	}
+	
+	override fun producesText(): Boolean = converter.producesText()
+	override fun producesElements(): Boolean = converter.producesElements()
 }
 
 class PropertyEio<in T : Any, A : Any>(
@@ -68,6 +73,9 @@ class PropertyOverwritingEio<in T:Any, A:XmlSerializable>(
 	override fun produce(builder: XmlBuilder, obj: T) {
 		converter.write(builder, prop.get(obj))
 	}
+	
+	override fun producesText(): Boolean = converter.producesText()
+	override fun producesElements(): Boolean = converter.producesElements()
 }
 
 class NullablePropertyEio<in T : Any, A : Any>(
@@ -93,6 +101,9 @@ class ListPropertyEio<in T : Any, A : Any>(
 			converter.write(builder, a)
 		}
 	}
+	
+	override fun producesText(): Boolean = converter.producesText()
+	override fun producesElements(): Boolean = converter.producesElements()
 	
 	override fun consumeElement(obj: T,
 	                            tag: String,
@@ -120,6 +131,9 @@ class WrappedListPropertyEio<in T: Any, A:Any>(
 			}
 		}
 	}
+	
+	override fun producesText(): Boolean = false
+	override fun producesElements(): Boolean = true
 	
 	override fun consumeElement(obj: T,
 	                            tag: String,

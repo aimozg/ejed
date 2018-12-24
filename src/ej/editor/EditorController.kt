@@ -67,7 +67,7 @@ class EditorController : Controller() {
 		)
 		println("Saving to $file")
 		file.writer().use { writer ->
-			ModData.saveMod(mod, writer)
+			ModData.saveMod(mod, writer, true)
 		}
 	}
 	

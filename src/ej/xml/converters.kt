@@ -13,6 +13,8 @@ interface ElementConverter<A:Any> {
 	            input: XmlExplorerController,
 	            parent: Any?): A?
 	fun write(builder:XmlBuilder, value:A)
+	fun producesText(): Boolean = false
+	fun producesElements(): Boolean = true
 }
 interface OverwritingElementConverter<A:XmlSerializable>: ElementConverter<A> {
 	fun convertInto(obj:A,

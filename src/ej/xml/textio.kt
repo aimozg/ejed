@@ -12,6 +12,9 @@ abstract class TextProducer<in T:Any>: XmlProducer<T> {
 	override fun produce(builder: XmlBuilder, obj: T) {
 		builder.text(produce(obj))
 	}
+	
+	override fun producesText(): Boolean = true
+	override fun producesElements(): Boolean = false
 }
 abstract class TextIO<in T:Any> : TextConsumer<T>,TextProducer<T>() {
 

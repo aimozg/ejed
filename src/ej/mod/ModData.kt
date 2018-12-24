@@ -159,11 +159,34 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 		fun loadMod(src: Reader):ModData {
 			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 		}
-		fun saveMod(mod:ModData,dst: Writer) {
-			val builder = XmlStreamBuilder(dst)
+		
+		fun saveMod(mod: ModData, dst: Writer, indent: Boolean) {
+			val b0 = XmlStreamBuilder(dst)
+			val builder = if (indent) IndentingXmlBuilder(b0, MOD_INDENT_STYLE) else b0
 			getSerializationInfo().serializeDocument(mod, builder)
 		}
 		
+		val MOD_INDENT_STYLE = IndentingXmlBuilder.SimpleIndentStyle(
+				IndentingXmlBuilder.IndentType.BLOCK,
+				listOf("?xml", "mod").map { it to IndentingXmlBuilder.IndentType.MULTILINE }.toMap() +
+						listOf("scene",
+						       "if",
+						       "menu",
+						       "state",
+						       "hook",
+						       "lib",
+						       "text",
+						       "trigger",
+						       "monster",
+						       "desc",
+						       "body",
+						       "combat",
+						       "loot",
+						       "skin",
+						       "script",
+						       "switch").map { it to IndentingXmlBuilder.IndentType.INDENTED }.toMap() +
+						listOf("u", "b", "i", "font").map { it to IndentingXmlBuilder.IndentType.INLINE }.toMap()
+		)
 	}
 	
 }
