@@ -24,6 +24,7 @@ class NodeBinding(
 	}
 	
 	private val listener = observable.onChangeAndNowWeak { newBody ->
+		if (body == newBody) return@onChangeAndNowWeak
 		val oldBody = children.indexOf(body).takeIf { it >= 0 }
 		body = newBody
 		if (newBody != null) {

@@ -18,41 +18,47 @@ import java.io.Writer
 
 interface ModDataNode
 interface XStatement : ModDataNode, XmlSerializable
-interface XComplexStatement: XStatement {
+interface XComplexStatement : XStatement {
 	val content: ObservableList<XStatement>
 }
+
 interface StoryContainer : ModDataNode, XmlSerializable {
 	val lib: ObservableList<StoryStmt>
 	val owner: ModDataNode?
 }
-enum class ValidationStatus(val hasValid:Boolean,val hasInvalid:Boolean) {
-	UNKNOWN(false,false),
-	VALID(true,false),
-	MIXED(true,true),
-	INVALID(false,true);
+
+enum class ValidationStatus(val hasValid: Boolean, val hasInvalid: Boolean) {
+	UNKNOWN(false, false),
+	VALID(true, false),
+	MIXED(true, true),
+	INVALID(false, true);
 	
-	operator fun plus(other: ValidationStatus): ValidationStatus = when(this) {
+	operator fun plus(other: ValidationStatus): ValidationStatus = when (this) {
 		UNKNOWN -> other
 		VALID -> if (other.hasInvalid) MIXED else VALID
 		MIXED -> MIXED
 		INVALID -> if (other.hasValid) MIXED else INVALID
 	}
-	operator fun times(other: ValidationStatus): ValidationStatus = when(this) {
+	
+	operator fun times(other: ValidationStatus): ValidationStatus = when (this) {
 		UNKNOWN -> other
 		VALID -> if (other.hasInvalid) INVALID else VALID
 		MIXED -> MIXED
 		INVALID -> INVALID
 	}
 }
+
 interface StoryStmt : StoryContainer {
 	var name: String
 	val nameProperty: Property<String>
 	var isValid: ValidationStatus
 	val isValidProperty: Property<ValidationStatus>
-	val path:String get() = ownersToRoot().fold(name) { s, story ->
-		"${story.name}/$s"
-	}
+	val path: String
+		get() = ownersToRoot().fold(name) { s, story ->
+			"${story.name}/$s"
+		}
 }
+
 val ModDataNode.acceptsMenu: Boolean
 	get() = this is XcScene
 val ModDataNode.acceptsActions: Boolean
@@ -64,7 +70,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 	var sourceFile: File? = null
 	
 	val nameProperty = SimpleStringProperty("")
-	var name:String  by nameProperty
+	var name: String  by nameProperty
 	
 	val versionProperty = SimpleIntegerProperty(0)
 	var version: Int by versionProperty
@@ -79,7 +85,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 	
 	fun allStories() = sequence {
 		val run = ArrayList(lib)
-		while(run.isNotEmpty()) {
+		while (run.isNotEmpty()) {
 			val e = run.removeAt(0)
 			yield(e)
 			run.addAll(e.lib)
@@ -88,13 +94,13 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 	
 	override fun toString(): String {
 		return "<mod name='$name' version='$version'>" +
-				" <state> ${stateVars.joinToString(" ")} </state>"+
-				monsters.joinToString(" ")+
-				lib.joinToString(" ")+
+				" <state> ${stateVars.joinToString(" ")} </state>" +
+				monsters.joinToString(" ") +
+				lib.joinToString(" ") +
 				"</mod>"
 	}
 	
-	companion object : XmlSerializableCompanion<ModData>{
+	companion object : XmlSerializableCompanion<ModData> {
 		override val szInfoClass = ModData::class
 		override fun XmlSzInfoBuilder<ModData>.buildSzInfo() {
 			name = "mod"
@@ -107,8 +113,8 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 				lib.add(XcScene().also { s ->
 					val trigger = TimedTrigger()
 					s.trigger = trigger
-					for ((k,v) in attrs) when(k) {
-						"type" -> trigger.type = when(v) {
+					for ((k, v) in attrs) when (k) {
+						"type" -> trigger.type = when (v) {
 							"daily" -> TimedTrigger.Type.DAILY
 							"hourly" -> TimedTrigger.Type.HOURLY
 							else -> kotlin.error("Unexpected hook@type=$v")
@@ -118,7 +124,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 					}
 					val contentLoader = XContentContainer.getSerializationInfo()
 					input.forEachElement { tag, attrs ->
-						contentLoader.deserializeElementInto(s,input,tag,attrs)
+						contentLoader.deserializeElementInto(s, input, tag, attrs)
 					}
 					s.owner = mod
 				})
@@ -133,12 +139,12 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 						"condition" -> trigger.condition = text()
 						"chance" -> trigger.chance = text()
 						"scene" -> {
-							scene = XcScene.getSerializationInfo().deserialize(input,attrs2,mod)
+							scene = XcScene.getSerializationInfo().deserialize(input, attrs2, mod)
 						}
 						else -> error("Unexpected encounter.$tag2")
 					}
 				}
-				for ((k,v) in attrs) when(k) {
+				for ((k, v) in attrs) when (k) {
 					"pool" -> trigger.pool = v
 					"name" -> scene.name = v
 					else -> kotlin.error("Unexpected encounter@$k")
@@ -153,10 +159,11 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 			              "text" to XcNamedText::class)
 		}
 		
-		fun loadMod(src: InputStream):ModData {
+		fun loadMod(src: InputStream): ModData {
 			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 		}
-		fun loadMod(src: Reader):ModData {
+		
+		fun loadMod(src: Reader): ModData {
 			return getSerializationInfo().deserializeDocument(XmlExplorer(src))
 		}
 		
@@ -168,24 +175,17 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 		
 		val MOD_INDENT_STYLE = IndentingXmlBuilder.SimpleIndentStyle(
 				IndentingXmlBuilder.IndentType.BLOCK,
-				listOf("?xml", "mod").map { it to IndentingXmlBuilder.IndentType.MULTILINE }.toMap() +
-						listOf("scene",
-						       "if",
-						       "menu",
-						       "state",
-						       "hook",
-						       "lib",
-						       "text",
-						       "trigger",
-						       "monster",
-						       "desc",
-						       "body",
-						       "combat",
-						       "loot",
-						       "skin",
-						       "script",
-						       "switch").map { it to IndentingXmlBuilder.IndentType.INDENTED }.toMap() +
-						listOf("u", "b", "i", "font").map { it to IndentingXmlBuilder.IndentType.INLINE }.toMap()
+				listOf(
+						"?xml", "mod", "scene", "lib", "text"
+				).map { it to IndentingXmlBuilder.IndentType.MULTILINE }.toMap() +
+						listOf(
+								"if", "menu", "switch",
+								"state", "hook", "trigger",
+								"monster", "desc", "body", "combat", "loot", "skin", "script"
+						).map { it to IndentingXmlBuilder.IndentType.INDENTED }.toMap() +
+						listOf(
+								"u", "b", "i", "font"
+						).map { it to IndentingXmlBuilder.IndentType.INLINE }.toMap()
 		)
 	}
 	

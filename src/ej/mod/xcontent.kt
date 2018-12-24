@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
 import tornadofx.*
+import java.io.StringWriter
 
 
 @Suppress("unused")
@@ -16,6 +17,8 @@ internal fun ModDataNode.defaultToString(tagname:String, attrs:String, content:S
 
 fun XStatement.defaultNamedSzInfo(): Pair<String, AXmlSerializationInfo<XStatement>>? {
 	val myInfo = getSerializationInfo(javaClass.kotlin)
+	val name = myInfo.name
+	if (name != null) return name to myInfo
 	return XContentContainer.statementMappings.entries.find {
 		it.value() == myInfo
 	}?.let {
@@ -26,12 +29,24 @@ fun XStatement.defaultNamedSzInfo(): Pair<String, AXmlSerializationInfo<XStateme
 fun defaultNamedSzInfo(name: String): AXmlSerializationInfo<out XStatement>? {
 	return XContentContainer.statementMappings[name]?.invoke()
 }
+
+fun XStatement.toXml(builder: XmlBuilder) {
+	val myInfo = defaultNamedSzInfo()
+			?: kotlin.error("Unsaveable statement $this")
+	myInfo.second.serializeDocument(this, myInfo.first, builder)
+}
 fun XStatement.toXmlObject(): XmllikeObject =
-		XmlObjectBuilder().also { builder ->
-			val myInfo = defaultNamedSzInfo()
-					?: kotlin.error("Unsaveable statement $this")
-			myInfo.second.serializeDocument(this, myInfo.first, builder)
-		}.build()
+		XmlObjectBuilder().also { it -> toXml(it) }.build()
+
+fun XStatement.toPrettyPrintedXml(withDocHeader: Boolean = true): String {
+	val writer = StringWriter()
+	val builder = IndentingXmlBuilder(XmlStreamBuilder(writer), ModData.MOD_INDENT_STYLE)
+	toXml(builder)
+	var s: CharSequence = writer.buffer
+	if (!withDocHeader) s = s.replace(Regex("""^<\?xml[^>]+\?>\s*+"""), "")
+	return s.toString()
+}
+
 
 fun XStatementFromXmlObject(src: XmllikeObject): XStatement =
 		XmlObjectExplorer(src).exploreDocument { rootTag, rootAttrs ->
@@ -180,6 +195,7 @@ class XcScene : XContentContainer(), StoryStmt {
 		
 		override fun XmlSzInfoBuilder<XcScene>.buildSzInfo() {
 			inherit(XContentContainer)
+			name = "scene"
 			elementsByTag(XcScene::lib,
 			              "lib" to XcLib::class,
 			              "text" to XcNamedText::class,
@@ -215,6 +231,7 @@ class XcNamedText : XContentContainer(), StoryStmt {
 		
 		override fun XmlSzInfoBuilder<XcNamedText>.buildSzInfo() {
 			inherit(XContentContainer)
+			name = "text"
 			elementsByTag(XcNamedText::lib,
 			              "lib" to XcLib::class,
 			              "text" to XcNamedText::class,

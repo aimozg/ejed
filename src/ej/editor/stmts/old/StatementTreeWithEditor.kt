@@ -2,10 +2,7 @@ package ej.editor.stmts.old
 
 import ej.editor.Styles
 import ej.editor.expr.KnownIds
-import ej.editor.utils.ContextualTreeSelection
-import ej.editor.utils.listBinding
-import ej.editor.utils.onChangeWeak
-import ej.editor.utils.presentWhen
+import ej.editor.utils.*
 import ej.mod.*
 import ej.utils.addToList
 import javafx.beans.property.SimpleIntegerProperty
@@ -42,7 +39,6 @@ open class StatementTreeWithEditor(val mod:ModData) : VBox() {
 	val rootAcceptsMenu = rootStatementProperty.booleanBinding { it?.acceptsMenu == true }
 	val rootAcceptsActions = rootStatementProperty.booleanBinding { it?.acceptsActions == true }
 	private var expandButton by singleAssign<ToggleButton>()
-	private val weakListeners = ArrayList<Any>()
 
 	val contextualCurrentProperty = SimpleObjectProperty<ContextualTreeSelection<XStatement>>().apply {
 		bind(tree.selectionModel.selectedItemProperty().select { item ->

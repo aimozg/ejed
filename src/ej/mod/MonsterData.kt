@@ -43,6 +43,7 @@ class MonsterData : Patchable, ModDataNode, XmlSerializable {
 			override val szInfoClass = MonsterDesc::class
 			override fun XmlSzInfoBuilder<MonsterDesc>.buildSzInfo() {
 				inherit(XContentContainer)
+				name = "desc"
 			}
 		}
 	}

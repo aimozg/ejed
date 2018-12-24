@@ -3,14 +3,10 @@ package ej.editor.views
 import com.sun.javafx.scene.control.skin.ScrollBarSkin
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
-import ej.editor.utils.ContextMenuContainer
-import ej.editor.utils.bindingN
-import ej.editor.utils.nodeBinding
-import ej.editor.utils.observableUnique
-import ej.mod.ModData
-import ej.mod.XComplexStatement
-import ej.mod.XStatement
-import ej.mod.XcScene
+import ej.editor.utils.*
+import ej.mod.*
+import ej.utils.addToList
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
 import javafx.scene.control.ScrollPane
@@ -26,34 +22,68 @@ class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>(XcScene())
 	var rootStatement: XComplexStatement by rootStatementProperty
 	
+	var xmlModeProperty = SimpleBooleanProperty(false)
+	
 	override fun getContentBias(): Orientation {
 		return Orientation.HORIZONTAL
 	}
 	
 	private val stmtList: StatementListView
+	private val xmlEditor: SceneXmlEditor
 	override val menus get() = stmtList.menus
 	
 	init {
-		nodeBinding(rootStatementProperty) { it ->
-				(it as? XcScene)?.let {
-					SceneTriggerEditor(it)
-				}
-			}
+		isFillWidth = true
 		stmtList = StatementListView().apply {
 			vgrow = Priority.SOMETIMES
 			expandButton.removeFromParent()
 			itemsProperty.bind(bindingN(rootStatementProperty) {
 				it?.content ?: emptyList<XStatement>().observableUnique()
 			})
-//			beforeList = listTopMenu
-//			afterList = listBottomMenu
 			paddingBottom = 80
 		}
-		scrollpane(true, false) {
-			hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
-			vgrow = Priority.ALWAYS
-			prefViewportWidthProperty().bind(widthProperty() - ScrollBarSkin.DEFAULT_WIDTH)
-			stmtList.attachTo(this)
+		xmlEditor = SceneXmlEditor().apply {
+			prefHeightProperty().bind(this@SceneEditor.heightProperty())
+		}
+		weakListenerN(rootStatementProperty, xmlModeProperty) { stmt, xm ->
+			if (xm == true) {
+				xmlEditor.replaceText(stmt?.toPrettyPrintedXml(false) ?: "")
+			}
+		}.addToList(weakListeners)
+		
+		toolbar {
+			togglegroup {
+				togglebutton("XML Mode", value = true) {
+					addClass("nogap")
+				}
+				togglebutton("Visual Mode", value = false) {
+					addClass("nogap")
+				}
+				bind(xmlModeProperty)
+			}
+		}
+		nodeBinding(xmlModeProperty) { xmlMode ->
+			if (xmlMode == true) {
+				VBox().apply {
+					spacing = 5.0
+					isFillWidth = true
+					xmlEditor.attachTo(this)
+				}
+			} else {
+				VBox().apply {
+					nodeBinding(rootStatementProperty) { it ->
+						(it as? XcScene)?.let {
+							SceneTriggerEditor(it)
+						}
+					}
+					scrollpane(true, false) {
+						hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+						vgrow = Priority.ALWAYS
+						prefViewportWidthProperty().bind(widthProperty() - ScrollBarSkin.DEFAULT_WIDTH)
+						stmtList.attachTo(this)
+					}
+				}
+			}
 		}
 	}
 }

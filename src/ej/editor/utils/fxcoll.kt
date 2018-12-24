@@ -166,6 +166,24 @@ fun <T1, T2, T3, T4, T5, T6, T7, R> bindingN(prop1: ObservableValue<T1>,
 			op(prop1.value, prop2.value, prop3.value, prop4.value, prop5.value, prop6.value, prop7.value)
 		}, prop1, prop2, prop3, prop4, prop5, prop6, prop7)
 
+fun <T1> weakListenerN(prop1: ObservableValue<T1>,
+                       op: (T1?) -> Unit) =
+		WeakInvalidationListener {
+			op(prop1.value)
+		}.also {
+			prop1.addListener(it)
+		}
+
+fun <T1, T2> weakListenerN(prop1: ObservableValue<T1>,
+                           prop2: ObservableValue<T2>,
+                           op: (T1?, T2?) -> Unit) =
+		WeakInvalidationListener {
+			op(prop1.value, prop2.value)
+		}.also {
+			prop1.addListener(it)
+			prop2.addListener(it)
+		}
+
 fun <E> ObservableValue<out E>.isEqualToAny(vararg values: E): BooleanBinding =
 		booleanBinding { me ->
 			values.any { it == me }
@@ -277,3 +295,7 @@ fun <T> ListChangeListener.Change<out T>.reapplyTo(tgt: MutableList<T>) {
 		if (wasRemoved()) tgt.remove(from, from + removedSize)
 	}
 }
+
+@Suppress("UNCHECKED_CAST")
+val Node.weakListeners: ArrayList<Any?>
+	get() = properties.getOrPut("fxui.weakListeners") { ArrayList<Any?>() } as ArrayList<Any?>
