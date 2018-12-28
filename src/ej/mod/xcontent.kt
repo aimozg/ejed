@@ -140,7 +140,7 @@ class XcText(text: String) : XStatement, XmlAutoSerializable {
 					if (textNode != null) text += textNode
 					if (elementNode != null) unknownElement(elementNode.first, elementNode.second, input)
 				}
-				text += "</tag>"
+				text += "</$tag>"
 			}
 			else -> input.error("unexpected element t.$tag")
 		}

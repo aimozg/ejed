@@ -3,12 +3,18 @@ package ej.editor.views
 import com.sun.javafx.scene.control.skin.ScrollBarSkin
 import ej.editor.stmts.SceneTriggerEditor
 import ej.editor.stmts.StatementListView
-import ej.editor.utils.*
+import ej.editor.utils.ContextMenuContainer
+import ej.editor.utils.bindingN
+import ej.editor.utils.nodeBinding
+import ej.editor.utils.observableUnique
 import ej.mod.*
-import ej.utils.addToList
+import ej.xml.XmlExplorer
+import ej.xml.deserializeDocument
+import ej.xml.getSerializationInfo
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Orientation
+import javafx.scene.control.Alert
 import javafx.scene.control.ScrollPane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -22,7 +28,46 @@ class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 	val rootStatementProperty = SimpleObjectProperty<XComplexStatement>(XcScene())
 	var rootStatement: XComplexStatement by rootStatementProperty
 	
-	var xmlModeProperty = SimpleBooleanProperty(false)
+	var xmlModeProperty = object : SimpleBooleanProperty(false) {
+		override fun set(newValue: Boolean) {
+			val oldValue = value
+			if (trySetXmlMode(newValue)) {
+				super.set(newValue)
+			} else {
+				super.set(newValue)
+				runLater {
+					super.set(oldValue)
+				}
+			}
+		}
+	}
+	
+	private fun trySetXmlMode(xm: Boolean): Boolean {
+		val stmt = rootStatement
+		when (xm) {
+			true -> {
+				xmlEditor.replaceText("")
+				xmlEditor.replaceText(
+						stmt.content.joinToString(separator = "\n") {
+							val e = ((it as?XlIf)?.ungrouped() ?: it)
+							e.toPrettyPrintedXml(false)
+						})
+			}
+			false -> try {
+				val tmpScene = getSerializationInfo<XcNamedText>().deserializeDocument(
+						XmlExplorer("<?xml version=\"1.0\"?><text>\n${xmlEditor.text}\n</text>")
+				)
+				stmt.content.setAll(tmpScene.content)
+			} catch (e: Throwable) {
+				alert(Alert.AlertType.ERROR, "Error", e.message)
+				if (e is XmlExplorer.XmlExplorerException && (e.lineNumber - 2) in xmlEditor.paragraphs.indices) {
+					xmlEditor.selectRange(e.lineNumber - 2, e.columnNumber - 1, e.lineNumber - 2, e.columnNumber - 1)
+				}
+				return false
+			}
+		}
+		return true
+	}
 	
 	override fun getContentBias(): Orientation {
 		return Orientation.HORIZONTAL
@@ -45,11 +90,6 @@ class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 		xmlEditor = SceneXmlEditor().apply {
 			prefHeightProperty().bind(this@SceneEditor.heightProperty())
 		}
-		weakListenerN(rootStatementProperty, xmlModeProperty) { stmt, xm ->
-			if (xm == true) {
-				xmlEditor.replaceText(stmt?.toPrettyPrintedXml(false) ?: "")
-			}
-		}.addToList(weakListeners)
 		
 		toolbar {
 			togglegroup {

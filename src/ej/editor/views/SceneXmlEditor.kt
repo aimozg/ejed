@@ -49,8 +49,9 @@ class SceneXmlEditor() :
 	
 	companion object {
 		private val XML_TAG = Regex(
-				"""((</?\h*)(\w+)([^<>]*)(\h*/?>))|(<!--(?:[^-]|-(?!->))+-->)|(\t)"""
-				// 12       3    4       5         6                          7
+				"""((</?\h*)(\w+)((?:[^</>]|/[^>])*)(\h*/?>))|(<!--(?:[^-]|-(?!->))+-->)|(\t++)"""
+				// 12       3    4                  5         6                          7
+				//  start   name attribute-body     end       comment                    tab
 		)
 		private val ATTRIBUTES = Regex(
 				"""(\w+\h*)(=)(\h*"[^"]+")"""
@@ -108,6 +109,7 @@ class SceneXmlEditor() :
 				}
 				pos = mr.range.last + 1
 			}
+			spansBuilder.add(listOf("chars"), text.length - pos)
 			return spansBuilder.create()
 		}
 		
