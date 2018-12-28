@@ -303,3 +303,16 @@ TextFlow.xlogic, TextFlow.xcommand, TextFlow.xcomment, TextFlow.xnext {
     -fx-wrap-text: true;
     -fx-font-size: 14;
 }
+
+.scene-xml-editor .text {
+    -fx-font-size: 14;
+    -fx-font-family: "Lucida Console";
+}
+
+.scene-xml-editor .text.tab {
+    -fx-font-size: 7; /* because JavaFx '\t' is hardcoded to be as wide as 8 spaces but I want it to be 4 */
+}
+
+.scene-xml-editor .text.output {
+    -fx-font-family: "Lucida Fax";
+}

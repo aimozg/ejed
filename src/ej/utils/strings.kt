@@ -11,6 +11,9 @@ operator fun StringBuilder.plusAssign(c:Char) {
 	append(c)
 }
 
+val MatchResult.length: Int get() = range.last + 1 - range.first
+val MatchGroup.length: Int get() = range.last + 1 - range.first
+
 fun String.appendIf(condition:Boolean,ifTrue:String,ifFalse:String=""):String =
 		if (condition) this+ifTrue else this+ifFalse
 fun String?.affix(prefix:String,suffix:String=""):String =

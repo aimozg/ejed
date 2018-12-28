@@ -7,7 +7,7 @@ package ej.utils
  */
 
 abstract class AbstractParser {
-	protected open val LA_WHITESPACE = Regex("""^\s++""")
+	protected open val LA_WHITESPACE = Regex("""^[\h\s\v]++""")
 	inner class Context(val source:String) {
 		var str:String = source
 		val pos get() = maxOf(0,source.length - str.length)

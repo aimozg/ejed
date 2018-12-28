@@ -119,3 +119,40 @@ TextFlow Text, VBox Text, HBox Text, Pane Text {
 .dragover {
     -fx-background-color: #242;
 }
+
+.scene-xml-editor .text.output { /* printable text (inside <t>) */
+    -fx-text-fill: #eee;
+}
+
+.scene-xml-editor .text.comment { /* comments */
+    -fx-text-fill: #464;
+}
+
+.scene-xml-editor .text.chars { /* XML text nodes aside printable text (scripts, commands & properties) */
+    -fx-text-fill: #8ff;
+}
+
+.scene-xml-editor .text.tagc { /* XML "</>" chars */
+    -fx-text-fill: #fc8;
+    -fx-font-weight: bold;
+}
+
+.scene-xml-editor .text.tagn { /* XML tag name */
+    -fx-text-fill: #fc8;
+    -fx-font-weight: bold;
+}
+
+.scene-xml-editor .text.tagan { /* XML tag atrribute name */
+    -fx-text-fill: #48f;
+    -fx-font-weight: bold;
+}
+
+.scene-xml-editor .text.tagaq { /* XML tag attribute '=' char */
+    -fx-text-fill: #4f8;
+    -fx-font-weight: bold;
+}
+
+.scene-xml-editor .text.tagav { /* XML tag attribute value */
+    -fx-text-fill: #4f8;
+    -fx-font-weight: bold;
+}

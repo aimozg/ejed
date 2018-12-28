@@ -78,6 +78,9 @@ abstract class XmlParser<OUT> : AbstractParser() {
 		return state.end()
 	}
 	
+	override val LA_WHITESPACE: Regex
+		get() = Regex("""^(?:[\h\s\v]+|(?:<!--(?:[^-]|-(?!->))+-->))++""")
+	
 	companion object {
 		private val LA_BEGIN = Regex("""^<([^"</>&=\s]++)""") // 1 = tag name
 		private val LA_ATTR = Regex("""^([^"</>&=\s]++)="?([^"<>]++)"?""") // 1 = name, 2 = value

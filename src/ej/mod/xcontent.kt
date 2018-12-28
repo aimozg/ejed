@@ -40,7 +40,9 @@ fun XStatement.toXmlObject(): XmllikeObject =
 
 fun XStatement.toPrettyPrintedXml(withDocHeader: Boolean = true): String {
 	val writer = StringWriter()
-	val builder = IndentingXmlBuilder(XmlStreamBuilder(writer), ModData.MOD_INDENT_STYLE)
+	val builder = IndentingXmlBuilder(XmlStreamBuilder(writer), ModData.MOD_INDENT_STYLE).also {
+		it.oneIndent = ModData.MOD_INDENT_CHARS
+	}
 	toXml(builder)
 	var s: CharSequence = writer.buffer
 	if (!withDocHeader) s = s.replace(Regex("""^<\?xml[^>]+\?>\s*+"""), "")

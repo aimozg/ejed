@@ -173,6 +173,7 @@ class ModData : StoryContainer, ModDataNode, XmlSerializable {
 			getSerializationInfo().serializeDocument(mod, builder)
 		}
 		
+		val MOD_INDENT_CHARS = "\t"
 		val MOD_INDENT_STYLE = IndentingXmlBuilder.SimpleIndentStyle(
 				IndentingXmlBuilder.IndentType.BLOCK,
 				listOf(
