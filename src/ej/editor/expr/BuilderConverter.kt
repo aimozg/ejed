@@ -59,6 +59,8 @@ object DefaultBuilderConverter : BuilderConverter {
 				Comparison.tryConvert(this, expr)
 						?: BooleanAnd.tryConvert(this, expr)
 						?: BooleanOr.tryConvert(this, expr)
+			is BooleanNotExpression ->
+				BooleanNot.tryConvert(this, expr)
 			is InvalidExpression -> null
 		} ?: RawExpressionBuilder(expr)
 	}

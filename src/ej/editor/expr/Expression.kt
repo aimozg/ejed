@@ -64,6 +64,7 @@ enum class BinaryOperator(val repr:String, val priority:Int, vararg val aliases:
 	DIV("/",50),
 	MOD("mod",50);
 	companion object {
+		const val PRIORITY_ABOVE_ALL = 60
 		fun parse(s:String):BinaryOperator? = values().firstOrNull {
 			it.repr == s || s in it.aliases
 		}
@@ -102,6 +103,12 @@ class ConditionalExpression(val condition:Expression,
 	override val parts get() = listOf(condition,ifTrue,ifFalse)
 	override val source get() = "$condition ? $ifTrue : $ifFalse"
 	override fun copy() = ConditionalExpression(condition.copy(), ifTrue.copy(), ifFalse.copy())
+}
+
+class BooleanNotExpression(val expr: Expression) : Expression() {
+	override val parts get() = listOf(expr)
+	override val source get() = "not $expr"
+	override fun copy() = BooleanNotExpression(expr.copy())
 }
 class BinaryExpression(val left:Expression, val op:BinaryOperator, val right:Expression):Expression() {
 	override val parts get() = listOf(left,right)

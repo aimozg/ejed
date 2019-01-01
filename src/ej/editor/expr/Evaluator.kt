@@ -154,6 +154,8 @@ open class Evaluator(
 			is ConditionalExpression ->
 				if (evaluate(e.condition).isTrue()) evaluate(e.ifTrue)
 				else evaluate(e.ifFalse)
+			is BooleanNotExpression ->
+				Evaluated.BoolValue(!evaluate(e.expr).isTrue())
 			is BinaryExpression ->
 				when (e.op) {
 					BinaryOperator.OR ->

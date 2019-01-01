@@ -3,10 +3,7 @@ package ej.editor.expr.lists
 import ej.editor.expr.ExpressionBuilder
 import ej.editor.expr.ExpressionChooser
 import ej.editor.expr.ExpressionTypes
-import ej.editor.expr.impl.BooleanAnd
-import ej.editor.expr.impl.BooleanOr
-import ej.editor.expr.impl.Comparison
-import ej.editor.expr.impl.RawExpressionBuilder
+import ej.editor.expr.impl.*
 import ej.editor.external.Stdlib
 
 object BoolExprChooser : ExpressionChooser() {
@@ -16,6 +13,7 @@ object BoolExprChooser : ExpressionChooser() {
 					// generics
 					BooleanAnd(),
 					BooleanOr(),
+					BooleanNot(),
 					Comparison(),
 					RawExpressionBuilder()
 			)

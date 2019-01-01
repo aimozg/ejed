@@ -64,6 +64,12 @@
         <value name="not female" impl="[0,1,3]"/>
         <value name="not herm" impl="[0,1,2]"/>
     </enum>
+    <enum name="SexType">
+        <value name="neuter" impl="'N'"/>
+        <value name="male" impl="'M'"/>
+        <value name="female" impl="'F'"/>
+        <value name="hermaphrodite" impl="'H'"/>
+    </enum>
     <enum name="CreatureTrait">
         <value name="is biped" impl="'biped'"/>
         <value name="is taur" impl="'taur'"/>
@@ -72,6 +78,17 @@
         <value name="has testicles" impl="'testicles'"/>
         <value name="has horn(s)" impl="'horns'"/>
         <value name="has tail(s)" impl="'tails'"/>
+        <value name="has virgin vagina" impl="'virgin-vagina'"/>
+        <value name="has vagina" impl="'vagina'"/>
+        <value name="has penis" impl="'penis'"/>
+    </enum>
+    <enum name="VaginalWetness">
+        <value name="DRY" impl="0"/>
+        <value name="NORMAL" impl="1"/>
+        <value name="WET" impl="2"/>
+        <value name="SLICK" impl="3"/>
+        <value name="DROOLING" impl="4"/>
+        <value name="SLAVERING" impl="5"/>
     </enum>
     <!-- stat -->
     <enum name="BuffableStatName">
@@ -151,12 +168,10 @@
     <function name="CreatureHasPerk" return="boolean">
         <listname>Creature: Has Perk</listname>
         <param name="Creature" type="Creature" default="player"/>
-        <param name="Has" type="HasOrNot" default="true"/>
         <param name="Perk" type="PerkType"/>
         <editor>
             <param name="Creature"/>
-            <param name="Has" type="SELECT"/>
-            perk
+            has perk
             <param name="Perk" type="SELECT"/>
         </editor>
     </function>
@@ -164,33 +179,64 @@
         <listname>Creature: Has Trait</listname>
         <param name="Creature" type="Creature" default="player"/>
         <param name="Trait" type="CreatureTrait"/>
-        <param name="Invert" type="boolean" default="false"/>
         <editor>
             <param name="Creature"/>
             <param name="Trait" type="SELECT"/>
-            <param name="Invert" type="CHECKBOX" typedata="not"/>
         </editor>
     </function>
-    <!-- creature-test -->
-    <function name="CreatureTestSex" return="boolean">
-        <listname>Creature: Test Sex</listname>
-        <param name="Creature" type="Creature" default="player"/>
-        <param name="SexTest" type="SexTest"/>
+    <function name="HasPerk" return="boolean">
+        <listname>Player: Has Perk</listname>
+        <param name="Perk" type="PerkType"/>
         <editor>
-            <param name="Creature"/>
-            is
-            <param name="SexTest" type="SELECT"/>
+            Player has perk
+            <param name="Perk" type="SELECT"/>
         </editor>
     </function>
-    <function name="CreatureTestLegType" return="boolean">
-        <listname>Creature: Test Leg Type</listname>
+    <function name="HasTrait" return="boolean">
+        <listname>Player: Has Trait</listname>
+        <param name="Trait" type="CreatureTrait"/>
+        <editor>
+            Player
+            <param name="Trait" type="SELECT"/>
+        </editor>
+    </function>
+    <!-- body parts -->
+    <function name="CreatureLegType" return="LegType">
+        <listname>Creature: Leg Type</listname>
         <param name="Creature" type="Creature" default="player"/>
-        <param name="Is" type="IsOrNot" default="true"/>
-        <param name="LegType" type="LegType" default="'HUMAN'"/>
         <editor>
             <param name="Creature"/>'s leg type
-            <param name="Is" type="SELECT"/>
-            <param name="LegType" type="SELECT"/>
+        </editor>
+    </function>
+    <function name="LegType" return="LegType">
+        <listname>Player: Leg Type</listname>
+        <editor>
+            Player's leg type
+        </editor>
+    </function>
+    <!-- sexual properties -->
+    <function name="VaginalWetness" return="VaginalWetness">
+        <listname>Player: Vaginal wetness</listname>
+        <editor>
+            Player's vaginal wetness
+        </editor>
+    </function>
+    <function name="VaginalCapacity" return="number">
+        <listname>Player: Vaginal wetness</listname>
+        <editor>
+            Player's vaginal capacity (sq.in.)
+        </editor>
+    </function>
+    <function name="PenisCount" return="number">
+        <listname>Player: Penis count</listname>
+        <editor>
+            Player's number of penises
+        </editor>
+    </function>
+    <function name="Sex" return="SexType">
+        <listname>Player: Sex</listname>
+        <editor>
+            Player's sex
         </editor>
     </function>
     <!-- ********
@@ -335,14 +381,11 @@
     <!-- items -->
     <!-- sex -->
     <command name="StretchAnus">
-        <listname>Creature: Stretch Anus</listname>
-        <param name="Creature" type="Creature" default="player"/>
+        <listname>Player: Stretch Anus</listname>
         <param name="Area" type="float" default="30"/>
         <param name="NoDisplay" type="boolean" default="false"/>
         <editor>
-            Stretch
-            <param name="Creature"/>'s
-            anus by
+            Stretch player's anus by
             <param name="Area"/>
             sq.in.
             <param name="NoDisplay" type="CHECKBOX" typedata="(no display)"/>
@@ -352,14 +395,11 @@
         </editor-hint>
     </command>
     <command name="StretchVagina">
-        <listname>Creature: Stretch Vagina</listname>
-        <param name="Creature" type="Creature" default="player"/>
+        <listname>Player: Stretch Vagina</listname>
         <param name="Area" type="float" default="30"/>
         <param name="NoDisplay" type="boolean" default="false"/>
         <editor>
-            Stretch
-            <param name="Creature"/>'s
-            vagina by
+            Stretch player's vagina by
             <param name="Area"/>
             sq.in.
             <param name="NoDisplay" type="CHECKBOX" typedata="(no display)"/>
@@ -369,12 +409,10 @@
         </editor-hint>
     </command>
     <command name="Orgasm">
-        <listname>Creature: Orgasm</listname>
-        <param name="Creature" type="Creature" default="player"/>
+        <listname>Player: Orgasm</listname>
         <param name="OrgasmType" type="OrgasmType" default="'Generic'"/>
         <editor>
-            <param name="Creature"/>
-            orgasms with
+            Player orgasms with
             <param name="OrgasmType" type="SELECT"/>
         </editor>
     </command>

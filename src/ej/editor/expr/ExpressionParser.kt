@@ -14,7 +14,8 @@ class ExpressionParser : AbstractParser() {
 		val LA_FLOAT = Regex("""^[+\-]?((\d++)?\.\d++)(e[+\-]?\d++)?""")
 		val LA_INT = Regex("""^[+\-]?(0x)?\d++""")
 		val LA_ID = Regex("""^[a-zA-Z_$][a-zA-Z_$0-9]*+""")
-		val LA_OPERATOR = Regex("""^(>=?|<=?|!==?|={1,3}|\|\||&&|or|and|eq|neq?|[lg](te?|eq?)|[-+*/%])""")
+		val LA_UNARY_NOT = Regex("""^(?:~|not\b)""")
+		val LA_OPERATOR = Regex("""^(>=?|<=?|!==?|={1,3}|\|\||&&|or\b|and\b|eq\b|neq?\b|[lg](te?|eq?)\b|[-+*/%])""")
 		val LA_DOUBLE_QUOTED_STRING_CONTENT = Regex("""^[^"\\]++""")
 		val LA_SINGLE_QUOTED_STRING_CONTENT = Regex("""^[^'\\]++""")
 		
@@ -41,6 +42,9 @@ class ExpressionParser : AbstractParser() {
 		val x:Expression
 		when {
 			isEmpty() -> parserError("Unexpected end of input")
+			eat(LA_UNARY_NOT) -> {
+				x = BooleanNotExpression(evalExpr(BinaryOperator.PRIORITY_ABOVE_ALL))
+			}
 			eat("(") -> {
 				x = evalUntil(")")
 				eat(")")

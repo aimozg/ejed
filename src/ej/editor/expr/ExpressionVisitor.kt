@@ -61,6 +61,11 @@ abstract class ExpressionVisitor() {
 		visitAnyExpression(x.left)
 		visitAnyExpression(x.right)
 	}
+	
+	open fun visitBooleanNot(x: BooleanNotExpression) {
+		visitAnyExpression(x)
+		visitAnyExpression(x.expr)
+	}
 	open fun visitInvalid(x:InvalidExpression) {
 		visitAnyExpression(x)
 	}
@@ -81,6 +86,7 @@ fun Expression.visit(visitor: ExpressionVisitor):Unit =
 		is DotExpression -> visitor.visitDot(this)
 		is AccessExpression -> visitor.visitAccess(this)
 		is ConditionalExpression -> visitor.visitConditional(this)
+		is BooleanNotExpression -> visitor.visitBooleanNot(this)
 		is BinaryExpression -> visitor.visitBinary(this)
 		is InvalidExpression -> visitor.visitInvalid(this)
 	}
