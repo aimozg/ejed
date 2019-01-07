@@ -151,6 +151,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	
 	init {
 		cellWrapper = CELLWRAPPER_STACK
+		addClass("stmt-list")
 		graphicFactory { stmt ->
 			(stmt.createControl() ?: Label("not supported ${stmt.javaClass.simpleName}").apply {
 				// contextMenu = cellMenu
@@ -161,9 +162,12 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 		}
 		cellDecorator { cell, box, graphic ->
 			configureDragAndDrop(cell)
+			box += StackPane().apply {
+				addClass("stmt-ctrl-left")
+			}
 			box += graphic
 			box += StackPane().apply {
-				addClass("stmt-ctrl-itemmenu")
+				addClass("stmt-ctrl-right")
 				alignment = Pos.TOP_LEFT
 				stackpaneConstraints { alignment = Pos.TOP_RIGHT }
 				minWidth = Region.USE_PREF_SIZE

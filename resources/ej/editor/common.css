@@ -221,7 +221,7 @@
 .simple-list-view {
     -fx-fill-width: true;
     -fx-pref-height: -1;
-    -fx-spacing: 4.0;
+    -fx-spacing: 0.0;
     /*-fx-padding: 2.0 2.0 2.0 12.0;*/
     /*-fx-padding: 2.0 2.0 2.0 2.0;*/
 }
@@ -230,27 +230,50 @@
     -fx-padding: 0.0;
 }
 
-.stmt-ctrl-itemmenu {
+.stmt-ctrl-main .stmt-ctrl-left {
+    -fx-max-width: 32px;
+    -fx-shape: "M 0 0 z M 6 0 L 10 0 L 10 16 L 6 16 z M 32 16 z";
+    -fx-background-color: -fx-text-background-color;
+}
+
+.stmt-ctrl-right {
     -fx-pref-width: 16px;
     -fx-pref-height: 16px;
 }
 
-.stmt-ctrl-itemmenu .small-button,
-.stmt-ctrl-itemmenu .small-button .glyph-font {
+.stmt-ctrl-right .small-button,
+.stmt-ctrl-right .small-button .glyph-font {
     -fx-text-fill: -fx-body-color;
 }
 
-.stmt-ctrl-main .simple-list-view, .stmt-ctrl-main {
-    -fx-spacing: 4.0;
-}
+/*.stmt-ctrl-main .simple-list-view, .stmt-ctrl-main {
+    -fx-spacing: 0.0;
+}*/
 
 .stmt-ctrl-main {
     -fx-fill-width: true;
-    -fx-padding: 0 16 0 32;
+    -fx-border-color: #80808080;
+    -fx-border-width: 1px 0 1px 0;
 }
 
-.stmt-ctrl-main.sc-if, .stmt-ctrl-main.sc-menu, .stmt-ctrl-main.sc-switch {
-    -fx-padding: 0 0 0 32;
+.stmt-ctrl-main {
+    -fx-padding: 4 16 4 0;
+}
+
+.stmt-ctrl-main.sc-if,
+.stmt-ctrl-main.sc-menu,
+.stmt-ctrl-main.sc-switch {
+    -fx-padding: 4 0 0 0;
+}
+
+.stmt-ctrl-main .stmt-ctrl-main {
+    -fx-padding: 4 16 4 32;
+}
+
+.stmt-ctrl-main .stmt-ctrl-main.sc-if,
+.stmt-ctrl-main .stmt-ctrl-main.sc-menu,
+.stmt-ctrl-main .stmt-ctrl-main.sc-switch {
+    -fx-padding: 4 0 0 32;
 }
 
 .stmt-ctrl-main Text {
