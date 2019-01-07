@@ -22,7 +22,7 @@ import java.util.*
  * Confidential until published on GitHub
  */
 
-const val VERSION = "v0.2.1"
+const val VERSION = "v0.2.2"
 
 abstract class AModView(title: String? = "EJEd $VERSION") : View(title) {
 	val controller: EditorController by inject(DefaultScope)
