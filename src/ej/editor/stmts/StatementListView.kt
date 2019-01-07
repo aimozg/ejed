@@ -15,6 +15,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.geometry.Side
+import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.Menu
@@ -152,94 +153,105 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	init {
 		cellWrappersOrientation = Orientation.HORIZONTAL
 		graphicFactory { cell, stmt ->
-			cell.setOnDragOver { event ->
-				if (event.gestureSource != cell) {
-					if (event.dragboard.hasStatement()) {
-						if (parents().none {
-									it.hasClass("dragged")
-								}) {
-							event.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
-							for (p in parents()) {
-								p.removeClass(Styles.dragover, Styles.dragoverFromBottom, Styles.dragoverFromTop)
-							}
-						}
-					}
-				}
-				event.consume()
+			configureDragAndDrop(cell)
+			(stmt.createControl() ?: Label("not supported ${stmt.javaClass.simpleName}").apply {
+				// contextMenu = cellMenu
+				textAlignment = TextAlignment.LEFT
+			}).apply {
+				hgrow = Priority.ALWAYS
 			}
-			cell.setOnDragEntered { event ->
-				if (event.gestureSource != cell && event.dragboard.hasContent(DATAFORMAT_XSTATEMENT)) {
-					cell.addClass(Styles.dragover)
-					if (event.y < cell.height / 2) {
-						cell.addClass(Styles.dragoverFromTop)
-						wasDragFromTop = true
-					} else {
-						cell.addClass(Styles.dragoverFromBottom)
-						wasDragFromTop = false
-					}
-				}
-				event.consume()
-			}
-			cell.setOnDragExited { event ->
-				cell.removeClass(Styles.dragover, Styles.dragoverFromTop, Styles.dragoverFromBottom)
-				event.consume()
-			}
-			cell.setOnDragDropped { event ->
-				val rawStmt = event.dragboard.getContent(DATAFORMAT_XSTATEMENT) as? ByteArray
-				if (rawStmt != null) {
-					val xobj = XmllikeObject.fromBytes(rawStmt)
-					val content = XStatementFromXmlObject(xobj)
-//					println("dropped $content generated from $xobj onto $stmt (from top = $wasDragFromTop)")
-					val tgti = if (wasDragFromTop) cell.index else (cell.index + 1)
-					cell.list.items.add(tgti, content)
-					event.isDropCompleted = true
-				} else {
-					event.isDropCompleted = false
-				}
-				event.consume()
-			}
-			HBox().apply {
+		}
+		cellDecorator { cell, box, graphic ->
+			box += StackPane().apply {
+				addClass("stmt-ctrl-itemmenu")
 				alignment = Pos.TOP_LEFT
-				children += StackPane().apply {
-					addClass("stmt-ctrl-itemmenu")
-					minWidth = Region.USE_PREF_SIZE
-					minHeight = Region.USE_PREF_SIZE
-					maxWidth = Region.USE_PREF_SIZE
-					maxHeight = Region.USE_PREF_SIZE
-					button().apply {
-						addClass("small-button")
-						graphic = fontAwesome.create(FontAwesome.Glyph.REORDER)
-						isFocusTraversable = false
-						setOnDragDetected { event ->
-							val db = cell.startDragAndDrop(TransferMode.MOVE)
-							val content = stmt.toXmlObject()
-//							println("Dragging $content")
-							db.setContent(mapOf(DATAFORMAT_XSTATEMENT to content.toBytes()))
-							cell.addClass(Styles.dragged)
-							event.consume()
-							cell.setOnDragDone { done ->
-								cell.removeClass(Styles.dragged)
-								if (done.isAccepted) {
-									items.remove(cell.item)
-								}
-								done.consume()
-							}
-						}
-					}
-				}
-				children += (stmt.createControl() ?: Label("not supported ${stmt.javaClass.simpleName}").apply {
-					// contextMenu = cellMenu
-					textAlignment = TextAlignment.LEFT
-				}).apply {
-					hgrow = Priority.ALWAYS
+				minWidth = Region.USE_PREF_SIZE
+				minHeight = Region.USE_PREF_SIZE
+				maxWidth = Region.USE_PREF_SIZE
+				maxHeight = Region.USE_PREF_SIZE
+				button().apply {
+					addClass("small-button")
+					this.graphic = fontAwesome.create(FontAwesome.Glyph.REORDER)
+					isFocusTraversable = false
+					makeDragAndDropStarter(this, cell, cell.item)
 				}
 			}
+			box += graphic
 		}
 		
 		cells.onChange {
 			while (it.next()) {
 				for (cell in it.addedSubList) cell.presentWhen(expandedProperty)
 			}
+		}
+	}
+	
+	private fun makeDragAndDropStarter(btn: Node,
+	                                   cell: SimpleListCell<XStatement>,
+	                                   stmt: XStatement) {
+		btn.setOnDragDetected { event ->
+			val db = cell.startDragAndDrop(TransferMode.MOVE)
+			val content = stmt.toXmlObject()
+			//							println("Dragging $content")
+			db.setContent(mapOf(DATAFORMAT_XSTATEMENT to content.toBytes()))
+			cell.addClass(Styles.dragged)
+			event.consume()
+			cell.setOnDragDone { done ->
+				cell.removeClass(Styles.dragged)
+				if (done.isAccepted) {
+					items.remove(cell.item)
+				}
+				done.consume()
+			}
+		}
+	}
+	
+	private fun configureDragAndDrop(cell: SimpleListCell<XStatement>) {
+		cell.setOnDragOver { event ->
+			if (event.gestureSource != cell) {
+				if (event.dragboard.hasStatement()) {
+					if (parents().none {
+								it.hasClass("dragged")
+							}) {
+						event.acceptTransferModes(*TransferMode.COPY_OR_MOVE)
+						for (p in parents()) {
+							p.removeClass(Styles.dragover, Styles.dragoverFromBottom, Styles.dragoverFromTop)
+						}
+					}
+				}
+			}
+			event.consume()
+		}
+		cell.setOnDragEntered { event ->
+			if (event.gestureSource != cell && event.dragboard.hasContent(DATAFORMAT_XSTATEMENT)) {
+				cell.addClass(Styles.dragover)
+				if (event.y < cell.height / 2) {
+					cell.addClass(Styles.dragoverFromTop)
+					wasDragFromTop = true
+				} else {
+					cell.addClass(Styles.dragoverFromBottom)
+					wasDragFromTop = false
+				}
+			}
+			event.consume()
+		}
+		cell.setOnDragExited { event ->
+			cell.removeClass(Styles.dragover, Styles.dragoverFromTop, Styles.dragoverFromBottom)
+			event.consume()
+		}
+		cell.setOnDragDropped { event ->
+			val rawStmt = event.dragboard.getContent(DATAFORMAT_XSTATEMENT) as? ByteArray
+			if (rawStmt != null) {
+				val xobj = XmllikeObject.fromBytes(rawStmt)
+				val content = XStatementFromXmlObject(xobj)
+				//					println("dropped $content generated from $xobj onto $stmt (from top = $wasDragFromTop)")
+				val tgti = if (wasDragFromTop) cell.index else (cell.index + 1)
+				cell.list.items.add(tgti, content)
+				event.isDropCompleted = true
+			} else {
+				event.isDropCompleted = false
+			}
+			event.consume()
 		}
 	}
 	

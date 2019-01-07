@@ -9,6 +9,7 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Skin
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tornadofx.*
@@ -22,14 +23,14 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 	val beforeListProperty = SimpleObjectProperty<Node?>()
 	var beforeList: Node? by beforeListProperty
 	
-	var nodeBeforeCell: (T) -> Node? = { null }
-	fun beforeCell(bc: (T) -> Node?) {
-		nodeBeforeCell = bc
+	var decorateCell: (cell: DecoratedListCell<T>, box: Pane, graphic: Node) -> Unit = { cell, box, graphic ->
+		graphic.apply {
+			hgrow = Priority.ALWAYS
+		}.attachTo(box)
 	}
 	
-	var nodeAfterCell: (T) -> Node? = { null }
-	fun afterCell(bc: (T) -> Node?) {
-		nodeAfterCell = bc
+	fun cellDecorator(cd: (cell: DecoratedListCell<T>, box: Pane, graphic: Node) -> Unit) {
+		decorateCell = cd
 	}
 	
 	override fun cellFactory(item: T): SimpleListCell<T> {
@@ -53,19 +54,15 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 			val box = when (list.cellWrappersOrientation) {
 				Orientation.HORIZONTAL -> HBox().apply { alignment = Pos.TOP_LEFT }
 				Orientation.VERTICAL -> VBox().apply { alignment = Pos.TOP_LEFT }
+			}.apply {
+				vgrow = Priority.SOMETIMES
+				hgrow = Priority.ALWAYS
+				val graphic = list.graphicFactory(this@DecoratedListCell)
+				list.decorateCell(this@DecoratedListCell, this, graphic)
 			}
 			return SingleElementSkinBase<DecoratedListCell<T>>(
 					this,
-					box.apply {
-				vgrow = Priority.SOMETIMES
-						hgrow = Priority.ALWAYS
-				list.nodeBeforeCell(item)?.attachTo(this)
-						list.graphicFactory(this@DecoratedListCell).attachTo(this).apply {
-							hgrow = Priority.ALWAYS
-						}
-				list.nodeAfterCell(item)?.attachTo(this)
-//				nodeBindingNonNull(itemProperty) { list.graphicFactory(this@DecoratedListCell) }
-			})
+					box)
 		}
 	}
 }
