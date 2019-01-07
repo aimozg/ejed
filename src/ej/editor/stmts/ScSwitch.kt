@@ -12,6 +12,7 @@ import tornadofx.*
 class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
 	override fun createDefaultSkin() = SwitchSkin()
 	inner class SwitchSkin : ScSkin<XlSwitch, ScSwitch>(this, {
+		addClass("sc-switch")
 		addClass(Styles.xlogic)
 		scFlow(Styles.xlogic) {
 			text("Choose one of options")

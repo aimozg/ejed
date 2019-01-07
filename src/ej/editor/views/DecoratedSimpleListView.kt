@@ -1,13 +1,9 @@
 package ej.editor.views
 
 import ej.editor.utils.SimpleListView
-import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.Node
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
-import javafx.scene.layout.VBox
+import javafx.scene.layout.*
 import tornadofx.*
 
 /*
@@ -30,10 +26,7 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 	}
 	
 	override fun addCellGraphic(cell: SimpleListCell<T>, graphic: Node) {
-		val box = when (cellWrappersOrientation) {
-			Orientation.HORIZONTAL -> HBox().apply { alignment = Pos.TOP_LEFT }
-			Orientation.VERTICAL -> VBox().apply { alignment = Pos.TOP_LEFT }
-		}.apply {
+		val box = cellWrapper().apply {
 			vgrow = Priority.SOMETIMES
 			hgrow = Priority.ALWAYS
 		}
@@ -41,5 +34,11 @@ open class DecoratedSimpleListView<T : Any>() : SimpleListView<T>() {
 		decorateCell(cell, box, graphic)
 	}
 	
-	var cellWrappersOrientation = Orientation.VERTICAL
+	var cellWrapper: () -> Pane = { VBox() }
+	
+	companion object {
+		val CELLWRAPPER_HBOX: () -> Pane = { HBox().apply { alignment = Pos.TOP_LEFT } }
+		val CELLWRAPPER_VBOX: () -> Pane = { VBox().apply { alignment = Pos.TOP_LEFT } }
+		val CELLWRAPPER_STACK: () -> Pane = { StackPane().apply { alignment = Pos.TOP_LEFT } }
+	}
 }

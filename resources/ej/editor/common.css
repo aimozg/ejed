@@ -181,6 +181,9 @@
 
 .dragged {
     -fx-opacity: 0.5;
+    -fx-border-color: #f00;
+    -fx-border-width: 2;
+    -fx-background-color: #ff000080;
 }
 
 .dragover.dragover-from-top {
@@ -243,6 +246,11 @@
 
 .stmt-ctrl-main {
     -fx-fill-width: true;
+    -fx-padding: 0 16 0 32;
+}
+
+.stmt-ctrl-main.sc-if, .stmt-ctrl-main.sc-menu, .stmt-ctrl-main.sc-switch {
+    -fx-padding: 0 0 0 32;
 }
 
 .stmt-ctrl-main Text {
@@ -258,11 +266,14 @@ TextFlow.xlogic, TextFlow.xcommand, TextFlow.xcomment, TextFlow.xnext {
     -fx-padding: 4 0 0 0;
 }
 
+/*
 .sc-if-then > .simple-list-cell,
 .sc-if-elseif > .simple-list-cell,
 .sc-if-else > .simple-list-cell {
-    -fx-padding: 0 0 0 16;
+    -fx-padding: 0 0 0 32;
 }
+*/
+
 
 .xcomment .text-input {
     -fx-background-color: -fx-control-inner-background;

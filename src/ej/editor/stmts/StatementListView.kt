@@ -12,7 +12,6 @@ import ej.utils.addAfter
 import ej.utils.addBefore
 import ej.xml.XmllikeObject
 import javafx.beans.property.SimpleBooleanProperty
-import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.Node
@@ -151,7 +150,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	}
 	
 	init {
-		cellWrappersOrientation = Orientation.HORIZONTAL
+		cellWrapper = CELLWRAPPER_STACK
 		graphicFactory { stmt ->
 			(stmt.createControl() ?: Label("not supported ${stmt.javaClass.simpleName}").apply {
 				// contextMenu = cellMenu
@@ -166,6 +165,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 			box += StackPane().apply {
 				addClass("stmt-ctrl-itemmenu")
 				alignment = Pos.TOP_LEFT
+				stackpaneConstraints { alignment = Pos.TOP_RIGHT }
 				minWidth = Region.USE_PREF_SIZE
 				minHeight = Region.USE_PREF_SIZE
 				maxWidth = Region.USE_PREF_SIZE
