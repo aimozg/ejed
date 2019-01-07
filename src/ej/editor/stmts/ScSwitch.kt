@@ -6,6 +6,7 @@ import ej.editor.utils.presentWhen
 import ej.editor.utils.stringValueToggler
 import ej.mod.XlSwitch
 import ej.mod.XlSwitchCase
+import javafx.scene.layout.HBox
 import tornadofx.*
 
 class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
@@ -21,7 +22,7 @@ class ScSwitch(stmt: XlSwitch) : StatementControl<XlSwitch>(stmt) {
 		}
 		simpleList(stmt.branches) { stmt ->
 			stmtList(stmt.content) {
-				beforeList = hbox {
+				contentBeforeList += HBox().apply {
 					children += listTopMenu
 					scFlow(Styles.xlogic) {
 						text("Branch when: ")

@@ -2,6 +2,7 @@ package ej.editor.stmts
 
 import ej.editor.Styles
 import ej.mod.XsMenu
+import javafx.scene.layout.HBox
 import tornadofx.*
 
 class ScMenu(stmt: XsMenu) : StatementControl<XsMenu>(stmt) {
@@ -9,7 +10,7 @@ class ScMenu(stmt: XsMenu) : StatementControl<XsMenu>(stmt) {
 	inner class MenuSkin : ScSkin<XsMenu, ScMenu>(this, {
 		addClass(Styles.xcommand)
 		stmtList(stmt.content) {
-			beforeList = hbox {
+			contentBeforeList += HBox().apply {
 				children += listTopMenu
 				scFlow(Styles.xcommand) {
 					text("Menu:")

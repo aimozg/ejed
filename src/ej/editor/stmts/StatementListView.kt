@@ -146,14 +146,13 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	}
 	
 	private var wasDragFromTop = false
-	override fun cellFactory(item: XStatement): DecoratedListCell<XStatement> {
+	override fun createCellInstance(item: XStatement): SimpleListCell<XStatement> {
 		return StatementCell(this, item)
 	}
 	
 	init {
 		cellWrappersOrientation = Orientation.HORIZONTAL
-		graphicFactory { cell, stmt ->
-			configureDragAndDrop(cell)
+		graphicFactory { stmt ->
 			(stmt.createControl() ?: Label("not supported ${stmt.javaClass.simpleName}").apply {
 				// contextMenu = cellMenu
 				textAlignment = TextAlignment.LEFT
@@ -162,6 +161,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 			}
 		}
 		cellDecorator { cell, box, graphic ->
+			configureDragAndDrop(cell)
+			box += graphic
 			box += StackPane().apply {
 				addClass("stmt-ctrl-itemmenu")
 				alignment = Pos.TOP_LEFT
@@ -176,7 +177,6 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 					makeDragAndDropStarter(this, cell, cell.item)
 				}
 			}
-			box += graphic
 		}
 		
 		cells.onChange {
@@ -256,7 +256,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	}
 	
 	class StatementCell(list: StatementListView, stmt: XStatement) :
-			DecoratedListCell<XStatement>(list, stmt),
+			SimpleListCell<XStatement>(list, stmt),
 			ContextMenuContainer {
 		override val menus by lazy {
 			listOf(Menu("Statement").apply {

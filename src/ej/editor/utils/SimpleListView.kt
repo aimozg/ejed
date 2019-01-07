@@ -10,11 +10,10 @@ import javafx.geometry.HPos
 import javafx.geometry.Orientation
 import javafx.geometry.VPos
 import javafx.scene.Node
-import javafx.scene.control.Control
 import javafx.scene.control.Label
-import javafx.scene.control.Skin
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import javafx.scene.layout.StackPane
 import javafx.scene.text.TextAlignment
 import tornadofx.*
 
@@ -76,28 +75,29 @@ open class SimpleListView<T : Any> : Region() {
 		requestLayout()
 	}
 	
-	protected open fun cellFactory(item: T): SimpleListCell<T> {
+	protected open fun createCellInstance(item: T): SimpleListCell<T> {
 		return SimpleListCell(this, item)
 	}
 	
-	protected fun createCell(item: T): SimpleListCell<T> = cellFactory(item).also { cell ->
+	protected open fun addCellGraphic(cell: SimpleListCell<T>, graphic: Node) {
+		cell.children += graphic
+	}
+	
+	protected fun createCell(item: T): SimpleListCell<T> = createCellInstance(item).also { cell ->
+		addCellGraphic(cell, graphicFactory(cell.item))
 		cell.managedProperty().addListener { _ ->
 			requestLayout()
 		}
 	}
 	
-	var graphicFactory: (SimpleListCell<T>) -> Node = { cell ->
-		Label(cell.item.toString()).apply {
+	var graphicFactory: (T) -> Node = { item ->
+		Label(item.toString()).apply {
 			textAlignment = TextAlignment.LEFT
 		}
 	}
 	
 	fun graphicFactory(gf: (T) -> Node) {
-		graphicFactory = { gf(it.item) }
-	}
-	
-	fun graphicFactory(gf: (SimpleListCell<T>, T) -> Node) {
-		graphicFactory = { gf(it, it.item) }
+		graphicFactory = { gf(it) }
 	}
 	
 	override fun getContentBias(): Orientation {
@@ -237,30 +237,18 @@ open class SimpleListView<T : Any> : Region() {
 		requestLayout()
 	}
 	
-	open class SimpleListCell<T : Any>(open val list: SimpleListView<T>, val item: T) : Control() {
-		//		val itemProperty = SimpleObjectProperty<T>(item)
-//		val item: T by itemProperty
+	open class SimpleListCell<T : Any>(val list: SimpleListView<T>, val item: T) : StackPane() {
 		val index get() = list.items.indexOf(item)
 		
 		init {
 			isFocusTraversable = false
 			addClass("simple-list-cell")
+			hgrow = Priority.ALWAYS
 		}
 		
 		override fun getContentBias(): Orientation {
 			return Orientation.HORIZONTAL
 		}
-		
-		override fun createDefaultSkin(): Skin<out SimpleListCell<T>> =
-				SingleElementSkinBase(
-						this,
-						list.graphicFactory(this)
-						/*NodeBinding(
-								itemProperty.objectBinding {
-									list.graphicFactory(this)
-								}
-						)*/
-				)
 	}
 	
 	companion object {

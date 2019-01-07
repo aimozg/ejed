@@ -13,6 +13,7 @@ import ej.utils.addBefore
 import ej.utils.crop
 import javafx.scene.control.Menu
 import javafx.scene.input.KeyCombination
+import javafx.scene.layout.HBox
 import tornadofx.*
 
 /*
@@ -49,7 +50,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 		addClass(Styles.xlogic)
 		stmtList(stmt.thenGroup.content) {
 			addClass("sc-if-then")
-			beforeList = hbox {
+			contentBeforeList += HBox().apply {
 				children += listTopMenu
 				scFlow(Styles.xlogic) {
 					text("If ")
@@ -62,7 +63,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 		simpleList(stmt.elseifGroups) { elseif ->
 			stmtList(elseif.content) {
 				addClass("sc-if-elseif")
-				beforeList = hbox {
+				contentBeforeList += HBox().apply {
 					children += listTopMenu
 					scFlow(Styles.xlogic) {
 						text("Else if ")
@@ -103,7 +104,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 			it?.content ?: emptyList<XStatement>().observableUnique()
 		}) {
 			addClass("sc-if-else")
-			beforeList = hbox {
+			contentBeforeList += HBox().apply {
 				children += listTopMenu
 				scFlow(Styles.xlogic) {
 					text("Else") {
