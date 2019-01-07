@@ -12,7 +12,7 @@ class ScMenu(stmt: XsMenu) : StatementControl<XsMenu>(stmt) {
 		addClass(Styles.xcommand)
 		stmtList(stmt.content) {
 			contentBeforeList += HBox().apply {
-				children += listTopMenu
+				children += expandButton
 				scFlow(Styles.xcommand) {
 					text("Menu:")
 				}

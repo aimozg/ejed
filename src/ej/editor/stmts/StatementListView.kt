@@ -162,10 +162,32 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 		}
 		cellDecorator { cell, box, graphic ->
 			configureDragAndDrop(cell)
+			box += graphic
 			box += StackPane().apply {
 				addClass("stmt-ctrl-left")
+				button().apply {
+					addClass("smaller-button", "stmt-ctrl-insbefore")
+					stackpaneConstraints { alignment = Pos.TOP_CENTER }
+					this.graphic = fontAwesome.create(FontAwesome.Glyph.PLUS).size(8.0)
+					isFocusTraversable = false
+					contextmenu { }
+					action {
+						contextMenu.items.setAll((cell as StatementCell).menuInsertBefore.items)
+						contextMenu.show(this, Side.LEFT, 4.0, 4.0)
+					}
+				}
+				button().apply {
+					addClass("smaller-button", "stmt-ctrl-insafter")
+					stackpaneConstraints { alignment = Pos.BOTTOM_CENTER }
+					this.graphic = fontAwesome.create(FontAwesome.Glyph.PLUS).size(8.0)
+					isFocusTraversable = false
+					contextmenu { }
+					action {
+						contextMenu.items.setAll((cell as StatementCell).menuInsertAfter.items)
+						contextMenu.show(this, Side.LEFT, 4.0, 4.0);
+					}
+				}
 			}
-			box += graphic
 			box += StackPane().apply {
 				addClass("stmt-ctrl-right")
 				alignment = Pos.TOP_LEFT
@@ -262,6 +284,32 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	class StatementCell(list: StatementListView, stmt: XStatement) :
 			SimpleListCell<XStatement>(list, stmt),
 			ContextMenuContainer {
+		val menuInsertAfter by lazy {
+			Menu("Insert _After").apply {
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name) {
+						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+" + e.hotkey)
+						action {
+							list.insertAfter(stmt, e.factory(), true)
+						}
+					}
+				}
+			}
+		}
+		val menuInsertBefore by lazy {
+			Menu("Insert _Before").apply {
+				for (e in StatementMetadata.entries) {
+					if (e == null) separator()
+					else item(e.name) {
+						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+Shift+" + e.hotkey)
+						action {
+							list.insertBefore(stmt, e.factory(), true)
+						}
+					}
+				}
+			}
+		}
 		override val menus by lazy {
 			listOf(Menu("Statement").apply {
 				item("Delete", "Shortcut+Delete") {
@@ -269,28 +317,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 						list.deleteStmt(stmt)
 					}
 				}
-				menu("Insert _After").apply {
-					for (e in StatementMetadata.entries) {
-						if (e == null) separator()
-						else item(e.name) {
-							if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+" + e.hotkey)
-							action {
-								list.insertAfter(stmt, e.factory(), true)
-							}
-						}
-					}
-				}
-				menu("Insert _Before").apply {
-					for (e in StatementMetadata.entries) {
-						if (e == null) separator()
-						else item(e.name) {
-							if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+Shift+" + e.hotkey)
-							action {
-								list.insertBefore(stmt, e.factory(), true)
-							}
-						}
-					}
-				}
+				this += menuInsertAfter
+				this += menuInsertBefore
 			})
 		}
 	}

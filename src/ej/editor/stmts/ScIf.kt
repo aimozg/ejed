@@ -51,7 +51,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 		stmtList(stmt.thenGroup.content) {
 			addClass("sc-if-then")
 			contentBeforeList += HBox().apply {
-				children += listTopMenu
+				children += expandButton
 				scFlow(Styles.xlogic) {
 					text("If ")
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
@@ -64,7 +64,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 			stmtList(elseif.content) {
 				addClass("sc-if-elseif")
 				contentBeforeList += HBox().apply {
-					children += listTopMenu
+					children += expandButton
 					scFlow(Styles.xlogic) {
 						text("Else if ")
 						valueLink("Condition", elseif.testProperty.toBuilder(), BoolExprChooser, setter = {
@@ -105,7 +105,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 		}) {
 			addClass("sc-if-else")
 			contentBeforeList += HBox().apply {
-				children += listTopMenu
+				children += expandButton
 				scFlow(Styles.xlogic) {
 					text("Else") {
 						addClass(Styles.xlogic)

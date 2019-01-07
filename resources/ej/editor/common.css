@@ -38,7 +38,8 @@
 .trigger-editor .fieldset {
     -fx-padding: 0;
 }
-.small-button {
+
+.small-button, .smaller-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
@@ -52,18 +53,29 @@
     -fx-font-size: 0.8em;
     /*-fx-focus-traversable: false;*/
 }
-.small-button:hover {
+
+.small-button:hover, .smaller-button:hover {
     -fx-background-color: #d3d3d3;
 }
-.small-button:focused {
+
+.small-button:focused, .smaller-button:focused {
     -fx-background-color: #d3d3d3;
 }
-.small-button:armed {
+
+.small-button:armed, .smaller-button:armed {
     -fx-background-color: #a9a9a9;
 }
 .small-button-space {
     -fx-min-width: 16px;
     -fx-min-height: 16px;
+}
+
+.smaller-button {
+    -fx-min-width: 8px;
+    -fx-max-width: 8px;
+    -fx-min-height: 8px;
+    -fx-max-height: 8px;
+    -fx-font-size: 8px;
 }
 .toggle-switch.nogap {
     -fx-padding: 0 1.333333em 0 0;
@@ -230,6 +242,9 @@
     -fx-padding: 0.0;
 }
 
+.stmt-ctrl-left {
+    -fx-max-width: 16px;
+}
 .stmt-ctrl-main .stmt-ctrl-left {
     -fx-max-width: 32px;
     -fx-shape: "M 0 0 z M 6 0 L 10 0 L 10 16 L 6 16 z M 32 16 z";
@@ -249,6 +264,13 @@
 /*.stmt-ctrl-main .simple-list-view, .stmt-ctrl-main {
     -fx-spacing: 0.0;
 }*/
+.stmt-ctrl-left .stmt-ctrl-insbefore, .stmt-ctrl-left .stmt-ctrl-insafter {
+    -fx-opacity: 0.0;
+}
+
+.stmt-ctrl-left:hover .stmt-ctrl-insbefore, .stmt-ctrl-left:hover .stmt-ctrl-insafter {
+    -fx-opacity: 1.0;
+}
 
 .stmt-ctrl-main {
     -fx-fill-width: true;
@@ -257,23 +279,23 @@
 }
 
 .stmt-ctrl-main {
-    -fx-padding: 4 16 4 0;
+    -fx-padding: 0 16 0 16;
 }
 
 .stmt-ctrl-main.sc-if,
 .stmt-ctrl-main.sc-menu,
 .stmt-ctrl-main.sc-switch {
-    -fx-padding: 4 0 0 0;
+    -fx-padding: 0 0 0 16;
 }
 
 .stmt-ctrl-main .stmt-ctrl-main {
-    -fx-padding: 4 16 4 32;
+    -fx-padding: 0 16 0 32;
 }
 
 .stmt-ctrl-main .stmt-ctrl-main.sc-if,
 .stmt-ctrl-main .stmt-ctrl-main.sc-menu,
 .stmt-ctrl-main .stmt-ctrl-main.sc-switch {
-    -fx-padding: 4 0 0 32;
+    -fx-padding: 0 0 0 32;
 }
 
 .stmt-ctrl-main Text {

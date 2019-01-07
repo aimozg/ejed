@@ -13,6 +13,8 @@ import org.controlsfx.glyphfont.GlyphFontRegistry
 val fontAwesome = GlyphFontRegistry.font("FontAwesome")
 
 fun boundFaGlyph(binding:ObservableValue<out String>):Glyph = fontAwesome.create(" ").apply {
-	textProperty().bind(binding)
+	binding.onChangeAndNow { newValue ->
+		text = newValue
+	}
 }
 fun FontAwesome.Glyph.node(): Glyph = fontAwesome.create(this)

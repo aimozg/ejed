@@ -38,6 +38,7 @@ abstract class StatementControl<T : XStatement>(val stmt: T) : Control() {
 	
 	init {
 		isFocusTraversable = false
+		addClass("stmt-ctrl")
 	}
 	
 	open class ScSkin<S : XStatement, C : StatementControl<S>>(control: C,
