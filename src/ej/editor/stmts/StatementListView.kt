@@ -33,7 +33,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	val expandedProperty = SimpleBooleanProperty(true)
 	var expanded by expandedProperty
 	
-	override val menus by lazy {
+	override val myContextMenus by lazy { buildMenus() }
+	override fun buildMenus() =
 		listOf(Menu("_List").apply {
 			menu("Collapse/E_xpand") {
 				action {
@@ -61,7 +62,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 				}
 			}
 		})
-	}
+
 	val expandButton: Button by lazy {
 		Button().apply {
 			addClass("small-button")
@@ -172,7 +173,7 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 					isFocusTraversable = false
 					contextmenu { }
 					action {
-						contextMenu.items.setAll((cell as StatementCell).menuInsertBefore.items)
+						contextMenu.items.setAll((cell as StatementCell).menuInsertBefore().items)
 						contextMenu.show(this, Side.LEFT, 4.0, 4.0)
 					}
 				}
@@ -183,8 +184,8 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 					isFocusTraversable = false
 					contextmenu { }
 					action {
-						contextMenu.items.setAll((cell as StatementCell).menuInsertAfter.items)
-						contextMenu.show(this, Side.LEFT, 4.0, 4.0);
+						contextMenu.items.setAll((cell as StatementCell).menuInsertAfter().items)
+						contextMenu.show(this, Side.LEFT, 4.0, 4.0)
 					}
 				}
 			}
@@ -201,6 +202,10 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 					this.graphic = fontAwesome.create(FontAwesome.Glyph.REORDER)
 					isFocusTraversable = false
 					makeDragAndDropStarter(this, cell, cell.item)
+					contextmenu {
+						items += (cell as? ContextMenuContainer)?.buildMenus() ?: emptyList()
+						items += (graphic as? ContextMenuContainer)?.buildMenus() ?: emptyList()
+					}
 				}
 			}
 		}
@@ -284,42 +289,43 @@ class StatementListView : DecoratedSimpleListView<XStatement>(), ContextMenuCont
 	class StatementCell(list: StatementListView, stmt: XStatement) :
 			SimpleListCell<XStatement>(list, stmt),
 			ContextMenuContainer {
-		val menuInsertAfter by lazy {
+		fun menuInsertAfter() =
 			Menu("Insert _After").apply {
 				for (e in StatementMetadata.entries) {
 					if (e == null) separator()
 					else item(e.name) {
 						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+" + e.hotkey)
 						action {
-							list.insertAfter(stmt, e.factory(), true)
+							(list as StatementListView).insertAfter(item, e.factory(), true)
 						}
 					}
 				}
 			}
-		}
-		val menuInsertBefore by lazy {
+		
+		fun menuInsertBefore() =
 			Menu("Insert _Before").apply {
 				for (e in StatementMetadata.entries) {
 					if (e == null) separator()
 					else item(e.name) {
 						if (e.hotkey != null) accelerator = KeyCombination.valueOf("Shortcut+Shift+" + e.hotkey)
 						action {
-							list.insertBefore(stmt, e.factory(), true)
+							(list as StatementListView).insertBefore(item, e.factory(), true)
 						}
 					}
 				}
 			}
-		}
-		override val menus by lazy {
+		
+		override val myContextMenus by lazy { buildMenus() }
+		override fun buildMenus() =
 			listOf(Menu("Statement").apply {
 				item("Delete", "Shortcut+Delete") {
 					action {
-						list.deleteStmt(stmt)
+						(list as StatementListView).deleteStmt(item)
 					}
 				}
-				this += menuInsertAfter
-				this += menuInsertBefore
+				this += menuInsertAfter()
+				this += menuInsertBefore()
 			})
-		}
+		
 	}
 }

@@ -102,6 +102,7 @@ class EditorView : AModView() {
 	
 	private val menus = HashMap<String, ArrayList<Menu>>()
 	override fun onDock() {
+		
 		val scene = currentStage?.scene ?: return
 		scene.focusOwnerProperty().addListener { _, oldValue, newValue ->
 			//			println("focusOwner -> $newValue")
@@ -140,6 +141,7 @@ class EditorView : AModView() {
 				}
 			}
 		}
+		
 		this.controller.modProperty.onChangeAndNow {
 			if (it != null) {
 				root.center = find<ModView>().root

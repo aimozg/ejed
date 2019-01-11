@@ -23,7 +23,8 @@ import tornadofx.*
 class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 	override fun createDefaultSkin() = IfSkin()
 	
-	override val menus: List<Menu> by lazy {
+	override val myContextMenus by lazy { buildMenus() }
+	override fun buildMenus() =
 		listOf(Menu("_If-Then-Else").apply {
 			item("Add Else-If") {
 				action {
@@ -43,7 +44,7 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 				enableWhen(stmt.elseGroupProperty.isNotNull)
 			}
 		})
-	}
+	
 	
 	inner class IfSkin : ScSkin<XlIf, ScIf>(this, {
 		addClass("sc-if")
@@ -57,6 +58,9 @@ class ScIf(stmt: XlIf) : StatementControl<XlIf>(stmt), ContextMenuContainer {
 					valueLink("Condition", stmt.testProperty.toBuilder(), BoolExprChooser, setter = {
 						if (it != null) stmt.testProperty.fromBuilder(it)
 					})
+				}
+				contextmenu {
+					items += this@ScIf.buildMenus()
 				}
 			}
 		}

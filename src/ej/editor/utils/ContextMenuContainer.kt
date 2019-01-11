@@ -9,8 +9,10 @@ import javafx.scene.control.Menu
  * Confidential until published on GitHub
  */
 interface ContextMenuContainer {
-	val menus: List<Menu>
+	val myContextMenus: List<Menu>
+	fun buildMenus(): List<Menu>
 }
 
 fun Node.myContextMenus() =
-		(this as? ContextMenuContainer)?.menus ?: ((this as? Control)?.skin as? ContextMenuContainer)?.menus
+		(this as? ContextMenuContainer)?.myContextMenus
+				?: ((this as? Control)?.skin as? ContextMenuContainer)?.myContextMenus

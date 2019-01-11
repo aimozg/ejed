@@ -75,7 +75,8 @@ class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 	
 	private val stmtList: StatementListView
 	private val xmlEditor: SceneXmlEditor
-	override val menus get() = stmtList.menus
+	override val myContextMenus by lazy { buildMenus() }
+	override fun buildMenus() = stmtList.buildMenus()
 	
 	init {
 		isFillWidth = true

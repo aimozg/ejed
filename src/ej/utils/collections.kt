@@ -80,3 +80,4 @@ inline fun <T> Iterable<T>.minOf(initial: Double = Double.MAX_VALUE, value: (T) 
 }
 
 fun <T> Iterable<T>.indexOfOrNull(element: T): Int? = indexOf(element).takeIf { it >= 0 }
+inline fun <T> Iterable<T>.indexOfOrNull(predicate: (T) -> Boolean): Int? = indexOfFirst(predicate).takeIf { it >= 0 }
