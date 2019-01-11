@@ -372,3 +372,8 @@ TextFlow.xlogic, TextFlow.xcommand, TextFlow.xcomment, TextFlow.xnext {
 .scene-xml-editor .text.output {
     -fx-font-family: "Lucida Fax";
 }
+
+.flash-text-editor .tag.text {
+    /*-fx-cursor: hand;*/
+    -fx-underline: true;
+}

@@ -1,6 +1,8 @@
 package ej.editor.views
 
+import ej.editor.parser.AbstractSceneParser
 import ej.editor.utils.WritableExpression
+import ej.utils.length
 import javafx.beans.property.Property
 import javafx.geometry.Orientation
 import javafx.scene.input.Clipboard
@@ -12,6 +14,8 @@ import org.fxmisc.richtext.StyledTextArea
 import org.fxmisc.richtext.TextExt
 import org.fxmisc.richtext.model.Codec
 import org.fxmisc.richtext.model.StyleSpans
+import org.fxmisc.richtext.model.StyleSpansBuilder
+import org.fxmisc.richtext.model.TwoDimensional
 import tornadofx.*
 import java.io.IOException
 import java.util.function.BiConsumer
@@ -21,7 +25,7 @@ import java.util.function.BiConsumer
  * Created by aimozg on 11.10.2018.
  * Confidential until published on GitHub
  */
-class FlashTextEditor(document: EditableFlashTextDocument) :
+class FlashTextEditor(val document: EditableFlashTextDocument) :
 		StyledTextArea<FlashParStyle, FlashSegStyle>(
 				FlashParStyle(),
 				BiConsumer<TextFlow, FlashParStyle> { t, u ->
@@ -42,6 +46,40 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 		editableTextProperty.bindBidirectional(textProperty)
 	}
 	
+	init {
+		addClass("flash-text-editor")
+		document.multiPlainChanges().subscribe { changes ->
+			val dirtyParagraphs = HashSet<Int>()
+			for (c in changes) {
+				if (c.inserted.contains('[') || c.inserted.contains(']') || c.inserted.contains('\\') || c.removed.contains(
+								'[') || c.removed.contains(']') || c.removed.contains('\\')) {
+					dirtyParagraphs += document.offsetToPosition(c.position, TwoDimensional.Bias.Forward).major
+				}
+			}
+			for (ip in dirtyParagraphs) {
+				styleTags(ip)
+			}
+		}
+	}
+	
+	private fun styleTags(row: Int) {
+		val paragraph = document.getParagraph(row)
+		if (paragraph.length() == 0) return
+		val sp = StyleSpansBuilder<FlashSegStyle>()
+		for (ss in paragraph.styledSegments) {
+			val text = ss.segment
+			val style = ss.style.copy(isTag = false)
+			var pos = 0
+			for (mr in AbstractSceneParser.REX_TAG.findAll(text)) {
+				sp.add(style, mr.range.first - pos)
+				sp.add(style.copy(isTag = true), mr.length)
+				pos = mr.range.last + 1
+			}
+			sp.add(style, text.length - pos)
+		}
+		document.setStyleSpans(row, 0, sp.create())
+	}
+	
 	val editableTextProperty = object : WritableExpression<String>() {
 		override fun doGet(): String {
 			return document.toFlashHtml()
@@ -55,6 +93,7 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 	}
 	var editableText by editableTextProperty
 	var isAutoStretch = false
+	private var loading = false
 	override fun getContentBias(): Orientation {
 		return Orientation.HORIZONTAL
 	}
@@ -85,7 +124,12 @@ class FlashTextEditor(document: EditableFlashTextDocument) :
 	}
 	
 	fun loadText(text: String) {
-		this.content.replace(0, this.content.length, FlashHtmlProcessor().parse(text))
+		try {
+			loading = true
+			this.content.replace(0, this.content.length, FlashHtmlProcessor().parse(text))
+		} finally {
+			loading = false
+		}
 	}
 	
 	init {

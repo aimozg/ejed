@@ -87,7 +87,8 @@ data class FlashSegStyle(
 		val underline: Boolean? = false,
 		val color: String? = null,
 		val size: Int? = null,
-		val face: String? = null
+		val face: String? = null,
+		val isTag: Boolean = false
 ) {
 	
 	fun clearFont() =
@@ -106,6 +107,7 @@ data class FlashSegStyle(
 			if (s.color != null) textFill = c(s.color)
 			if (s.size != null) fontSize = s.size.pt
 			if (s.face != null) fontFamily = s.face
+			t.toggleClass("tag", s.isTag)
 		}
 	}
 	
@@ -116,7 +118,8 @@ data class FlashSegStyle(
 				u.underline ?: this.underline,
 				u.color ?: this.color,
 				u.size ?: this.size,
-				u.face ?: this.face
+				u.face ?: this.face,
+				this.isTag
 		)
 	}
 	fun mergeWith(u: FlashSegStyle): Optional<FlashSegStyle> {
@@ -126,7 +129,8 @@ data class FlashSegStyle(
 				different(this.underline, u.underline) ||
 				different(this.color, u.color) ||
 				different(this.size, u.size) ||
-				different(this.face, u.face)
+				different(this.face, u.face) ||
+				different(this.isTag, u.isTag)
 		) return Optional.empty()
 		return Optional.of(FlashSegStyle(
 				this.bold ?: u.bold,
@@ -134,7 +138,8 @@ data class FlashSegStyle(
 				this.underline ?: u.underline,
 				this.color ?: u.color,
 				this.size ?: u.size,
-				this.face ?: u.face
+				this.face ?: u.face,
+				this.isTag
 		))
 	}
 	
@@ -181,7 +186,8 @@ data class FlashSegStyle(
 						(if (t.underline == true) 4 else 0) or
 						(if (t.color != null) 8 else 0) or
 						(if (t.size != null) 16 else 0) or
-						(if (t.face != null) 32 else 0)
+						(if (t.face != null) 32 else 0) or
+						(if (t.isTag) 64 else 0)
 				os.writeByte(flags)
 				if (t.color != null) os.writeUTF(t.color)
 				if (t.size != null) os.writeInt(t.size)
@@ -196,7 +202,8 @@ data class FlashSegStyle(
 				val color = if (flags.and(8) != 0) `is`.readUTF() else null
 				val size = if (flags.and(16) != 0) `is`.readInt() else null
 				val face = if (flags.and(32) != 0) `is`.readUTF() else null
-				return FlashSegStyle(bold, italic, underline, color, size, face)
+				val isTag = flags.and(64) != 0
+				return FlashSegStyle(bold, italic, underline, color, size, face, isTag)
 			}
 		}
 	}
@@ -209,6 +216,7 @@ typealias ReadOnlyFlashTextDocument = ReadOnlyStyledDocument<FlashParStyle, Stri
 typealias EditableFlashTextDocument = SimpleEditableStyledDocument<FlashParStyle, FlashSegStyle>
 typealias FlashTextDocumentBuilder = ReadOnlyStyledDocumentBuilder<FlashParStyle, String, FlashSegStyle>
 typealias FlashStyledSegment = StyledSegment<String, FlashSegStyle>
+typealias FlashParagraph = Paragraph<FlashParStyle, String, FlashSegStyle>
 
 fun ReadOnlyFlashTextDocument.editableCopy() = EditableFlashTextDocument(this)
 fun FlashTextDocument.toFlashHtml() = paragraphs.joinToString("\n") {

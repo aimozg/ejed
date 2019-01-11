@@ -156,3 +156,7 @@ TextFlow Text, VBox Text, HBox Text, Pane Text {
     -fx-text-fill: #4f8;
     -fx-font-weight: bold;
 }
+
+.flash-text-editor .tag.text {
+    -fx-fill: #89f;
+}

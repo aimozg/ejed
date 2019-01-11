@@ -13,6 +13,9 @@ private val REX_SPACEBARS = Regex("""[ \t]{2}""")
 private val REX_SPACE_BEFORE_PUNCTUATION = Regex(""" ++(?=[,.!?])""")
 
 abstract class AbstractSceneParser : AbstractParser() {
+	companion object {
+		val REX_TAG = Regex("""\[((?:[^\[\\]|\\.)*)]""")
+	}
 	abstract fun evaluateTag(tag: String): String
 	abstract fun evaluateFunction(name: String, rawArgument: String, rawContent:List<String>): String
 	abstract fun evaluateExpression(expr: String): String
