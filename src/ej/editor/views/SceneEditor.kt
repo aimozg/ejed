@@ -46,6 +46,7 @@ class SceneEditor(val mod: ModData) : VBox(), ContextMenuContainer {
 		val stmt = rootStatement
 		when (xm) {
 			true -> {
+				xmlEditor.undoManager.forgetHistory()
 				xmlEditor.replaceText("")
 				xmlEditor.replaceText(
 						stmt.content.joinToString(separator = "\n") {

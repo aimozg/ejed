@@ -64,9 +64,9 @@ internal fun String.escapeJsKeepDoubleQuote() = JS_NOSQ_ESCAPABLE_TOKENS.replace
 }
 
 
-fun String.toJsString(smart: Boolean = true): String = when {
+fun String.toJsString(smart: Boolean = true, preferSingleQuote: Boolean = false): String = when {
 	!smart -> "'" + escapeJs() + "'"
-	contains('"') -> "'" + escapeJsKeepDoubleQuote() + "'"
+	preferSingleQuote || contains('"') -> "'" + escapeJsKeepDoubleQuote() + "'"
 	else -> "\"" + escapeJsKeepSingleQuote() + "\""
 }
 

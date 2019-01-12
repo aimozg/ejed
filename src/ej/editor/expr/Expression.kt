@@ -46,16 +46,16 @@ class FloatLiteral(value:Double):ConstLiteral<Double>(value) {
 }
 class StringLiteral(value:String):ConstLiteral<String>(value) {
 	override val parts get() = emptyList<Expression>()
-	override val source get() = value.toJsString()
+	override val source get() = value.toJsString(preferSingleQuote = true)
 	override fun copy() = StringLiteral(value)
 }
 enum class BinaryOperator(val repr:String, val priority:Int, vararg val aliases:String) {
 	OR("or",10,"||"),
 	AND("and",20,"&&"),
-	LT("<",30,"lt"),
-	LTE("<=",30,"lte","le","leq"),// ≤
-	GT(">",30,"gt"),
-	GTE(">=",30,"gte","ge","geq"), // ≥
+	LT("lt", 30, "<"),
+	LTE("lte", 30, "<=", "le", "leq"),// ≤
+	GT("gt", 30, ">"),
+	GTE("gte", 30, ">=", "ge", "geq"), // ≥
 	NEQ("!=",30,"ne","neq","!=="), // ≠
 	EQ("==",30,"eq","=","==="),
 	ADD("+",40),

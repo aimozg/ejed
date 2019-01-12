@@ -152,6 +152,16 @@
         <value name="nipples" impl="'Nipples'"/>
         <value name="ovipositor" impl="'Ovi'"/>
     </enum>
+    <!-- items -->
+    <enum name="EquipmentSlot">
+        <value name="Melee Weapon" impl="'Melee Weapon'"/>
+        <value name="Ranged Weapon" impl="'Ranged Weapon'"/>
+        <value name="Armour" impl="'Armour'"/>
+        <value name="Jewelry" impl="'Jewelry'"/>
+        <value name="Shield" impl="'Shield'"/>
+        <value name="Undergarment Upper" impl="'Undergarment_Upper'"/>
+        <value name="Undergarment Lower" impl="'Undergarment_Lower'"/>
+    </enum>
     <!-- misc -->
     <enum name="HasOrNot">
         <value name="has" impl="true"/>
@@ -237,6 +247,26 @@
         <listname>Player: Sex</listname>
         <editor>
             Player's sex
+        </editor>
+    </function>
+    <!-- items -->
+    <function name="IsNaked" return="boolean">
+        <listname>Player: Is Naked</listname>
+        <editor>
+            Player is naked.
+        </editor>
+        <editor-hint>
+            No armor, lower- or upper- undergarments.
+            Jewelry, weapons, and shield do not count.
+        </editor-hint>
+    </function>
+    <function name="EquipmentEmpty" return="boolean">
+        <listname>Player: Equipment slot is empty</listname>
+        <param name="Slot" type="EquipmentSlot" default="Armour"/>
+        <editor>
+            Player's
+            <param name="Slot" type="SELECT"/>
+            equipment slot is empty.
         </editor>
     </function>
     <!-- ********
