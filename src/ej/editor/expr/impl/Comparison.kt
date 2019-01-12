@@ -2,6 +2,7 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.expr.lists.AnyExprChooser
+import ej.editor.external.FunctionDecl
 import ej.editor.utils.EnumChooser
 import javafx.scene.layout.Pane
 import tornadofx.*
@@ -33,8 +34,15 @@ data class Comparison(
 	companion object : PartialBuilderConverter<BinaryExpression> {
 		override fun tryConvert(converter: BuilderConverter, expr: BinaryExpression): Comparison? = Comparison().apply {
 			op = (Operator.byOperator(expr.op) ?: return null)
-			left = converter.convert(expr.left, ExpressionTypes.ANY)
-			right = converter.convert(expr.right, ExpressionTypes.ANY)
+			val l = converter.convert(expr.left, ExpressionTypes.ANY)
+			left = l
+			val rtype = when (l) {
+				is ExternalFunctionBuilder ->
+					(l.decl as? FunctionDecl?)?.returnTypeRaw
+							?: ExpressionTypes.ANY
+				else -> ExpressionTypes.ANY
+			}
+			right = converter.convert(expr.right, rtype)
 		}
 	}
 	
