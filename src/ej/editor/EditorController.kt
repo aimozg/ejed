@@ -6,7 +6,6 @@ import ej.as3.ast.AS3Interface
 import ej.as3.ast.AS3Var
 import ej.as3.parser.ActionScriptParser
 import ej.editor.utils.FlashToMod
-import ej.editor.utils.onChangeAndNow
 import ej.mod.ModData
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -32,19 +31,14 @@ class EditorController : Controller() {
 	val modProperty = SimpleObjectProperty<ModData>(null)
 	var mod: ModData? by modProperty
 	
-	fun loadModList() {
-		File(modDir).takeIf{it.exists() && it.isDirectory}?.let { dir ->
-			modFiles.setAll(*dir.listFiles { file -> file.isFile && file.extension == "xml" })
-		}
-	}
 	
 	fun openMod() {
 		chooseFile("Choose mod file",
 		           mode = FileChooserMode.Single,
 		           filters = MOD_FILE_FILTERS) {
-			initialDirectory = File(modDir).takeIf { it.exists() && it.isDirectory } ?: File(".")
+			initialDirectory = mod?.sourceFile?.parentFile?.takeIf { it.exists() && it.isDirectory }
+					?: File(".")
 		}.firstOrNull()?.let { file ->
-			modDir = file.parent
 			loadMod(file)
 		}
 	}
@@ -161,12 +155,6 @@ class EditorController : Controller() {
 					}
 				}
 			}
-		}
-	}
-	
-	init {
-		modDirProperty.onChangeAndNow {
-			loadModList()
 		}
 	}
 	
