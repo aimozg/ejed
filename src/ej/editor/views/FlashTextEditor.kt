@@ -51,10 +51,13 @@ class FlashTextEditor(val document: EditableFlashTextDocument) :
 		document.multiPlainChanges().subscribe { changes ->
 			val dirtyParagraphs = HashSet<Int>()
 			for (c in changes) {
-				if (c.inserted.contains('[') || c.inserted.contains(']') || c.inserted.contains('\\') || c.removed.contains(
-								'[') || c.removed.contains(']') || c.removed.contains('\\')) {
+				/*
+				if (c.inserted.contains('[') || c.inserted.contains(']') || c.inserted.contains('\\')
+						|| c.removed.contains('[') || c.removed.contains(']') || c.removed.contains('\\')) {
 					dirtyParagraphs += document.offsetToPosition(c.position, TwoDimensional.Bias.Forward).major
 				}
+				*/
+				dirtyParagraphs += document.offsetToPosition(c.position, TwoDimensional.Bias.Forward).major
 			}
 			for (ip in dirtyParagraphs) {
 				styleTags(ip)
