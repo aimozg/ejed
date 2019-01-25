@@ -342,12 +342,18 @@
         <value name="is taur" impl="'taur'"/>
         <value name="is naga" impl="'naga'"/>
         <value name="is goo" impl="'goo'"/>
-        <value name="has testicles" impl="'testicles'"/>
+
+        <value name="has beard" impl="'beard'"/>
+        <value name="has gills" impl="'gills'"/>
+        <value name="has hair" impl="'hair'"/>
         <value name="has horn(s)" impl="'horns'"/>
         <value name="has tail(s)" impl="'tails'"/>
-        <value name="has virgin vagina" impl="'virgin-vagina'"/>
+        <value name="has wings" impl="'wings'"/>
+
         <value name="has vagina" impl="'vagina'"/>
         <value name="has penis" impl="'penis'"/>
+        <value name="has testicles" impl="'testicles'"/>
+        <value name="has virgin vagina" impl="'virgin-vagina'"/>
     </enum>
     <enum name="VaginalWetness">
         <value name="DRY" impl="0"/>
