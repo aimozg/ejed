@@ -2,8 +2,13 @@ package ej.editor.expr.impl
 
 import ej.editor.expr.*
 import ej.editor.expr.lists.AnyExprChooser
+import ej.editor.expr.lists.SimpleExpressionChooser
 import ej.editor.external.FunctionDecl
+import ej.editor.external.Stdlib
 import ej.editor.utils.EnumChooser
+import ej.editor.utils.weakListenerN
+import ej.editor.utils.weakListeners
+import ej.utils.addToList
 import javafx.scene.layout.Pane
 import tornadofx.*
 
@@ -15,15 +20,37 @@ data class Comparison(
 	override fun name() = "Compare values"
 	override fun copyMe() = copy()
 	
+	private var enumMode = false
 	override fun editorBody(): Pane = defaultEditorTextFlow {
-		valueLink(::left, "Value1", AnyExprChooser)
+		val vlLeft = valueLink(::left, "Value1", AnyExprChooser)
 		text(" ")
-		valueLink(::op, "Comparison operator",
-		          EnumChooser(Operator::longName)) {
+		val vlOp = valueLink(::op, "Comparison operator",
+		                     EnumChooser(Operator::longName)) {
 			it?.shortName ?: "<Operator>"
 		}
 		text(" ")
-		valueLink(::right, "Value2", AnyExprChooser)
+		val vlRight = valueLink(::right, "Value2", AnyExprChooser)
+		fun resetEnumMode() {
+			if (enumMode) {
+				enumMode = false
+				vlOp.chooser = EnumChooser(Operator::longName)
+				vlRight.chooser = AnyExprChooser
+			}
+		}
+		weakListenerN(vlLeft.valueProperty, vlOp.valueProperty) { left, op ->
+			val enum = ((left as? ExternalFunctionBuilder)?.decl as? FunctionDecl)?.returnTypeRaw?.let {
+				Stdlib.enumByTypeName(it)
+			}
+			if (enum != null && (op == Operator.EQ || op == Operator.NEQ)) {
+				if (!enumMode) {
+					vlOp.chooser = EnumChooser(listOf(Operator.EQ, Operator.NEQ), Operator::longName)
+				}
+				enumMode = true
+				vlRight.chooser = SimpleExpressionChooser(listOf(ExternalEnumBuilder(enum)), enum.name)
+			} else {
+				resetEnumMode()
+			}
+		}.addToList(weakListeners)
 	}
 	
 	override fun text() = mktext("(", left, " ", op, " ", right, ")")
@@ -37,6 +64,8 @@ data class Comparison(
 			val l = converter.convert(expr.left, ExpressionTypes.ANY)
 			left = l
 			val rtype = when (l) {
+				is ExternalEnumBuilder ->
+					l.enumDecl.name
 				is ExternalFunctionBuilder ->
 					(l.decl as? FunctionDecl?)?.returnTypeRaw
 							?: ExpressionTypes.ANY

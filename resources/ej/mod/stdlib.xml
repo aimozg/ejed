@@ -4,6 +4,181 @@
          TESTS
          ***** -->
     <!-- body part types -->
+    <enum name="AntennaeType">
+        <value name="no" impl="'NONE'"/>
+        <value name="mantis" impl="'MANTIS'"/>
+        <value name="bee" impl="'BEE'"/>
+        <value name="cockatrice" impl="'COCKATRICE'"/>
+    </enum>
+    <enum name="ArmType">
+        <value name="human" impl="'HUMAN'"/>
+        <value name="harpy" impl="'HARPY'"/>
+        <value name="spider" impl="'SPIDER'"/>
+        <value name="mantis" impl="'MANTIS'"/>
+        <value name="bee" impl="'BEE'"/>
+        <value name="salamander" impl="'SALAMANDER'"/>
+        <value name="phoenix" impl="'PHOENIX'"/>
+        <value name="vine-covered" impl="'PLANT'"/>
+        <value name="shark" impl="'SHARK'"/>
+        <value name="gargoyle" impl="'GARGOYLE'"/>
+        <value name="wolf" impl="'WOLF'"/>
+        <value name="lion" impl="'LION'"/>
+        <value name="kitsune" impl="'KITSUNE'"/>
+        <value name="fox" impl="'FOX'"/>
+        <value name="lizard" impl="'LIZARD'"/>
+        <value name="dragon" impl="'DRAGON'"/>
+        <value name="yeti" impl="'YETI'"/>
+        <value name="orca" impl="'ORCA'"/>
+        <value name="tentacle-covered" impl="'PLANT2'"/>
+        <value name="devil" impl="'DEVIL'"/>
+        <value name="oni" impl="'ONI'"/>
+        <value name="elf" impl="'ELF'"/>
+        <value name="raiju" impl="'RAIJU'"/>
+        <value name="red-panda" impl="'RED_PANDA'"/>
+        <value name="gargoyle" impl="'GARGOYLE_2'"/>
+        <value name="cat" impl="'CAT'"/>
+        <value name="avian" impl="'AVIAN'"/>
+        <value name="gryphon" impl="'GRYPHON'"/>
+        <value name="sphinx" impl="'SPHINX'"/>
+    </enum>
+    <enum name="BeardType">
+        <value name="NORMAL" impl="'NORMAL'"/>
+        <value name="GOATEE" impl="'GOATEE'"/>
+        <value name="CLEANCUT" impl="'CLEANCUT'"/>
+        <value name="MOUNTAINMAN" impl="'MOUNTAINMAN'"/>
+    </enum>
+    <enum name="ClawType">
+        <value name="NORMAL" impl="'NORMAL'"/>
+        <value name="LIZARD" impl="'LIZARD'"/>
+        <value name="DRAGON" impl="'DRAGON'"/>
+        <value name="SALAMANDER" impl="'SALAMANDER'"/>
+    </enum>
+    <enum name="EarType">
+        <value name="HUMAN" impl="'HUMAN'"/>
+        <value name="HORSE" impl="'HORSE'"/>
+        <value name="DOG" impl="'DOG'"/>
+        <value name="COW" impl="'COW'"/>
+        <value name="ELFIN" impl="'ELFIN'"/>
+        <value name="CAT" impl="'CAT'"/>
+        <value name="LIZARD" impl="'LIZARD'"/>
+        <value name="BUNNY" impl="'BUNNY'"/>
+        <value name="KANGAROO" impl="'KANGAROO'"/>
+        <value name="FOX" impl="'FOX'"/>
+        <value name="DRAGON" impl="'DRAGON'"/>
+        <value name="RACCOON" impl="'RACCOON'"/>
+        <value name="MOUSE" impl="'MOUSE'"/>
+        <value name="FERRET" impl="'FERRET'"/>
+        <value name="PIG" impl="'PIG'"/>
+        <value name="RHINO" impl="'RHINO'"/>
+        <value name="ECHIDNA" impl="'ECHIDNA'"/>
+        <value name="DEER" impl="'DEER'"/>
+        <value name="WOLF" impl="'WOLF'"/>
+        <value name="LION" impl="'LION'"/>
+        <value name="YETI" impl="'YETI'"/>
+        <value name="ORCA" impl="'ORCA'"/>
+        <value name="SNAKE" impl="'SNAKE'"/>
+        <value name="GOAT" impl="'GOAT'"/>
+        <value name="ONI" impl="'ONI'"/>
+        <value name="ELVEN" impl="'ELVEN'"/>
+        <value name="WEASEL" impl="'WEASEL'"/>
+        <value name="BAT" impl="'BAT'"/>
+        <value name="VAMPIRE" impl="'VAMPIRE'"/>
+        <value name="RED_PANDA" impl="'RED_PANDA'"/>
+        <value name="AVIAN" impl="'AVIAN'"/>
+        <value name="GRYPHON" impl="'GRYPHON'"/>
+    </enum>
+    <enum name="EyeType">
+        <value name="HUMAN" impl="'HUMAN'"/>
+        <value name="FOUR_SPIDER_EYES" impl="'FOUR_SPIDER_EYES'"/>
+        <value name="BLACK_EYES_SAND_TRAP" impl="'BLACK_EYES_SAND_TRAP'"/>
+        <value name="SLITS" impl="'SLITS'"/>
+        <value name="FENRIR" impl="'FENRIR'"/>
+        <value name="REPTILIAN" impl="'REPTILIAN'"/>
+        <value name="SNAKE" impl="'SNAKE'"/>
+        <value name="DRAGON" impl="'DRAGON'"/>
+        <value name="DEVIL" impl="'DEVIL'"/>
+        <value name="ONI" impl="'ONI'"/>
+        <value name="ELF" impl="'ELF'"/>
+        <value name="RAIJU" impl="'RAIJU'"/>
+        <value name="GEMSTONES" impl="'GEMSTONES'"/>
+        <value name="FERAL" impl="'FERAL'"/>
+        <value name="GRYPHON" impl="'GRYPHON'"/>
+    </enum>
+    <enum name="FaceType">
+        <value name="HUMAN" impl="'HUMAN'"/>
+        <value name="HORSE" impl="'HORSE'"/>
+        <value name="DOG" impl="'DOG'"/>
+        <value name="COW_MINOTAUR" impl="'COW_MINOTAUR'"/>
+        <value name="SHARK_TEETH" impl="'SHARK_TEETH'"/>
+        <value name="SNAKE_FANGS" impl="'SNAKE_FANGS'"/>
+        <value name="CAT" impl="'CAT'"/>
+        <value name="LIZARD" impl="'LIZARD'"/>
+        <value name="BUNNY" impl="'BUNNY'"/>
+        <value name="KANGAROO" impl="'KANGAROO'"/>
+        <value name="SPIDER_FANGS" impl="'SPIDER_FANGS'"/>
+        <value name="FOX" impl="'FOX'"/>
+        <value name="DRAGON" impl="'DRAGON'"/>
+        <value name="RACCOON_MASK" impl="'RACCOON_MASK'"/>
+        <value name="RACCOON" impl="'RACCOON'"/>
+        <value name="BUCKTEETH" impl="'BUCKTEETH'"/>
+        <value name="MOUSE" impl="'MOUSE'"/>
+        <value name="FERRET_MASK" impl="'FERRET_MASK'"/>
+        <value name="FERRET" impl="'FERRET'"/>
+        <value name="PIG" impl="'PIG'"/>
+        <value name="BOAR" impl="'BOAR'"/>
+        <value name="RHINO" impl="'RHINO'"/>
+        <value name="ECHIDNA" impl="'ECHIDNA'"/>
+        <value name="DEER" impl="'DEER'"/>
+        <value name="WOLF" impl="'WOLF'"/>
+        <value name="SHARPTEETH" impl="'SHARPTEETH'"/>
+        <value name="YETI_FANGS" impl="'YETI_FANGS'"/>
+        <value name="ORCA" impl="'ORCA'"/>
+        <value name="PLANT_DRAGON" impl="'PLANT_DRAGON'"/>
+        <value name="VAMPIRE" impl="'VAMPIRE'"/>
+        <value name="BUCKTOOTH" impl="'BUCKTOOTH'"/>
+        <value name="JABBERWOCKY" impl="'JABBERWOCKY'"/>
+        <value name="RED_PANDA" impl="'RED_PANDA'"/>
+        <value name="CHESHIRE" impl="'CHESHIRE'"/>
+        <value name="CHESHIRE_SMILE" impl="'CHESHIRE_SMILE'"/>
+        <value name="AVIAN" impl="'AVIAN'"/>
+    </enum>
+    <enum name="GillType">
+        <value name="NONE" impl="'NONE'"/>
+        <value name="ANEMONE" impl="'ANEMONE'"/>
+        <value name="FISH" impl="'FISH'"/>
+        <value name="GILLS_IN_TENTACLE_LEGS" impl="'GILLS_IN_TENTACLE_LEGS'"/>
+    </enum>
+    <enum name="HairType">
+        <value name="NORMAL" impl="'NORMAL'"/>
+        <value name="FEATHER" impl="'FEATHER'"/>
+        <value name="GHOST" impl="'GHOST'"/>
+        <value name="GOO" impl="'GOO'"/>
+        <value name="ANEMONE" impl="'ANEMONE'"/>
+        <value name="QUILL" impl="'QUILL'"/>
+        <value name="GORGON" impl="'GORGON'"/>
+        <value name="LEAF" impl="'LEAF'"/>
+        <value name="FLUFFY" impl="'FLUFFY'"/>
+        <value name="GRASS" impl="'GRASS'"/>
+        <value name="SILKEN" impl="'SILKEN'"/>
+        <value name="STORM" impl="'STORM'"/>
+    </enum>
+    <enum name="HornType">
+        <value name="NONE" impl="'NONE'"/>
+        <value name="DEMON" impl="'DEMON'"/>
+        <value name="COW_MINOTAUR" impl="'COW_MINOTAUR'"/>
+        <value name="DRACONIC_X2" impl="'DRACONIC_X2'"/>
+        <value name="DRACONIC_X4_12_INCH_LONG" impl="'DRACONIC_X4_12_INCH_LONG'"/>
+        <value name="ANTLERS" impl="'ANTLERS'"/>
+        <value name="GOAT" impl="'GOAT'"/>
+        <value name="UNICORN" impl="'UNICORN'"/>
+        <value name="RHINO" impl="'RHINO'"/>
+        <value name="OAK" impl="'OAK'"/>
+        <value name="GARGOYLE" impl="'GARGOYLE'"/>
+        <value name="ORCHID" impl="'ORCHID'"/>
+        <value name="ONI_X2" impl="'ONI_X2'"/>
+        <value name="ONI" impl="'ONI'"/>
+        <value name="BICORN" impl="'BICORN'"/>
+    </enum>
     <enum name="LegType">
         <value name="human" impl="'HUMAN'"/>
         <value name="hoofed" impl="'HOOFED'"/>
@@ -46,6 +221,98 @@
         <value name="gargoyle" impl="'GARGOYLE_2'"/>
         <value name="avian" impl="'AVIAN'"/>
         <value name="gryphon" impl="'GRYPHON'"/>
+    </enum>
+    <enum name="RearBodyType">
+        <value name="NONE" impl="'NONE'"/>
+        <value name="DRACONIC_MANE" impl="'DRACONIC_MANE'"/>
+        <value name="DRACONIC_SPIKES" impl="'DRACONIC_SPIKES'"/>
+        <value name="FENRIR_ICE_SPIKES" impl="'FENRIR_ICE_SPIKES'"/>
+        <value name="LION_MANE" impl="'LION_MANE'"/>
+        <value name="BEHEMOTH" impl="'BEHEMOTH'"/>
+        <value name="SHARK_FIN" impl="'SHARK_FIN'"/>
+        <value name="ORCA_BLOWHOLE" impl="'ORCA_BLOWHOLE'"/>
+        <value name="RAIJU_MANE" impl="'RAIJU_MANE'"/>
+        <value name="BAT_COLLAR" impl="'BAT_COLLAR'"/>
+        <value name="WOLF_COLLAR" impl="'WOLF_COLLAR'"/>
+    </enum>
+    <enum name="TailType">
+        <value name="NONE" impl="'NONE'"/>
+        <value name="HORSE" impl="'HORSE'"/>
+        <value name="DOG" impl="'DOG'"/>
+        <value name="DEMONIC" impl="'DEMONIC'"/>
+        <value name="COW" impl="'COW'"/>
+        <value name="SPIDER_ADBOMEN" impl="'SPIDER_ADBOMEN'"/>
+        <value name="BEE_ABDOMEN" impl="'BEE_ABDOMEN'"/>
+        <value name="SHARK" impl="'SHARK'"/>
+        <value name="CAT" impl="'CAT'"/>
+        <value name="LIZARD" impl="'LIZARD'"/>
+        <value name="RABBIT" impl="'RABBIT'"/>
+        <value name="HARPY" impl="'HARPY'"/>
+        <value name="KANGAROO" impl="'KANGAROO'"/>
+        <value name="FOX" impl="'FOX'"/>
+        <value name="DRACONIC" impl="'DRACONIC'"/>
+        <value name="RACCOON" impl="'RACCOON'"/>
+        <value name="MOUSE" impl="'MOUSE'"/>
+        <value name="FERRET" impl="'FERRET'"/>
+        <value name="BEHEMOTH" impl="'BEHEMOTH'"/>
+        <value name="PIG" impl="'PIG'"/>
+        <value name="SCORPION" impl="'SCORPION'"/>
+        <value name="GOAT" impl="'GOAT'"/>
+        <value name="RHINO" impl="'RHINO'"/>
+        <value name="ECHIDNA" impl="'ECHIDNA'"/>
+        <value name="DEER" impl="'DEER'"/>
+        <value name="SALAMANDER" impl="'SALAMANDER'"/>
+        <value name="KITSHOO" impl="'KITSHOO'"/>
+        <value name="MANTIS_ABDOMEN" impl="'MANTIS_ABDOMEN'"/>
+        <value name="MANTICORE_PUSSYTAIL" impl="'MANTICORE_PUSSYTAIL'"/>
+        <value name="WOLF" impl="'WOLF'"/>
+        <value name="GARGOYLE" impl="'GARGOYLE'"/>
+        <value name="ORCA" impl="'ORCA'"/>
+        <value name="YGGDRASIL" impl="'YGGDRASIL'"/>
+        <value name="RAIJU" impl="'RAIJU'"/>
+        <value name="RED_PANDA" impl="'RED_PANDA'"/>
+        <value name="GARGOYLE_2" impl="'GARGOYLE_2'"/>
+        <value name="AVIAN" impl="'AVIAN'"/>
+        <value name="GRIFFIN" impl="'GRIFFIN'"/>
+        <value name="LION" impl="'LION'"/>
+    </enum>
+    <enum name="TongueType">
+        <value name="HUMAN" impl="'HUMAN'"/>
+        <value name="SNAKE" impl="'SNAKE'"/>
+        <value name="DEMONIC" impl="'DEMONIC'"/>
+        <value name="DRACONIC" impl="'DRACONIC'"/>
+        <value name="ECHIDNA" impl="'ECHIDNA'"/>
+        <value name="CAT" impl="'CAT'"/>
+        <value name="ELF" impl="'ELF'"/>
+        <value name="DOG" impl="'DOG'"/>
+    </enum>
+    <enum name="WingType">
+        <value name="NONE" impl="'NONE'"/>
+        <value name="BEE_LIKE_SMALL" impl="'BEE_LIKE_SMALL'"/>
+        <value name="BEE_LIKE_LARGE" impl="'BEE_LIKE_LARGE'"/>
+        <value name="HARPY" impl="'HARPY'"/>
+        <value name="IMP" impl="'IMP'"/>
+        <value name="BAT_LIKE_TINY" impl="'BAT_LIKE_TINY'"/>
+        <value name="BAT_LIKE_LARGE" impl="'BAT_LIKE_LARGE'"/>
+        <value name="SHARK_FIN" impl="'SHARK_FIN'"/>
+        <value name="FEATHERED" impl="'FEATHERED'"/>
+        <value name="DRACONIC_SMALL" impl="'DRACONIC_SMALL'"/>
+        <value name="DRACONIC_LARGE" impl="'DRACONIC_LARGE'"/>
+        <value name="GIANT_DRAGONFLY" impl="'GIANT_DRAGONFLY'"/>
+        <value name="BAT_LIKE_LARGE_2" impl="'BAT_LIKE_LARGE_2'"/>
+        <value name="DRACONIC_HUGE" impl="'DRACONIC_HUGE'"/>
+        <value name="MANTIS_LIKE_SMALL" impl="'MANTIS_LIKE_SMALL'"/>
+        <value name="MANTIS_LIKE_LARGE" impl="'MANTIS_LIKE_LARGE'"/>
+        <value name="MANTIS_LIKE_LARGE_2" impl="'MANTIS_LIKE_LARGE_2'"/>
+        <value name="GARGOYLE_LIKE_LARGE" impl="'GARGOYLE_LIKE_LARGE'"/>
+        <value name="PLANT" impl="'PLANT'"/>
+        <value name="MANTICORE_LIKE_SMALL" impl="'MANTICORE_LIKE_SMALL'"/>
+        <value name="MANTICORE_LIKE_LARGE" impl="'MANTICORE_LIKE_LARGE'"/>
+        <value name="BAT_ARM" impl="'BAT_ARM'"/>
+        <value name="VAMPIRE" impl="'VAMPIRE'"/>
+        <value name="FEY_DRAGON_WINGS" impl="'FEY_DRAGON_WINGS'"/>
+        <value name="FEATHERED_AVIAN" impl="'FEATHERED_AVIAN'"/>
+        <value name="NIGHTMARE" impl="'NIGHTMARE'"/>
     </enum>
     <!-- body other -->
     <enum name="SexTest">
@@ -211,6 +478,66 @@
         </editor>
     </function>
     <!-- body parts -->
+    <function name="AntennaeType" return="AntennaeType">
+        <listname>Player: Antennae Type</listname>
+        <editor>
+            Player's antennae type
+        </editor>
+    </function>
+    <function name="ArmType" return="ArmType">
+        <listname>Player: Arm Type</listname>
+        <editor>
+            Player's arm type
+        </editor>
+    </function>
+    <function name="BeardType" return="BeardType">
+        <listname>Player: Beard Type</listname>
+        <editor>
+            Player's beard type
+        </editor>
+    </function>
+    <function name="ClawType" return="ClawType">
+        <listname>Player: Claw Type</listname>
+        <editor>
+            Player's claw type
+        </editor>
+    </function>
+    <function name="EarType" return="EarType">
+        <listname>Player: Ear Type</listname>
+        <editor>
+            Player's ear type
+        </editor>
+    </function>
+    <function name="EyeType" return="EyeType">
+        <listname>Player: Eye Type</listname>
+        <editor>
+            Player's eye type
+        </editor>
+    </function>
+    <function name="FaceType" return="FaceType">
+        <listname>Player: Face Type</listname>
+        <editor>
+            Player's face type
+        </editor>
+    </function>
+    <function name="GillType" return="GillType">
+        <listname>Player: Gill Type</listname>
+        <editor>
+            Player's gill type
+        </editor>
+    </function>
+    <function name="HairType" return="HairType">
+        <listname>Player: Hair Type</listname>
+        <editor>
+            Player's hair type
+        </editor>
+    </function>
+    <function name="HornType" return="HornType">
+        <listname>Player: Horn Type</listname>
+        <editor>
+            Player's horn type
+        </editor>
+    </function>
     <function name="CreatureLegType" return="LegType">
         <listname>Creature: Leg Type</listname>
         <param name="Creature" type="Creature" default="player"/>
@@ -224,6 +551,30 @@
             Player's leg type
         </editor>
     </function>
+    <function name="RearBodyType" return="RearBodyType">
+        <listname>Player: Rear Body Type</listname>
+        <editor>
+            Player's rear body type
+        </editor>
+    </function>
+    <function name="TailType" return="TailType">
+        <listname>Player: Tail Type</listname>
+        <editor>
+            Player's tail type
+        </editor>
+    </function>
+    <function name="TongueType" return="TongueType">
+        <listname>Player: Tongue Type</listname>
+        <editor>
+            Player's tongue type
+        </editor>
+    </function>
+    <function name="WingType" return="WingType">
+        <listname>Player: Wing Type</listname>
+        <editor>
+            Player's wing type
+        </editor>
+    </function>
     <!-- sexual properties -->
     <function name="VaginalWetness" return="VaginalWetness">
         <listname>Player: Vaginal wetness</listname>
@@ -231,13 +582,13 @@
             Player's vaginal wetness
         </editor>
     </function>
-    <function name="VaginalCapacity" return="number">
+    <function name="VaginalCapacity" return="float">
         <listname>Player: Vaginal wetness</listname>
         <editor>
             Player's vaginal capacity (sq.in.)
         </editor>
     </function>
-    <function name="PenisCount" return="number">
+    <function name="PenisCount" return="float">
         <listname>Player: Penis count</listname>
         <editor>
             Player's number of penises
@@ -268,6 +619,45 @@
             <param name="Slot" type="SELECT"/>
             equipment slot is empty.
         </editor>
+    </function>
+    <!-- misc -->
+    <function name="RandomChance" return="boolean">
+        <listname>Random chance</listname>
+        <param name="M" type="int" default="5"/>
+        <param name="N" type="int" default="10"/>
+        <editor>
+            <param name="M"/>
+            times out of
+            <param name="N" type="INPUT"/>
+        </editor>
+    </function>
+    <function name="RandomInt" return="int">
+        <listname>Random integer number</listname>
+        <param name="Min" type="int" default="1"/>
+        <param name="Max" type="int" default="10"/>
+        <editor>
+            Random integer number between
+            <param name="Min" type="INPUT"/>
+            and
+            <param name="Max" type="INPUT"/>
+        </editor>
+        <editor-hint>
+            Uniformly chosen. Min &amp; max bounds are included.
+        </editor-hint>
+    </function>
+    <function name="RandomFloat" return="float">
+        <listname>Random real number</listname>
+        <param name="Min" type="float" default="0"/>
+        <param name="Max" type="float" default="1"/>
+        <editor>
+            Random real number between
+            <param name="Min" type="INPUT"/>
+            and
+            <param name="Max" type="INPUT"/>
+        </editor>
+        <editor-hint>
+            Uniformly chosen. Min bound is included, max is excluded.
+        </editor-hint>
     </function>
     <!-- ********
          COMMANDS

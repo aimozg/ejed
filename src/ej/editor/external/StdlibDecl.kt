@@ -25,8 +25,16 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression>,
 	@Elements("command")
 	val commands = ArrayList<CommandDecl>()
 	
-	fun functionsReturning(rawType:String) = functions.filter {
-		it.returnTypeRaw == rawType
+	fun functionsReturning(rawTypes: Collection<String>) = functions.filter {
+		it.returnTypeRaw in rawTypes
+	}
+	
+	fun functionsReturning(rawType: String) = when (rawType) {
+		ExpressionTypes.FLOAT -> functionsReturning(listOf(ExpressionTypes.FLOAT,
+		                                                   ExpressionTypes.INT,
+		                                                   ExpressionTypes.ANY))
+		ExpressionTypes.ANY -> functions
+		else -> functionsReturning(listOf(rawType, ExpressionTypes.ANY))
 	}
 	
 	fun commandBuilders(): List<ExpressionBuilder> = commands.map {
@@ -37,7 +45,9 @@ class StdlibDecl : XmlAutoSerializable, PartialBuilderConverter<CallExpression>,
 			enumByTypeName(rawType)?.let {
 				ExternalEnumBuilder(it)
 			}
-	) + functionsReturning(rawType).map {
+	) + functionsReturning(rawType).sortedBy {
+		it.listname
+	}.map {
 		ExternalFunctionBuilder(it)
 	}
 	fun functionByName(name:String) = functions.find { it.name == name }

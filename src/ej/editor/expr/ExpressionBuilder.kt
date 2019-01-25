@@ -84,7 +84,11 @@ abstract class ExpressionChooser : ValueChooser<ExpressionBuilder>(){
 	}
 }
 
-open class EnumChooser<E:Enum<E>>(val enumConsts:Array<E>,val nameProperty: KProperty1<E, String>) : ListValueChooser<E>(enumConsts.asList(),{
+open class EnumChooser<E : Enum<E>>(enumConsts: List<E>, val nameProperty: KProperty1<E, String>) : ListValueChooser<E>(
+		enumConsts,
+		{
 	it?.let{ e -> nameProperty.get(e) } ?: "<Choose value>"
-})
+		}) {
+	constructor(enumConsts: Array<E>, nameProperty: KProperty1<E, String>) : this(enumConsts.asList(), nameProperty)
+}
 
